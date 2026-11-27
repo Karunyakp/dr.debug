@@ -1,0 +1,221 @@
+{
+  "entities": {
+    "UserPublicProfile": {
+      "title": "UserPublicProfile",
+      "description": "Publicly readable non-PII profile information for a registered KAIROS user.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "role": {
+          "type": "string",
+          "enum": ["patient", "doctor", "hospital", "ambulance", "diagnostic", "admin"]
+        },
+        "facilityId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "role", "createdAt", "updatedAt"]
+    },
+    "UserPrivateInfo": {
+      "title": "UserPrivateInfo",
+      "description": "Isolated PII and medical metadata strictly restricted to the owner or admin.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "maxLength": 200 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "bloodGroup": { "type": "string", "maxLength": 10 },
+        "allergies": { "type": "string", "maxLength": 300 },
+        "emergencyContact": { "type": "string", "maxLength": 120 },
+        "abhaId": { "type": "string", "maxLength": 40 },
+        "consentGranted": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "consentGranted", "updatedAt"]
+    },
+    "Hospital": {
+      "title": "Hospital",
+      "description": "Hospital directory record with verified timestamped bed and ICU capacity.",
+      "type": "object",
+      "properties": {
+        "hospitalId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "area": { "type": "string", "maxLength": 120 },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "icuAvailable": { "type": "integer" },
+        "icuTotal": { "type": "integer" },
+        "generalAvailable": { "type": "integer" },
+        "generalTotal": { "type": "integer" },
+        "pedsAvailable": { "type": "integer" },
+        "pedsTotal": { "type": "integer" },
+        "acceptingEmergencies": { "type": "boolean" },
+        "lastVerifiedBy": { "type": "string", "maxLength": 120 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "hospitalId",
+        "name",
+        "icuAvailable",
+        "icuTotal",
+        "generalAvailable",
+        "generalTotal",
+        "acceptingEmergencies",
+        "updatedAt"
+      ]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Smart OPD or Specialist Connect booking with QR token and queue tracking.",
+      "type": "object",
+      "properties": {
+        "appointmentId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "patientName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "hospitalId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "hospitalName": { "type": "string", "maxLength": 160 },
+        "department": { "type": "string", "maxLength": 100 },
+        "doctorName": { "type": "string", "maxLength": 120 },
+        "slotTime": { "type": "string", "maxLength": 40 },
+        "tokenNumber": { "type": "string", "maxLength": 24 },
+        "consultationType": { "type": "string", "enum": ["in-person", "remote"] },
+        "status": {
+          "type": "string",
+          "enum": ["scheduled", "checked-in", "in-triage", "in-consultation", "completed", "cancelled"]
+        },
+        "queuePosition": { "type": "integer" },
+        "estimatedWaitMin": { "type": "integer" },
+        "delayMin": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "appointmentId",
+        "ownerId",
+        "patientName",
+        "hospitalId",
+        "department",
+        "doctorName",
+        "slotTime",
+        "tokenNumber",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "EmergencyReferral": {
+      "title": "EmergencyReferral",
+      "description": "Structured ISBAR emergency referral with accept-before-you-move bed reservation and ambulance tracking.",
+      "type": "object",
+      "properties": {
+        "referralId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "referringDoctorId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "referringHospitalName": { "type": "string", "maxLength": 160 },
+        "targetHospitalId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "targetHospitalName": { "type": "string", "maxLength": 160 },
+        "patientInitials": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "category": { "type": "string", "maxLength": 80 },
+        "urgency": { "type": "string", "enum": ["critical", "urgent", "priority"] },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "accepted", "declined", "escalated", "in_transit", "arrived", "completed"]
+        },
+        "heartRate": { "type": "integer" },
+        "spo2": { "type": "integer" },
+        "bp": { "type": "string", "maxLength": 20 },
+        "temperatureC": { "type": "number" },
+        "respRate": { "type": "integer" },
+        "isbarSummary": { "type": "string", "maxLength": 1500 },
+        "bedHoldLabel": { "type": "string", "maxLength": 40 },
+        "ambulanceId": { "type": "string", "maxLength": 64 },
+        "ambulanceStatus": {
+          "type": "string",
+          "enum": ["unassigned", "assigned", "preparing", "dispatched", "picked_up", "en_route", "arrived", "completed"]
+        },
+        "declineReason": { "type": "string", "maxLength": 300 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "referralId",
+        "referringDoctorId",
+        "targetHospitalId",
+        "patientInitials",
+        "category",
+        "urgency",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DiagnosticBooking": {
+      "title": "DiagnosticBooking",
+      "description": "Diagnostic lab test slot booking and report lifecycle.",
+      "type": "object",
+      "properties": {
+        "bookingId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "centreId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "centreName": { "type": "string", "maxLength": 160 },
+        "testName": { "type": "string", "maxLength": 160 },
+        "slotTime": { "type": "string", "maxLength": 40 },
+        "priceInr": { "type": "integer" },
+        "status": {
+          "type": "string",
+          "enum": ["requested", "confirmed", "sample_collected", "report_ready", "rejected"]
+        },
+        "reportSummary": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bookingId", "ownerId", "centreId", "testName", "slotTime", "status", "createdAt", "updatedAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable compliance audit record for sensitive healthcare coordination actions.",
+      "type": "object",
+      "properties": {
+        "logId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "actorUid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "actorRole": { "type": "string", "maxLength": 40 },
+        "action": { "type": "string", "maxLength": 120 },
+        "entityType": { "type": "string", "maxLength": 60 },
+        "entityId": { "type": "string", "maxLength": 128 },
+        "summary": { "type": "string", "maxLength": 400 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["logId", "actorUid", "actorRole", "action", "entityType", "entityId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserPublicProfile" },
+      "description": "Non-PII public profile and assigned role for a user."
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/UserPrivateInfo" },
+      "description": "Strictly isolated PII and patient consent data accessible only by owner or admin."
+    },
+    "/hospitals/{hospitalId}": {
+      "schema": { "$ref": "#/entities/Hospital" },
+      "description": "Hospital capacity and bed availability records."
+    },
+    "/appointments/{appointmentId}": {
+      "schema": { "$ref": "#/entities/Appointment" },
+      "description": "Smart OPD and Specialist Connect bookings."
+    },
+    "/referrals/{referralId}": {
+      "schema": { "$ref": "#/entities/EmergencyReferral" },
+      "description": "Structured ISBAR emergency referrals and time-limited bed reservations."
+    },
+    "/diagnosticBookings/{bookingId}": {
+      "schema": { "$ref": "#/entities/DiagnosticBooking" },
+      "description": "Diagnostic centre test bookings and report status."
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Append-only DPDP and clinical governance audit trail."
+    }
+  }
+}
