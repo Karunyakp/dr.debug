@@ -177,49 +177,49 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
     <div className="space-y-6">
       {/* Top Action Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
-          <p className="text-xs font-medium text-slate-600">Assigned Transfers</p>
-          <p className="font-mono text-2xl font-bold text-[#0B3B2D] tabular-nums mt-1">
+        <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5">
+          <p className="text-xs font-medium text-kairos-muted">Assigned Transfers</p>
+          <p className="font-mono text-2xl font-bold text-kairos-forest-ink tabular-nums mt-1">
             {assignedTransfers.filter((r) => r.status !== 'completed').length}
           </p>
-          <p className="text-xs text-[#119655] font-medium mt-1">
+          <p className="text-xs text-kairos-emerald-ink font-medium mt-1">
             Only confirmed or override-logged cases
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
-          <p className="text-xs font-medium text-slate-600">Active Unit · ETA</p>
-          <p className="font-mono text-2xl font-bold text-[#0B3B2D] tabular-nums mt-1">
+        <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5">
+          <p className="text-xs font-medium text-kairos-muted">Active Unit · ETA</p>
+          <p className="font-mono text-2xl font-bold text-kairos-forest-ink tabular-nums mt-1">
             {activeTransfer?.ambulanceUnitName ? 'KA-01' : 'Standby'} ·{' '}
             {activeTransfer?.ambulanceEtaMin ?? 0}m
           </p>
-          <p className="text-xs text-slate-600 mt-1">
+          <p className="text-xs text-kairos-muted mt-1">
             {activeTransfer ? `Stage: ${activeTransfer.ambulanceStatus.replace('_', ' ')}` : 'Awaiting dispatch'}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
-          <p className="text-xs font-medium text-slate-600">Receiving Bed Confirmation</p>
-          <p className="font-mono text-2xl font-bold text-[#119655] tabular-nums mt-1">
+        <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5">
+          <p className="text-xs font-medium text-kairos-muted">Receiving Bed Confirmation</p>
+          <p className="font-mono text-2xl font-bold text-kairos-emerald-ink tabular-nums mt-1">
             {activeTransfer?.bedHold
               ? `${activeTransfer.bedHold.bedLabel} · ${formatCountdown(holdState?.remainingSec ?? 0)}`
               : activeTransfer?.manualOverrideActive
                 ? 'Override'
                 : 'None'}
           </p>
-          <p className="text-xs text-slate-600 mt-1">
+          <p className="text-xs text-kairos-muted mt-1">
             {activeTransfer?.targetHospitalName || 'No active destination'}
           </p>
         </div>
       </div>
 
       {!activeTransfer ? (
-        <div className="bg-white rounded-2xl border border-[#DCECE3] p-8 text-center">
-          <Ambulance className="w-8 h-8 text-[#119655] mx-auto" />
-          <h2 className="font-display text-lg font-bold text-[#0B3B2D] mt-3">
+        <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-8 text-center">
+          <Ambulance className="w-8 h-8 text-kairos-emerald-ink mx-auto" />
+          <h2 className="font-display text-lg font-bold text-kairos-forest-ink mt-3">
             No confirmed emergency transfers yet
           </h2>
-          <p className="text-sm text-slate-600 max-w-md mx-auto mt-1">
+          <p className="text-sm text-kairos-muted max-w-md mx-auto mt-1">
             Under KAIROS’s Accept Before You Move protocol, ambulances dispatch once a receiving
             hospital confirms capacity or a clinician logs a manual safety override.
           </p>
@@ -236,8 +236,8 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                   onClick={() => handleSelectTransfer(ref.referralId)}
                   className={`px-3.5 py-2 rounded-xl border text-xs font-semibold transition-colors ${
                     ref.referralId === activeTransfer.referralId
-                      ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                      : 'bg-white text-[#0B3B2D] border-[#CFE3D8] hover:border-[#119655]'
+                      ? 'bg-kairos-forest text-white border-kairos-forest'
+                      : 'bg-kairos-surface text-kairos-forest-ink border-kairos-border hover:border-kairos-emerald'
                   }`}
                 >
                   {ref.referralId} · {ref.patientInitials} → {ref.targetHospitalName}
@@ -249,34 +249,34 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
           {activeTab === 'transfers' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Handoff & 7-Stage Status Card */}
-              <div className="lg:col-span-2 bg-white rounded-2xl border border-[#DCECE3] p-6 space-y-6">
-                <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#E5F0EA] pb-4">
+              <div className="lg:col-span-2 bg-kairos-surface rounded-2xl border border-kairos-border p-6 space-y-6">
+                <div className="flex flex-wrap items-start justify-between gap-4 border-b border-kairos-border-subtle pb-4">
                   <div>
                     <div className="flex items-center gap-2 text-xs font-semibold">
-                      <span className="font-mono text-[#0B3B2D]">{activeTransfer.referralId}</span>
-                      <span className="text-slate-300">·</span>
-                      <span className={activeTransfer.urgency === 'critical' ? 'text-red-700' : 'text-amber-700'}>
+                      <span className="font-mono text-kairos-forest-ink">{activeTransfer.referralId}</span>
+                      <span className="text-kairos-muted/50">·</span>
+                      <span className={activeTransfer.urgency === 'critical' ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'}>
                         {activeTransfer.urgency.toUpperCase()}
                       </span>
-                      <span className="text-slate-300">·</span>
-                      <span className="text-[#119655]">
+                      <span className="text-kairos-muted/50">·</span>
+                      <span className="text-kairos-emerald-ink">
                         {activeTransfer.manualOverrideActive
                           ? 'Manual Safety Override Logged'
                           : 'Hospital Acceptance Confirmed'}
                       </span>
                     </div>
-                    <h2 className="font-display text-xl font-extrabold text-[#0B3B2D] mt-1">
+                    <h2 className="font-display text-xl font-extrabold text-kairos-forest-ink mt-1">
                       {activeTransfer.category} — {activeTransfer.patientInitials} ({activeTransfer.ageSex})
                     </h2>
-                    <p className="text-xs text-slate-600 mt-1">
+                    <p className="text-xs text-kairos-muted mt-1">
                       Pickup: {activeTransfer.referringHospitalName} · Destination: {activeTransfer.targetHospitalName}
                     </p>
                   </div>
 
                   {activeTransfer.bedHold && (
-                    <div className="rounded-xl bg-[#ECFDF3] border border-[#BBF7D0] px-3.5 py-2 text-right">
-                      <p className="text-[11px] font-semibold text-[#119655]">CONFIRMED BED HOLD</p>
-                      <p className="font-mono text-sm font-bold text-[#0B3B2D] tabular-nums">
+                    <div className="rounded-xl bg-kairos-mint-soft border border-kairos-border px-3.5 py-2 text-right">
+                      <p className="text-[11px] font-semibold text-kairos-emerald-ink">CONFIRMED BED HOLD</p>
+                      <p className="font-mono text-sm font-bold text-kairos-forest-ink tabular-nums">
                         {activeTransfer.bedHold.bedLabel} · {formatCountdown(holdState?.remainingSec ?? 0)}
                       </p>
                     </div>
@@ -286,10 +286,10 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                 {/* 7-Stage One-Tap Status Progression */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-display text-sm font-bold text-[#0B3B2D]">
+                    <h3 className="font-display text-sm font-bold text-kairos-forest-ink">
                       7-Stage Ambulance Transfer Status
                     </h3>
-                    <span className="text-xs font-mono text-slate-500">
+                    <span className="text-xs font-mono text-kairos-muted">
                       Tap stage to broadcast live update
                     </span>
                   </div>
@@ -304,15 +304,15 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                           onClick={() => handleAdvanceStage(item.stage, item.defaultEta)}
                           className={`p-3 rounded-xl border text-left transition-all ${
                             isCurrent
-                              ? 'bg-[#119655] border-[#0D7A44] text-white shadow-sm'
+                              ? 'bg-kairos-emerald border-kairos-emerald-hover text-white shadow-sm'
                               : isCompleted
-                                ? 'bg-[#ECFDF3] border-[#BBF7D0] text-[#0B3B2D]'
-                                : 'bg-[#F8FBF9] border-[#DCECE3] text-slate-700 hover:border-[#119655]'
+                                ? 'bg-kairos-mint-soft border-kairos-border text-kairos-forest-ink'
+                                : 'bg-kairos-surface-subtle border-kairos-border text-kairos-forest-ink/85 hover:border-kairos-emerald'
                           }`}
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-mono text-[11px] font-bold">0{idx + 1}</span>
-                            {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-[#119655]" />}
+                            {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-kairos-emerald-ink" />}
                             {isCurrent && <Ambulance className="w-3.5 h-3.5 text-white" />}
                           </div>
                           <p className="text-xs font-bold mt-1.5 leading-snug">{item.label}</p>
@@ -323,16 +323,16 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                 </div>
 
                 {/* Clinician Emergency Instructions */}
-                <div className="rounded-xl bg-[#F4FAF6] border border-[#D5E7DD] p-4">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#0B3B2D]">
-                    <Stethoscope className="w-4 h-4 text-[#119655]" />
+                <div className="rounded-xl bg-kairos-surface-subtle border border-kairos-border p-4">
+                  <div className="flex items-center gap-2 text-xs font-bold text-kairos-forest-ink">
+                    <Stethoscope className="w-4 h-4 text-kairos-emerald-ink" />
                     Authorised Clinician Instructions ({activeTransfer.referringDoctorName})
                   </div>
-                  <p className="text-sm text-slate-700 mt-2 leading-relaxed">
+                  <p className="text-sm text-kairos-forest-ink/85 mt-2 leading-relaxed">
                     {activeTransfer.clinicianInstructions ||
                       'Maintain airway patency, monitor SpO2 continuously every 5 minutes, keep IV access patent, and notify receiving triage upon entering hospital corridor.'}
                   </p>
-                  <p className="text-xs text-slate-500 mt-2">
+                  <p className="text-xs text-kairos-muted mt-2">
                     Symptoms & Handover: {activeTransfer.symptoms}
                   </p>
                 </div>
@@ -342,7 +342,7 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => onTabChange('vitals')}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0B3B2D] text-white text-xs font-semibold hover:bg-[#14503E] transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-kairos-forest text-white text-xs font-semibold hover:bg-kairos-emerald transition-colors"
                   >
                     <HeartPulse className="w-4 h-4" />
                     Update In-Transit Vitals
@@ -350,9 +350,9 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => onTabChange('route')}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#CFE3D8] text-[#0B3B2D] text-xs font-semibold hover:border-[#119655] transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-kairos-surface border border-kairos-border text-kairos-forest-ink text-xs font-semibold hover:border-kairos-emerald transition-colors"
                   >
-                    <Navigation className="w-4 h-4 text-[#119655]" />
+                    <Navigation className="w-4 h-4 text-kairos-emerald-ink" />
                     Route & Location Consent
                   </button>
                 </div>
@@ -360,26 +360,26 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
 
               {/* Right Column: Pickup & Receiving Contacts + Latest Vitals */}
               <div className="space-y-4">
-                <div className="bg-white rounded-2xl border border-[#DCECE3] p-5 space-y-3">
-                  <h3 className="font-display text-sm font-bold text-[#0B3B2D]">
+                <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5 space-y-3">
+                  <h3 className="font-display text-sm font-bold text-kairos-forest-ink">
                     Pickup & Destination Details
                   </h3>
                   <div className="space-y-2.5 text-xs">
-                    <div className="p-3 rounded-xl bg-[#F8FBF9] border border-[#E5F0EA]">
-                      <p className="text-[11px] font-semibold text-slate-500">PICKUP FACILITY</p>
-                      <p className="font-bold text-[#0B3B2D] mt-0.5">{activeTransfer.referringHospitalName}</p>
-                      <p className="text-slate-600 mt-0.5">Lead: {activeTransfer.referringDoctorName}</p>
+                    <div className="p-3 rounded-xl bg-kairos-surface-subtle border border-kairos-border-subtle">
+                      <p className="text-[11px] font-semibold text-kairos-muted">PICKUP FACILITY</p>
+                      <p className="font-bold text-kairos-forest-ink mt-0.5">{activeTransfer.referringHospitalName}</p>
+                      <p className="text-kairos-muted mt-0.5">Lead: {activeTransfer.referringDoctorName}</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-[#ECFDF3] border border-[#BBF7D0]">
-                      <p className="text-[11px] font-semibold text-[#119655]">RECEIVING HOSPITAL (CONFIRMED)</p>
-                      <p className="font-bold text-[#0B3B2D] mt-0.5">{activeTransfer.targetHospitalName}</p>
-                      <p className="text-slate-600 mt-0.5">
+                    <div className="p-3 rounded-xl bg-kairos-mint-soft border border-kairos-border">
+                      <p className="text-[11px] font-semibold text-kairos-emerald-ink">RECEIVING HOSPITAL (CONFIRMED)</p>
+                      <p className="font-bold text-kairos-forest-ink mt-0.5">{activeTransfer.targetHospitalName}</p>
+                      <p className="text-kairos-muted mt-0.5">
                         {destinationHospital?.area || 'Bengaluru East'} · Receiving MD:{' '}
                         {activeTransfer.receivingDoctorName || 'ER Duty Physician'}
                       </p>
                       {destinationHospital?.phone && (
-                        <p className="font-mono text-[#0B3B2D] mt-1 inline-flex items-center gap-1">
-                          <PhoneCall className="w-3 h-3 text-[#119655]" />
+                        <p className="font-mono text-kairos-forest-ink mt-1 inline-flex items-center gap-1">
+                          <PhoneCall className="w-3 h-3 text-kairos-emerald-ink" />
                           {destinationHospital.phone}
                         </p>
                       )}
@@ -387,28 +387,28 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
-                  <h3 className="font-display text-sm font-bold text-[#0B3B2D] mb-3">
+                <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5">
+                  <h3 className="font-display text-sm font-bold text-kairos-forest-ink mb-3">
                     Latest Recorded Vitals
                   </h3>
                   <div className="grid grid-cols-2 gap-2.5 font-mono text-xs tabular-nums">
-                    <div className="p-2.5 rounded-xl bg-[#F8FBF9] border border-[#E5F0EA]">
-                      <span className="text-[10px] text-slate-500 block font-sans">Heart Rate</span>
-                      <span className="font-bold text-[#0B3B2D] text-sm">{activeTransfer.vitals.heartRate} bpm</span>
+                    <div className="p-2.5 rounded-xl bg-kairos-surface-subtle border border-kairos-border-subtle">
+                      <span className="text-[10px] text-kairos-muted block font-sans">Heart Rate</span>
+                      <span className="font-bold text-kairos-forest-ink text-sm">{activeTransfer.vitals.heartRate} bpm</span>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#F8FBF9] border border-[#E5F0EA]">
-                      <span className="text-[10px] text-slate-500 block font-sans">Blood Pressure</span>
-                      <span className="font-bold text-[#0B3B2D] text-sm">{activeTransfer.vitals.bp}</span>
+                    <div className="p-2.5 rounded-xl bg-kairos-surface-subtle border border-kairos-border-subtle">
+                      <span className="text-[10px] text-kairos-muted block font-sans">Blood Pressure</span>
+                      <span className="font-bold text-kairos-forest-ink text-sm">{activeTransfer.vitals.bp}</span>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#F8FBF9] border border-[#E5F0EA]">
-                      <span className="text-[10px] text-slate-500 block font-sans">SpO2</span>
-                      <span className={`font-bold text-sm ${activeTransfer.vitals.spo2 < 92 ? 'text-red-700' : 'text-[#119655]'}`}>
+                    <div className="p-2.5 rounded-xl bg-kairos-surface-subtle border border-kairos-border-subtle">
+                      <span className="text-[10px] text-kairos-muted block font-sans">SpO2</span>
+                      <span className={`font-bold text-sm ${activeTransfer.vitals.spo2 < 92 ? 'text-red-700 dark:text-red-400' : 'text-kairos-emerald-ink'}`}>
                         {activeTransfer.vitals.spo2}%
                       </span>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-[#F8FBF9] border border-[#E5F0EA]">
-                      <span className="text-[10px] text-slate-500 block font-sans">Temp · RR</span>
-                      <span className="font-bold text-[#0B3B2D] text-sm">
+                    <div className="p-2.5 rounded-xl bg-kairos-surface-subtle border border-kairos-border-subtle">
+                      <span className="text-[10px] text-kairos-muted block font-sans">Temp · RR</span>
+                      <span className="font-bold text-kairos-forest-ink text-sm">
                         {activeTransfer.vitals.temperatureC}°C · {activeTransfer.vitals.respRate}
                       </span>
                     </div>
@@ -419,19 +419,19 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
           )}
 
           {activeTab === 'vitals' && (
-            <div className="max-w-2xl bg-white rounded-2xl border border-[#DCECE3] p-6 space-y-5">
+            <div className="max-w-2xl bg-kairos-surface rounded-2xl border border-kairos-border p-6 space-y-5">
               <div>
-                <h2 className="font-display text-lg font-extrabold text-[#0B3B2D]">
+                <h2 className="font-display text-lg font-extrabold text-kairos-forest-ink">
                   In-Transit Vitals Streamer · {activeTransfer.referralId}
                 </h2>
-                <p className="text-xs text-slate-600 mt-1">
+                <p className="text-xs text-kairos-muted mt-1">
                   Updates sync directly to the receiving ER desk at {activeTransfer.targetHospitalName}.
                 </p>
               </div>
 
               {isOfflineSimulated && (
-                <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
-                  <WifiOff className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 p-3.5 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+                  <WifiOff className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-bold">Weak Rural Connectivity Mode Active</p>
                     <p className="mt-0.5">
@@ -444,31 +444,31 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
               <form onSubmit={handleVitalsUpdate} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                    <label className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                       Heart Rate (bpm)
                     </label>
                     <input
                       type="number"
                       value={hr}
                       onChange={(e) => setHr(e.target.value)}
-                      className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm font-mono tabular-nums"
+                      className="w-full rounded-xl border border-kairos-border px-3 py-2 text-sm font-mono tabular-nums"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                    <label className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                       Blood Pressure (mmHg)
                     </label>
                     <input
                       type="text"
                       value={bp}
                       onChange={(e) => setBp(e.target.value)}
-                      className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm font-mono tabular-nums"
+                      className="w-full rounded-xl border border-kairos-border px-3 py-2 text-sm font-mono tabular-nums"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                    <label className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                       Oxygen Saturation SpO2 (%)
                     </label>
                     <input
@@ -477,12 +477,12 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                       max={100}
                       value={spo2}
                       onChange={(e) => setSpo2(e.target.value)}
-                      className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm font-mono tabular-nums"
+                      className="w-full rounded-xl border border-kairos-border px-3 py-2 text-sm font-mono tabular-nums"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                    <label className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                       Temperature (°C)
                     </label>
                     <input
@@ -490,19 +490,19 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                       step="0.1"
                       value={tempC}
                       onChange={(e) => setTempC(e.target.value)}
-                      className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm font-mono tabular-nums"
+                      className="w-full rounded-xl border border-kairos-border px-3 py-2 text-sm font-mono tabular-nums"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                    <label className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                       Respiratory Rate (breaths/min)
                     </label>
                     <input
                       type="number"
                       value={respRate}
                       onChange={(e) => setRespRate(e.target.value)}
-                      className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm font-mono tabular-nums"
+                      className="w-full rounded-xl border border-kairos-border px-3 py-2 text-sm font-mono tabular-nums"
                       required
                     />
                   </div>
@@ -511,7 +511,7 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                 <div className="flex items-center gap-3 pt-2">
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#119655] hover:bg-[#0D7A44] text-white text-sm font-semibold transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-kairos-emerald hover:bg-kairos-emerald-hover text-white text-sm font-semibold transition-colors"
                   >
                     <Activity className="w-4 h-4" />
                     Transmit Updated Vitals to ER
@@ -519,7 +519,7 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => onTabChange('transfers')}
-                    className="px-4 py-2.5 rounded-xl border border-[#CFE3D8] text-xs font-semibold text-[#0B3B2D]"
+                    className="px-4 py-2.5 rounded-xl border border-kairos-border text-xs font-semibold text-kairos-forest-ink"
                   >
                     Back to Transfer
                   </button>
@@ -530,17 +530,17 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
 
           {activeTab === 'route' && (
             <div className="space-y-5">
-              <div className="bg-white rounded-2xl border border-[#DCECE3] p-5 flex flex-wrap items-center justify-between gap-4">
+              <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-start gap-3">
-                  <ShieldCheck className="w-5 h-5 text-[#119655] shrink-0 mt-0.5" />
+                  <ShieldCheck className="w-5 h-5 text-kairos-emerald-ink shrink-0 mt-0.5" />
                   <div>
-                    <h2 className="font-display text-base font-bold text-[#0B3B2D]">
+                    <h2 className="font-display text-base font-bold text-kairos-forest-ink">
                       Explicit, Revocable Location Sharing (DPDP Compliant)
                     </h2>
-                    <p className="text-xs text-slate-600 mt-0.5">
+                    <p className="text-xs text-kairos-muted mt-0.5">
                       Live ambulance GPS is shared with {activeTransfer.targetHospitalName} only while consent is active.
                     </p>
-                    {geoStatus && <p className="text-xs text-[#119655] font-medium mt-1">{geoStatus}</p>}
+                    {geoStatus && <p className="text-xs text-kairos-emerald-ink font-medium mt-1">{geoStatus}</p>}
                   </div>
                 </div>
                 <button
@@ -548,8 +548,8 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                   onClick={handleToggleLocationConsent}
                   className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
                     activeTransfer.locationConsentGranted
-                      ? 'bg-red-50 border border-red-200 text-red-700 hover:bg-red-100'
-                      : 'bg-[#119655] text-white hover:bg-[#0D7A44]'
+                      ? 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-950/60'
+                      : 'bg-kairos-emerald text-white hover:bg-kairos-emerald-hover'
                   }`}
                 >
                   <Compass className="w-4 h-4" />
@@ -565,22 +565,22 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
                 heightClass="h-[400px]"
               />
 
-              <div className="bg-white rounded-2xl border border-[#DCECE3] p-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+              <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-4 flex flex-wrap items-center justify-between gap-3 text-xs text-kairos-muted">
                 <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#119655]" />
+                  <MapPin className="w-3.5 h-3.5 text-kairos-emerald-ink" />
                   Current Coordinates:{' '}
-                  <strong className="font-mono text-[#0B3B2D]">
+                  <strong className="font-mono text-kairos-forest-ink">
                     {activeTransfer.ambulanceLocation
                       ? `${activeTransfer.ambulanceLocation.lat}, ${activeTransfer.ambulanceLocation.lng}`
                       : 'Not shared'}
                   </strong>
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-[#119655]" />
-                  Estimated Arrival: <strong className="font-mono text-[#0B3B2D]">{activeTransfer.ambulanceEtaMin ?? 6} min</strong>
+                  <Clock className="w-3.5 h-3.5 text-kairos-emerald-ink" />
+                  Estimated Arrival: <strong className="font-mono text-kairos-forest-ink">{activeTransfer.ambulanceEtaMin ?? 6} min</strong>
                 </span>
                 {activeTransfer.manualOverrideActive && (
-                  <span className="inline-flex items-center gap-1.5 text-amber-800 font-semibold">
+                  <span className="inline-flex items-center gap-1.5 text-amber-800 dark:text-amber-300 font-semibold">
                     <AlertTriangle className="w-3.5 h-3.5" />
                     Manual Override Active — Confirm ER readiness on arrival
                   </span>

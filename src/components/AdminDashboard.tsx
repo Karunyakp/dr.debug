@@ -20,6 +20,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useKairos } from '../context/KairosContext';
+import { useTheme } from '../context/ThemeContext';
 import type { KairosNotification, UserRole } from '../types/kairos';
 
 interface AdminDashboardProps {
@@ -32,6 +33,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   activeTab,
   searchQuery,
 }) => {
+  const { isDark } = useTheme();
   const {
     hospitals,
     specialists,
@@ -133,78 +135,92 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setBroadcastMessage('');
   };
 
+  // Recharts theme-aware colors
+  const chartGridColor = isDark ? '#1D3F33' : '#E5F0EA';
+  const chartTickColor = isDark ? '#9DB8AC' : '#334155';
+  const chartForestBar = isDark ? '#34D399' : '#0B3B2D';
+  const chartEmeraldBar = isDark ? '#16A35E' : '#119655';
+  const chartGoldBar = isDark ? '#FACC15' : '#F2B705';
+  const chartTooltipStyle = {
+    backgroundColor: isDark ? '#0C211A' : '#FFFFFF',
+    borderColor: isDark ? '#1D3F33' : '#D5E7DD',
+    color: isDark ? '#E6F4EC' : '#0B3B2D',
+    borderRadius: '12px',
+    fontSize: '12px',
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Platform KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
-          <p className="text-xs font-medium text-slate-600">Network ICU Capacity</p>
-          <p className="font-mono text-2xl font-bold text-[#0B3B2D] tabular-nums mt-1">
+        <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5">
+          <p className="text-xs font-medium text-kairos-muted">Network ICU Capacity</p>
+          <p className="font-mono text-2xl font-bold text-kairos-forest-ink tabular-nums mt-1">
             {totalIcuAvail} / {totalIcuCap}
           </p>
-          <p className="text-xs text-[#119655] font-medium mt-1">
+          <p className="text-xs text-kairos-emerald-ink font-medium mt-1">
             {hospitals.filter((h) => h.acceptingEmergencies).length} of {hospitals.length} accepting ER
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
-          <p className="text-xs font-medium text-slate-600">OPD Bookings Tracked</p>
-          <p className="font-mono text-2xl font-bold text-[#0B3B2D] tabular-nums mt-1">
+        <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5">
+          <p className="text-xs font-medium text-kairos-muted">OPD Bookings Tracked</p>
+          <p className="font-mono text-2xl font-bold text-kairos-forest-ink tabular-nums mt-1">
             {appointments.length}
           </p>
-          <p className="text-xs text-slate-500 mt-1">QR + Rural SMS channels</p>
+          <p className="text-xs text-kairos-muted mt-1">QR + Rural SMS channels</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
-          <p className="text-xs font-medium text-slate-600">Emergency Referrals</p>
-          <p className="font-mono text-2xl font-bold text-[#0B3B2D] tabular-nums mt-1">
+        <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5">
+          <p className="text-xs font-medium text-kairos-muted">Emergency Referrals</p>
+          <p className="font-mono text-2xl font-bold text-kairos-forest-ink tabular-nums mt-1">
             {referrals.length}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-kairos-muted mt-1">
             {referrals.filter((r) => r.bedHold).length} with verified bed hold
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
-          <p className="text-xs font-medium text-slate-600">Audit Events Logged</p>
-          <p className="font-mono text-2xl font-bold text-[#0B3B2D] tabular-nums mt-1">
+        <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5">
+          <p className="text-xs font-medium text-kairos-muted">Audit Events Logged</p>
+          <p className="font-mono text-2xl font-bold text-kairos-forest-ink tabular-nums mt-1">
             {auditLogs.length}
           </p>
-          <p className="text-xs text-[#119655] font-medium mt-1">DPDP 2023 + RBAC Active</p>
+          <p className="text-xs text-kairos-emerald-ink font-medium mt-1">DPDP 2023 + RBAC Active</p>
         </div>
       </div>
 
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Bed Capacity Chart */}
-          <div className="bg-white rounded-2xl border border-[#DCECE3] p-6">
+          <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="font-display text-base font-bold text-[#0B3B2D]">
+                <h2 className="font-display text-base font-bold text-kairos-forest-ink">
                   Verified Hospital Bed Availability
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-kairos-muted mt-0.5">
                   Live bed counts across registered network hospitals
                 </p>
               </div>
-              <Activity className="w-4 h-4 text-[#119655]" />
+              <Activity className="w-4 h-4 text-kairos-emerald-ink" />
             </div>
             <div className="h-72 w-full">
               {bedChartData.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-xs text-slate-500 bg-[#FAFDFB] rounded-xl border border-[#E5F0EA]">
+                <div className="h-full flex items-center justify-center text-xs text-kairos-muted bg-kairos-surface-subtle rounded-xl border border-kairos-border-subtle px-4 text-center">
                   Register hospitals in the Hospitals &amp; Network tab to see live bed capacity charts.
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={bedChartData} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5F0EA" />
-                    <XAxis dataKey="name" interval={0} tick={{ fontSize: 11, fill: '#334155' }} />
-                    <YAxis tick={{ fontSize: 11, fill: '#334155' }} />
-                    <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: '12px' }} />
-                    <Bar dataKey="ICU Avail" fill="#0B3B2D" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="General Avail" fill="#119655" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Peds Avail" fill="#F2B705" radius={[4, 4, 0, 0]} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                    <XAxis dataKey="name" interval={0} tick={{ fontSize: 11, fill: chartTickColor }} />
+                    <YAxis tick={{ fontSize: 11, fill: chartTickColor }} />
+                    <Tooltip contentStyle={chartTooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: '12px', color: chartTickColor }} />
+                    <Bar dataKey="ICU Avail" fill={chartForestBar} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="General Avail" fill={chartEmeraldBar} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Peds Avail" fill={chartGoldBar} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -212,28 +228,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           {/* Coordination Activity Chart */}
-          <div className="bg-white rounded-2xl border border-[#DCECE3] p-6">
+          <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="font-display text-base font-bold text-[#0B3B2D]">
+                <h2 className="font-display text-base font-bold text-kairos-forest-ink">
                   Platform Coordination Throughput
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-kairos-muted mt-0.5">
                   Active vs completed cases across OPD, Emergency, and Diagnostics
                 </p>
               </div>
-              <Building2 className="w-4 h-4 text-[#119655]" />
+              <Building2 className="w-4 h-4 text-kairos-emerald-ink" />
             </div>
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={activityChartData} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5F0EA" />
-                  <XAxis dataKey="module" tick={{ fontSize: 12, fill: '#334155' }} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#334155' }} />
-                  <Tooltip />
-                  <Legend wrapperStyle={{ fontSize: '12px' }} />
-                  <Bar dataKey="Active" fill="#119655" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Completed" fill="#0B3B2D" radius={[4, 4, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                  <XAxis dataKey="module" tick={{ fontSize: 12, fill: chartTickColor }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: chartTickColor }} />
+                  <Tooltip contentStyle={chartTooltipStyle} />
+                  <Legend wrapperStyle={{ fontSize: '12px', color: chartTickColor }} />
+                  <Bar dataKey="Active" fill={chartEmeraldBar} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Completed" fill={chartForestBar} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -264,9 +280,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 setNewHospArea('');
                 setNewHospPhone('');
               }}
-              className="bg-white rounded-2xl border border-[#DCECE3] p-5 space-y-3"
+              className="bg-kairos-surface rounded-2xl border border-kairos-border p-5 space-y-3"
             >
-              <h3 className="font-display text-sm font-bold text-[#0B3B2D]">Register Hospital</h3>
+              <h3 className="font-display text-sm font-bold text-kairos-forest-ink">Register Hospital</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <input
                   type="text"
@@ -274,7 +290,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   value={newHospName}
                   onChange={(e) => setNewHospName(e.target.value)}
                   placeholder="Hospital Name *"
-                  className="rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs text-[#0B3B2D]"
+                  className="rounded-xl border border-kairos-border bg-kairos-surface-subtle px-3 py-2 text-xs text-kairos-forest-ink placeholder:text-kairos-muted/70"
                 />
                 <input
                   type="text"
@@ -282,14 +298,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   value={newHospArea}
                   onChange={(e) => setNewHospArea(e.target.value)}
                   placeholder="Area / Locality *"
-                  className="rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs text-[#0B3B2D]"
+                  className="rounded-xl border border-kairos-border bg-kairos-surface-subtle px-3 py-2 text-xs text-kairos-forest-ink placeholder:text-kairos-muted/70"
                 />
                 <input
                   type="tel"
                   value={newHospPhone}
                   onChange={(e) => setNewHospPhone(e.target.value)}
                   placeholder="Emergency Phone"
-                  className="rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs text-[#0B3B2D]"
+                  className="rounded-xl border border-kairos-border bg-kairos-surface-subtle px-3 py-2 text-xs text-kairos-forest-ink placeholder:text-kairos-muted/70"
                 />
                 <input
                   type="number"
@@ -297,12 +313,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   value={newHospIcu}
                   onChange={(e) => setNewHospIcu(e.target.value)}
                   placeholder="ICU Beds"
-                  className="rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs font-mono text-[#0B3B2D]"
+                  className="rounded-xl border border-kairos-border bg-kairos-surface-subtle px-3 py-2 text-xs font-mono text-kairos-forest-ink"
                 />
               </div>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-[#119655] hover:bg-[#0D7A44] text-white text-xs font-semibold"
+                className="px-4 py-2 rounded-xl bg-kairos-emerald hover:bg-kairos-emerald-hover text-white text-xs font-semibold transition-colors"
               >
                 Add Hospital to Network
               </button>
@@ -327,9 +343,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 });
                 setNewDocName('');
               }}
-              className="bg-white rounded-2xl border border-[#DCECE3] p-5 space-y-3"
+              className="bg-kairos-surface rounded-2xl border border-kairos-border p-5 space-y-3"
             >
-              <h3 className="font-display text-sm font-bold text-[#0B3B2D]">Add Specialist Doctor</h3>
+              <h3 className="font-display text-sm font-bold text-kairos-forest-ink">Add Specialist Doctor</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <input
                   type="text"
@@ -337,7 +353,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   value={newDocName}
                   onChange={(e) => setNewDocName(e.target.value)}
                   placeholder="Doctor Full Name *"
-                  className="rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs text-[#0B3B2D]"
+                  className="rounded-xl border border-kairos-border bg-kairos-surface-subtle px-3 py-2 text-xs text-kairos-forest-ink placeholder:text-kairos-muted/70"
                 />
                 <input
                   type="text"
@@ -345,13 +361,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   value={newDocSpecialty}
                   onChange={(e) => setNewDocSpecialty(e.target.value)}
                   placeholder="Specialty *"
-                  className="rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs text-[#0B3B2D]"
+                  className="rounded-xl border border-kairos-border bg-kairos-surface-subtle px-3 py-2 text-xs text-kairos-forest-ink placeholder:text-kairos-muted/70"
                 />
                 <select
                   value={newDocHospId || hospitals[0]?.hospitalId || ''}
                   onChange={(e) => setNewDocHospId(e.target.value)}
                   disabled={hospitals.length === 0}
-                  className="sm:col-span-2 rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs bg-white text-[#0B3B2D] disabled:opacity-50"
+                  className="sm:col-span-2 rounded-xl border border-kairos-border px-3 py-2 text-xs bg-kairos-surface-subtle text-kairos-forest-ink disabled:opacity-50"
                 >
                   {hospitals.length === 0 ? (
                     <option value="">Register a hospital first</option>
@@ -367,7 +383,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <button
                 type="submit"
                 disabled={hospitals.length === 0}
-                className="px-4 py-2 rounded-xl bg-[#0B3B2D] hover:bg-[#119655] text-white text-xs font-semibold disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-kairos-forest hover:bg-kairos-emerald text-white text-xs font-semibold disabled:opacity-50 transition-colors"
               >
                 Add Specialist
               </button>
@@ -375,16 +391,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           {/* Hospitals Monitor */}
-          <div className="bg-white rounded-2xl border border-[#DCECE3] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#E5F0EA] flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-[#119655]" />
-              <h2 className="font-display text-base font-bold text-[#0B3B2D]">
+          <div className="bg-kairos-surface rounded-2xl border border-kairos-border overflow-hidden">
+            <div className="px-6 py-4 border-b border-kairos-border-subtle flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-kairos-emerald-ink" />
+              <h2 className="font-display text-base font-bold text-kairos-forest-ink">
                 Registered Hospitals &amp; Capacity Freshness ({hospitals.length})
               </h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F6FBF8] text-slate-600 border-b border-[#E5F0EA]">
+                <thead className="bg-kairos-surface-subtle text-kairos-muted border-b border-kairos-border-subtle">
                   <tr>
                     <th className="py-3 px-4 font-semibold">Hospital</th>
                     <th className="py-3 px-4 font-semibold">ICU</th>
@@ -393,10 +409,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <th className="py-3 px-4 font-semibold">Last Verified By</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#EEF5F1]">
+                <tbody className="divide-y divide-kairos-border-subtle">
                   {hospitals.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-6 px-4 text-center text-slate-500">
+                      <td colSpan={5} className="py-6 px-4 text-center text-kairos-muted">
                         No hospitals registered yet.
                       </td>
                     </tr>
@@ -404,25 +420,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     hospitals.map((h) => (
                       <tr key={h.hospitalId}>
                         <td className="py-3 px-4">
-                          <p className="font-bold text-[#0B3B2D]">{h.name}</p>
-                          <p className="text-slate-500">{h.area} · {h.distanceKm} km</p>
+                          <p className="font-bold text-kairos-forest-ink">{h.name}</p>
+                          <p className="text-kairos-muted">{h.area} · {h.distanceKm} km</p>
                         </td>
-                        <td className="py-3 px-4 font-mono font-bold tabular-nums text-[#0B3B2D]">
+                        <td className="py-3 px-4 font-mono font-bold tabular-nums text-kairos-forest-ink">
                           {h.icuAvailable}/{h.icuTotal}
                         </td>
-                        <td className="py-3 px-4 font-mono tabular-nums text-slate-700">
+                        <td className="py-3 px-4 font-mono tabular-nums text-kairos-muted">
                           {h.generalAvailable}/{h.generalTotal}
                         </td>
                         <td className="py-3 px-4">
                           <span
                             className={`font-semibold ${
-                              h.acceptingEmergencies ? 'text-[#119655]' : 'text-red-700'
+                              h.acceptingEmergencies ? 'text-kairos-emerald-ink' : 'text-red-700 dark:text-red-400'
                             }`}
                           >
                             {h.acceptingEmergencies ? 'Accepting' : 'Diversion'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-slate-600">{h.lastVerifiedBy}</td>
+                        <td className="py-3 px-4 text-kairos-muted">{h.lastVerifiedBy}</td>
                       </tr>
                     ))
                   )}
@@ -433,23 +449,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Specialists */}
-            <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
+            <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5">
               <div className="flex items-center gap-2 mb-3">
-                <Stethoscope className="w-4 h-4 text-[#119655]" />
-                <h3 className="font-display text-sm font-bold text-[#0B3B2D]">
+                <Stethoscope className="w-4 h-4 text-kairos-emerald-ink" />
+                <h3 className="font-display text-sm font-bold text-kairos-forest-ink">
                   Specialist Directory ({specialists.length})
                 </h3>
               </div>
-              <div className="divide-y divide-[#EEF5F1] text-xs">
+              <div className="divide-y divide-kairos-border-subtle text-xs">
                 {specialists.map((s) => (
                   <div key={s.doctorId} className="py-2.5 flex items-center justify-between gap-2">
                     <div>
-                      <p className="font-bold text-[#0B3B2D]">{s.name}</p>
-                      <p className="text-slate-600">
+                      <p className="font-bold text-kairos-forest-ink">{s.name}</p>
+                      <p className="text-kairos-muted">
                         {s.specialty} · {s.hospitalName}
                       </p>
                     </div>
-                    <span className="text-[11px] font-semibold text-[#119655]">
+                    <span className="text-[11px] font-semibold text-kairos-emerald-ink">
                       {s.remoteAvailable ? 'Remote + OPD' : 'In-Person'}
                     </span>
                   </div>
@@ -458,23 +474,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
 
             {/* Diagnostic Centres */}
-            <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
+            <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-5">
               <div className="flex items-center gap-2 mb-3">
-                <FlaskConical className="w-4 h-4 text-[#119655]" />
-                <h3 className="font-display text-sm font-bold text-[#0B3B2D]">
+                <FlaskConical className="w-4 h-4 text-kairos-emerald-ink" />
+                <h3 className="font-display text-sm font-bold text-kairos-forest-ink">
                   Diagnostic Centres ({diagnosticCentres.length})
                 </h3>
               </div>
-              <div className="divide-y divide-[#EEF5F1] text-xs">
+              <div className="divide-y divide-kairos-border-subtle text-xs">
                 {diagnosticCentres.map((c) => (
                   <div key={c.centreId} className="py-2.5 flex items-center justify-between gap-2">
                     <div>
-                      <p className="font-bold text-[#0B3B2D]">{c.name}</p>
-                      <p className="text-slate-600">
+                      <p className="font-bold text-kairos-forest-ink">{c.name}</p>
+                      <p className="text-kairos-muted">
                         {c.area} · {c.hours}
                       </p>
                     </div>
-                    <span className="font-mono font-semibold text-[#0B3B2D]">
+                    <span className="font-mono font-semibold text-kairos-forest-ink">
                       {c.tests.length} tests
                     </span>
                   </div>
@@ -486,21 +502,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
 
       {activeTab === 'users' && (
-        <div className="bg-white rounded-2xl border border-[#DCECE3] overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#E5F0EA] flex items-center gap-2">
-            <Users className="w-4 h-4 text-[#119655]" />
+        <div className="bg-kairos-surface rounded-2xl border border-kairos-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-kairos-border-subtle flex items-center gap-2">
+            <Users className="w-4 h-4 text-kairos-emerald-ink" />
             <div>
-              <h2 className="font-display text-base font-bold text-[#0B3B2D]">
-                Registered Users & Role-Based Access Control (RBAC)
+              <h2 className="font-display text-base font-bold text-kairos-forest-ink">
+                Registered Users &amp; Role-Based Access Control (RBAC)
               </h2>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-kairos-muted">
                 Server-side Firestore rules enforce least-privilege access per role.
               </p>
             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#F6FBF8] text-slate-600 border-b border-[#E5F0EA]">
+              <thead className="bg-kairos-surface-subtle text-kairos-muted border-b border-kairos-border-subtle">
                 <tr>
                   <th className="py-3 px-4 font-semibold">User</th>
                   <th className="py-3 px-4 font-semibold">Email</th>
@@ -509,16 +525,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <th className="py-3 px-4 font-semibold">Assigned Role</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#EEF5F1]">
+              <tbody className="divide-y divide-kairos-border-subtle">
                 {filteredUsers.map((u) => (
                   <tr key={u.uid}>
-                    <td className="py-3 px-4 font-bold text-[#0B3B2D]">{u.displayName}</td>
-                    <td className="py-3 px-4 text-slate-600 font-mono">{u.email}</td>
-                    <td className="py-3 px-4 text-slate-600">{u.facilityName || '—'}</td>
+                    <td className="py-3 px-4 font-bold text-kairos-forest-ink">{u.displayName}</td>
+                    <td className="py-3 px-4 text-kairos-muted font-mono">{u.email}</td>
+                    <td className="py-3 px-4 text-kairos-muted">{u.facilityName || '—'}</td>
                     <td className="py-3 px-4">
                       <span
                         className={`font-semibold ${
-                          u.consentGranted ? 'text-[#119655]' : 'text-amber-700'
+                          u.consentGranted ? 'text-kairos-emerald-ink' : 'text-amber-700 dark:text-amber-400'
                         }`}
                       >
                         {u.consentGranted ? 'Granted' : 'Revoked'}
@@ -529,7 +545,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         aria-label={`Role for ${u.displayName}`}
                         value={u.role}
                         onChange={(e) => updateUserRoleByAdmin(u.uid, e.target.value as UserRole)}
-                        className="rounded-lg border border-[#CFE3D8] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#0B3B2D]"
+                        className="rounded-lg border border-kairos-border bg-kairos-surface-subtle px-2.5 py-1.5 text-xs font-semibold text-kairos-forest-ink"
                       >
                         <option value="patient">Patient</option>
                         <option value="doctor">Referring Doctor</option>
@@ -550,24 +566,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {activeTab === 'governance' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Audit Log */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-[#DCECE3] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#E5F0EA] flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#119655]" />
+          <div className="lg:col-span-2 bg-kairos-surface rounded-2xl border border-kairos-border overflow-hidden">
+            <div className="px-6 py-4 border-b border-kairos-border-subtle flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-kairos-emerald-ink" />
               <div>
-                <h2 className="font-display text-base font-bold text-[#0B3B2D]">
-                  Immutable Coordination & DPDP Audit Trail
+                <h2 className="font-display text-base font-bold text-kairos-forest-ink">
+                  Immutable Coordination &amp; DPDP Audit Trail
                 </h2>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-kairos-muted">
                   Every bed hold, referral override, role update, and consent change is logged.
                 </p>
               </div>
             </div>
-            <div className="max-h-[460px] overflow-y-auto divide-y divide-[#EEF5F1]">
+            <div className="max-h-[460px] overflow-y-auto divide-y divide-kairos-border-subtle">
               {filteredLogs.map((log) => (
                 <div key={log.logId} className="px-5 py-3.5 text-xs">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-mono font-bold text-[#0B3B2D]">{log.action}</span>
-                    <span className="text-slate-500 font-mono text-[11px]">
+                    <span className="font-mono font-bold text-kairos-forest-ink">{log.action}</span>
+                    <span className="text-kairos-muted font-mono text-[11px]">
                       {new Date(log.createdAt).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -575,8 +591,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       })}
                     </span>
                   </div>
-                  <p className="text-slate-700 mt-1">{log.summary}</p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
+                  <p className="text-kairos-forest-ink/85 mt-1">{log.summary}</p>
+                  <p className="text-[11px] text-kairos-muted mt-0.5">
                     Actor: {log.actorName} ({log.actorRole}) · Entity: {log.entityType}/{log.entityId}
                   </p>
                 </div>
@@ -585,36 +601,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           {/* System Broadcast Notification */}
-          <div className="bg-white rounded-2xl border border-[#DCECE3] p-6">
+          <div className="bg-kairos-surface rounded-2xl border border-kairos-border p-6">
             <div className="flex items-center gap-2 mb-1">
-              <Bell className="w-4 h-4 text-[#119655]" />
-              <h3 className="font-display text-base font-bold text-[#0B3B2D]">
+              <Bell className="w-4 h-4 text-kairos-emerald-ink" />
+              <h3 className="font-display text-base font-bold text-kairos-forest-ink">
                 System Broadcast Alert
               </h3>
             </div>
-            <p className="text-xs text-slate-600 mb-4">
+            <p className="text-xs text-kairos-muted mb-4">
               Publish operational advisories to all active hospital, doctor, ambulance, and patient portals.
             </p>
             <form onSubmit={handleBroadcast} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">Alert Title</label>
+                <label className="block text-xs font-semibold text-kairos-forest-ink mb-1">Alert Title</label>
                 <input
                   type="text"
                   value={broadcastTitle}
                   onChange={(e) => setBroadcastTitle(e.target.value)}
                   placeholder="e.g., Outer Ring Road Trauma Diversion"
-                  className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs"
+                  className="w-full rounded-xl border border-kairos-border bg-kairos-surface-subtle px-3 py-2 text-xs text-kairos-forest-ink placeholder:text-kairos-muted/70"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">Severity</label>
+                <label className="block text-xs font-semibold text-kairos-forest-ink mb-1">Severity</label>
                 <select
                   value={broadcastSeverity}
                   onChange={(e) =>
                     setBroadcastSeverity(e.target.value as KairosNotification['severity'])
                   }
-                  className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs bg-white"
+                  className="w-full rounded-xl border border-kairos-border px-3 py-2 text-xs bg-kairos-surface-subtle text-kairos-forest-ink"
                 >
                   <option value="info">Info</option>
                   <option value="warning">Warning</option>
@@ -623,19 +639,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">Message</label>
+                <label className="block text-xs font-semibold text-kairos-forest-ink mb-1">Message</label>
                 <textarea
                   rows={4}
                   value={broadcastMessage}
                   onChange={(e) => setBroadcastMessage(e.target.value)}
                   placeholder="Provide clear, non-diagnostic coordination guidance..."
-                  className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs"
+                  className="w-full rounded-xl border border-kairos-border bg-kairos-surface-subtle px-3 py-2 text-xs text-kairos-forest-ink placeholder:text-kairos-muted/70"
                   required
                 />
               </div>
               <button
                 type="submit"
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#0B3B2D] hover:bg-[#15523F] text-white text-xs font-semibold"
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-kairos-forest hover:bg-kairos-emerald text-white text-xs font-semibold transition-colors"
               >
                 <Send className="w-3.5 h-3.5" />
                 Broadcast to All Roles

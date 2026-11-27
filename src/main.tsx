@@ -4,6 +4,7 @@ import App from './App.tsx';
 import './index.css';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { KairosProvider } from './context/KairosContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Google Maps Case A (Demo Key) two-tier quota defense registered before React renders
 declare global {
@@ -31,10 +32,12 @@ if (typeof window !== 'undefined') {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ErrorBoundary>
-      <KairosProvider>
-        <App />
-      </KairosProvider>
-    </ErrorBoundary>
+    <ThemeProvider>
+      <ErrorBoundary>
+        <KairosProvider>
+          <App />
+        </KairosProvider>
+      </ErrorBoundary>
+    </ThemeProvider>
   </StrictMode>
 );

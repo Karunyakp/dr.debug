@@ -1,23 +1,72 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
+:root {
+  --kairos-forest: #0B3B2D;
+  --kairos-forest-deep: #07291F;
+  --kairos-forest-ink: #0B3B2D;
+  --kairos-emerald: #119655;
+  --kairos-emerald-hover: #0D7A44;
+  --kairos-emerald-ink: #119655;
+  --kairos-mint: #F1F7F4;
+  --kairos-mint-soft: #E5F2EB;
+  --kairos-surface: #FFFFFF;
+  --kairos-surface-subtle: #FAFDFB;
+  --kairos-border: #D5E7DD;
+  --kairos-border-subtle: #E5F0EA;
+  --kairos-muted: #475569;
+  --kairos-gold: #F2B705;
+  color-scheme: light;
+}
+
+.dark {
+  --kairos-forest: #14533C;
+  --kairos-forest-deep: #061812;
+  --kairos-forest-ink: #E6F4EC;
+  --kairos-emerald: #16A35E;
+  --kairos-emerald-hover: #1EC174;
+  --kairos-emerald-ink: #34D399;
+  --kairos-mint: #061510;
+  --kairos-mint-soft: #113125;
+  --kairos-surface: #0C211A;
+  --kairos-surface-subtle: #102B22;
+  --kairos-border: #1D3F33;
+  --kairos-border-subtle: #163329;
+  --kairos-muted: #9DB8AC;
+  --kairos-gold: #FACC15;
+  color-scheme: dark;
+}
+
+@theme inline {
   --font-display: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --color-kairos-forest: #0B3B2D;
-  --color-kairos-forest-deep: #07291F;
-  --color-kairos-emerald: #119655;
-  --color-kairos-emerald-hover: #0D7A44;
-  --color-kairos-mint: #F1F7F4;
-  --color-kairos-mint-soft: #E5F2EB;
-  --color-kairos-border: #D5E7DD;
-  --color-kairos-gold: #F2B705;
+  --color-kairos-forest: var(--kairos-forest);
+  --color-kairos-forest-deep: var(--kairos-forest-deep);
+  --color-kairos-forest-ink: var(--kairos-forest-ink);
+  --color-kairos-emerald: var(--kairos-emerald);
+  --color-kairos-emerald-hover: var(--kairos-emerald-hover);
+  --color-kairos-emerald-ink: var(--kairos-emerald-ink);
+  --color-kairos-mint: var(--kairos-mint);
+  --color-kairos-mint-soft: var(--kairos-mint-soft);
+  --color-kairos-surface: var(--kairos-surface);
+  --color-kairos-surface-subtle: var(--kairos-surface-subtle);
+  --color-kairos-border: var(--kairos-border);
+  --color-kairos-border-subtle: var(--kairos-border-subtle);
+  --color-kairos-muted: var(--kairos-muted);
+  --color-kairos-gold: var(--kairos-gold);
 }
 
 @layer base {
   html {
     font-family: var(--font-sans);
     scroll-behavior: smooth;
+    background-color: var(--kairos-mint);
+    color: var(--kairos-forest-ink);
+  }
+
+  .dark body {
+    letter-spacing: 0.005em;
   }
 
   h1, h2, h3, h4, .font-display {

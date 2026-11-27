@@ -205,19 +205,19 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
         <>
           {/* 4-Card Summary Strip */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div className="bg-white border border-[#D5E7DD] rounded-2xl p-5">
-              <p className="text-xs font-medium text-slate-500">Active QR Token</p>
-              <p className="font-display text-2xl font-extrabold text-[#0B3B2D] mt-1 font-mono tabular-nums">
+            <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-5">
+              <p className="text-xs font-medium text-kairos-muted">Active QR Token</p>
+              <p className="font-display text-2xl font-extrabold text-kairos-forest-ink mt-1 font-mono tabular-nums">
                 {activeAppointment ? `#${activeAppointment.tokenNumber}` : 'None'}
               </p>
-              <p className="text-xs text-slate-600 mt-1 truncate">
+              <p className="text-xs text-kairos-muted mt-1 truncate">
                 {activeAppointment
                   ? `${activeAppointment.hospitalName} · ${activeAppointment.department}`
                   : 'Book a Smart OPD slot below'}
               </p>
             </div>
 
-            <div className="bg-[#0B3B2D] text-white rounded-2xl p-5">
+            <div className="bg-kairos-forest text-white rounded-2xl p-5">
               <p className="text-xs font-medium text-emerald-200">Live Queue Position</p>
               <p className="font-display text-2xl font-extrabold mt-1 font-mono tabular-nums">
                 {activeAppointment && activeAppointment.queuePosition > 0
@@ -231,19 +231,19 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               </p>
             </div>
 
-            <div className="bg-white border border-[#D5E7DD] rounded-2xl p-5">
-              <p className="text-xs font-medium text-slate-500">Diagnostic Bookings</p>
-              <p className="font-display text-2xl font-extrabold text-[#0B3B2D] mt-1 font-mono tabular-nums">
+            <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-5">
+              <p className="text-xs font-medium text-kairos-muted">Diagnostic Bookings</p>
+              <p className="font-display text-2xl font-extrabold text-kairos-forest-ink mt-1 font-mono tabular-nums">
                 {diagnosticBookings.length}
               </p>
-              <p className="text-xs text-slate-600 mt-1">
+              <p className="text-xs text-kairos-muted mt-1">
                 {diagnosticBookings[0]?.testName || 'Search nearby labs & tests'}
               </p>
             </div>
 
-            <div className="bg-white border border-[#D5E7DD] rounded-2xl p-5">
-              <p className="text-xs font-medium text-slate-500">Rural Specialist Access</p>
-              <p className="font-display text-2xl font-extrabold text-[#119655] mt-1">
+            <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-5">
+              <p className="text-xs font-medium text-kairos-muted">Rural Specialist Access</p>
+              <p className="font-display text-2xl font-extrabold text-kairos-emerald-ink mt-1">
                 EN / ಕನ್ನಡ
               </p>
               <button
@@ -252,7 +252,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   setRuralMode(true);
                   onTabChange('specialists');
                 }}
-                className="mt-1 text-xs font-semibold text-[#0B3B2D] hover:text-[#119655]"
+                className="mt-1 text-xs font-semibold text-kairos-forest-ink hover:text-kairos-emerald-ink"
               >
                 Open Rural Simplified Mode →
               </button>
@@ -262,22 +262,22 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           {/* Main Split: Active QR Token + Live Queue & Emergency Coordination Status */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* Digital QR Token Card */}
-            <div className="lg:col-span-5 bg-white border border-[#D5E7DD] rounded-2xl p-6 flex flex-col justify-between">
+            <div className="lg:col-span-5 bg-kairos-surface border border-kairos-border rounded-2xl p-6 flex flex-col justify-between">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h2 className="font-display text-base font-bold text-[#0B3B2D]">
+                  <h2 className="font-display text-base font-bold text-kairos-forest-ink">
                     Your Digital OPD QR Token
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-kairos-muted">
                     Scan at hospital kiosk or check in digitally to join live queue
                   </p>
                 </div>
-                <QrCode className="w-5 h-5 text-[#119655]" />
+                <QrCode className="w-5 h-5 text-kairos-emerald-ink" />
               </div>
 
               {activeAppointment ? (
-                <div className="my-5 flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-[#F4FAF6] border border-[#DCECE3]">
-                  <div className="bg-white p-3 rounded-xl border border-[#DCECE3] shrink-0">
+                <div className="my-5 flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-kairos-surface-subtle border border-kairos-border">
+                  <div className="bg-white p-3 rounded-xl border border-kairos-border shrink-0">
                     <QRCodeSVG
                       value={JSON.stringify({
                         token: activeAppointment.tokenNumber,
@@ -289,22 +289,22 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                     />
                   </div>
                   <div className="min-w-0 flex-1 text-center sm:text-left">
-                    <p className="font-mono text-2xl font-extrabold text-[#0B3B2D] tabular-nums">
+                    <p className="font-mono text-2xl font-extrabold text-kairos-forest-ink tabular-nums">
                       #{activeAppointment.tokenNumber}
                     </p>
-                    <p className="text-sm font-semibold text-[#0B3B2D] mt-1">
+                    <p className="text-sm font-semibold text-kairos-forest-ink mt-1">
                       {activeAppointment.hospitalName}
                     </p>
-                    <p className="text-xs text-slate-600 mt-0.5">
+                    <p className="text-xs text-kairos-muted mt-0.5">
                       {activeAppointment.department} · {activeAppointment.doctorName}
                     </p>
-                    <p className="text-xs font-mono text-[#119655] mt-1.5 tabular-nums">
+                    <p className="text-xs font-mono text-kairos-emerald-ink mt-1.5 tabular-nums">
                       {activeAppointment.slotTime} · Status: {activeAppointment.status}
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="my-6 p-6 rounded-xl bg-[#F4FAF6] text-center text-xs text-slate-600">
+                <div className="my-6 p-6 rounded-xl bg-kairos-surface-subtle text-center text-xs text-kairos-muted">
                   No active OPD appointment. Book a slot in Smart OPD to generate your QR token.
                 </div>
               )}
@@ -314,7 +314,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => checkInAppointmentByToken(activeAppointment.tokenNumber)}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-[#119655] text-white text-xs font-semibold hover:bg-[#0D7A44] transition-colors whitespace-nowrap"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-kairos-emerald text-white text-xs font-semibold hover:bg-kairos-emerald-hover transition-colors whitespace-nowrap"
                   >
                     Simulate Hospital QR Scan & Join Queue
                   </button>
@@ -322,7 +322,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => onTabChange('opd')}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-[#0B3B2D] text-white text-xs font-semibold hover:bg-[#07291F] transition-colors whitespace-nowrap"
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-kairos-forest text-white text-xs font-semibold hover:bg-kairos-forest-deep transition-colors whitespace-nowrap"
                 >
                   Book / Manage OPD
                 </button>
@@ -331,35 +331,35 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
             {/* Right Column: Emergency Coordination Tracker + Nearby Hospitals */}
             <div className="lg:col-span-7 space-y-5">
-              <div className="bg-white border border-[#D5E7DD] rounded-2xl p-6">
+              <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="font-display text-base font-bold text-[#0B3B2D]">
+                    <h2 className="font-display text-base font-bold text-kairos-forest-ink">
                       Emergency Referral & Ambulance Status
                     </h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-kairos-muted">
                       Real-time visibility when a clinician initiates an emergency transfer
                     </p>
                   </div>
-                  <Activity className="w-5 h-5 text-[#119655]" />
+                  <Activity className="w-5 h-5 text-kairos-emerald-ink" />
                 </div>
 
                 <div className="space-y-3">
                   {referrals.length === 0 ? (
-                    <p className="text-xs text-slate-500 p-4 rounded-xl bg-[#FAFDFB] border border-[#E5F0EA]">
+                    <p className="text-xs text-kairos-muted p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border-subtle">
                       No active emergency referrals recorded yet.
                     </p>
                   ) : (
                     referrals.slice(0, 2).map((ref) => (
                       <div
                         key={ref.referralId}
-                        className="p-4 rounded-xl border border-[#DCECE3] bg-[#FAFDFB] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        className="p-4 rounded-xl border border-kairos-border bg-kairos-surface-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                       >
                         <div>
-                          <p className="text-xs font-semibold text-[#0B3B2D]">
+                          <p className="text-xs font-semibold text-kairos-forest-ink">
                             {ref.referralId} · {ref.category} → {ref.targetHospitalName}
                           </p>
-                          <p className="text-xs text-slate-600 mt-1">
+                          <p className="text-xs text-kairos-muted mt-1">
                             {ref.bedHold
                               ? `Confirmed ${ref.bedHold.bedLabel} (${ref.bedHold.bedType}) by ${ref.bedHold.reservedByDoctor}`
                               : 'Awaiting receiving hospital acceptance (Accept Before You Move)'}
@@ -368,8 +368,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                         <span
                           className={`text-xs font-semibold uppercase font-mono shrink-0 ${
                             ref.status === 'in_transit' || ref.status === 'accepted'
-                              ? 'text-[#119655]'
-                              : 'text-amber-700'
+                              ? 'text-kairos-emerald-ink'
+                              : 'text-amber-700 dark:text-amber-400'
                           }`}
                         >
                           {ref.status.replace('_', ' ')}
@@ -396,28 +396,28 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           {/* Book New OPD Appointment */}
           <form
             onSubmit={handleBookOpd}
-            className="lg:col-span-5 bg-white border border-[#D5E7DD] rounded-2xl p-6 space-y-4 h-fit"
+            className="lg:col-span-5 bg-kairos-surface border border-kairos-border rounded-2xl p-6 space-y-4 h-fit"
           >
             <div className="flex items-center gap-2.5">
-              <Calendar className="w-5 h-5 text-[#119655]" />
+              <Calendar className="w-5 h-5 text-kairos-emerald-ink" />
               <div>
-                <h2 className="font-display text-base font-bold text-[#0B3B2D]">
+                <h2 className="font-display text-base font-bold text-kairos-forest-ink">
                   Book Smart OPD Appointment
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-kairos-muted">
                   Instant QR token generation & live delay-aware queue
                 </p>
               </div>
             </div>
 
             {hospitals.length === 0 ? (
-              <div className="p-4 rounded-xl bg-[#F4FAF6] border border-[#DCECE3] text-xs text-slate-600 leading-relaxed">
+              <div className="p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border text-xs text-kairos-muted leading-relaxed">
                 No hospitals are registered yet. Once a hospital registers via the Hospital Desk or Administrator portal, you can book Smart OPD tokens here.
               </div>
             ) : (
               <>
                 <div>
-                  <label htmlFor="opd-hosp" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                  <label htmlFor="opd-hosp" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                     Select Hospital
                   </label>
                   <select
@@ -434,7 +434,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                         setOpdDoctor(doc?.name ?? 'Duty Clinician');
                       }
                     }}
-                    className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                    className="w-full rounded-xl border border-kairos-border px-3.5 py-2.5 text-sm text-kairos-forest-ink focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
                   >
                     {hospitals.map((h) => (
                       <option key={h.hospitalId} value={h.hospitalId}>
@@ -445,14 +445,14 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 </div>
 
                 <div>
-                  <label htmlFor="opd-dept" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                  <label htmlFor="opd-dept" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                     Select Department
                   </label>
                   <select
                     id="opd-dept"
                     value={opdDept}
                     onChange={(e) => setOpdDept(e.target.value)}
-                    className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                    className="w-full rounded-xl border border-kairos-border px-3.5 py-2.5 text-sm text-kairos-forest-ink focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
                   >
                     {(opdHospital?.departments ?? ['General Medicine']).map((d) => (
                       <option key={d} value={d}>{d}</option>
@@ -461,7 +461,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 </div>
 
                 <div>
-                  <label htmlFor="opd-doc" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                  <label htmlFor="opd-doc" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                     Select Doctor
                   </label>
                   {specialists.length > 0 ? (
@@ -469,7 +469,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                       id="opd-doc"
                       value={opdDoctor}
                       onChange={(e) => setOpdDoctor(e.target.value)}
-                      className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                      className="w-full rounded-xl border border-kairos-border px-3.5 py-2.5 text-sm text-kairos-forest-ink focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
                     >
                       {specialists.map((s) => (
                         <option key={s.doctorId} value={s.name}>
@@ -484,13 +484,13 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                       value={opdDoctor}
                       onChange={(e) => setOpdDoctor(e.target.value)}
                       placeholder="Duty Clinician"
-                      className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                      className="w-full rounded-xl border border-kairos-border px-3.5 py-2.5 text-sm text-kairos-forest-ink focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
                     />
                   )}
                 </div>
 
                 <div>
-                  <span className="block text-xs font-semibold text-[#0B3B2D] mb-1.5">
+                  <span className="block text-xs font-semibold text-kairos-forest-ink mb-1.5">
                     Choose Available Slot
                   </span>
                   <div className="grid grid-cols-2 gap-2">
@@ -502,8 +502,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                           onClick={() => setOpdSlot(slot)}
                           className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-colors ${
                             opdSlot === slot
-                              ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                              : 'bg-[#FAFDFB] text-[#0B3B2D] border-[#CFE3D8] hover:border-[#119655]'
+                              ? 'bg-kairos-forest text-white border-kairos-forest'
+                              : 'bg-kairos-surface-subtle text-kairos-forest-ink border-kairos-border hover:border-kairos-emerald'
                           }`}
                         >
                           {slot}
@@ -515,7 +515,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 px-5 rounded-xl bg-[#119655] text-white text-sm font-semibold hover:bg-[#0D7A44] transition-colors"
+                  className="w-full py-2.5 px-5 rounded-xl bg-kairos-emerald text-white text-sm font-semibold hover:bg-kairos-emerald-hover transition-colors"
                 >
                   Confirm Booking &amp; Generate QR Token
                 </button>
@@ -524,45 +524,45 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           </form>
 
           {/* My Appointments & Live Queue History */}
-          <div className="lg:col-span-7 bg-white border border-[#D5E7DD] rounded-2xl p-6 space-y-4">
+          <div className="lg:col-span-7 bg-kairos-surface border border-kairos-border rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-display text-base font-bold text-[#0B3B2D]">
+                <h2 className="font-display text-base font-bold text-kairos-forest-ink">
                   My OPD Tokens & Live Queue ({myAppointments.length})
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-kairos-muted">
                   Scan QR on arrival, reschedule, or cancel anytime
                 </p>
               </div>
-              <Clock className="w-5 h-5 text-[#119655]" />
+              <Clock className="w-5 h-5 text-kairos-emerald-ink" />
             </div>
 
             <div className="space-y-3">
               {myAppointments.length === 0 && (
-                <p className="text-xs text-slate-500 p-4 rounded-xl bg-[#FAFDFB] border border-[#E5F0EA]">
+                <p className="text-xs text-kairos-muted p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border-subtle">
                   No OPD appointments booked yet.
                 </p>
               )}
               {myAppointments.map((appt) => (
                 <div
                   key={appt.appointmentId}
-                  className="p-4 rounded-xl border border-[#DCECE3] bg-[#FAFDFB] space-y-3"
+                  className="p-4 rounded-xl border border-kairos-border bg-kairos-surface-subtle space-y-3"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="px-3 py-2 rounded-xl bg-white border border-[#CFE3D8] font-mono text-sm font-bold text-[#0B3B2D] tabular-nums">
+                      <div className="px-3 py-2 rounded-xl bg-kairos-surface border border-kairos-border font-mono text-sm font-bold text-kairos-forest-ink tabular-nums">
                         {appt.tokenNumber}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-[#0B3B2D]">
+                        <p className="text-sm font-bold text-kairos-forest-ink">
                           {appt.hospitalName} · {appt.department}
                         </p>
-                        <p className="text-xs text-slate-600">
+                        <p className="text-xs text-kairos-muted">
                           {appt.doctorName} · {appt.slotTime} ·{' '}
                           {appt.consultationType === 'remote' ? 'Remote Consultation' : 'In-Person OPD'}
                         </p>
                         {appt.attachedReportName && (
-                          <p className="text-[11px] text-[#119655] mt-0.5">
+                          <p className="text-[11px] text-kairos-emerald-ink mt-0.5">
                             Attached report: {appt.attachedReportName}
                           </p>
                         )}
@@ -570,16 +570,16 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                     </div>
 
                     <div className="text-right">
-                      <p className="text-xs font-mono font-bold uppercase text-[#0B3B2D]">
+                      <p className="text-xs font-mono font-bold uppercase text-kairos-forest-ink">
                         {appt.status}
                       </p>
                       {appt.status !== 'cancelled' && appt.status !== 'completed' && (
-                        <p className="text-xs text-slate-600 font-mono tabular-nums mt-0.5">
+                        <p className="text-xs text-kairos-muted font-mono tabular-nums mt-0.5">
                           Pos #{appt.queuePosition} · ~{appt.estimatedWaitMin} min
                         </p>
                       )}
                       {appt.delayMin > 0 && (
-                        <p className="text-[11px] font-semibold text-red-700 mt-0.5">
+                        <p className="text-[11px] font-semibold text-red-700 dark:text-red-400 mt-0.5">
                           Doctor delayed +{appt.delayMin} min · Alert sent
                         </p>
                       )}
@@ -587,12 +587,12 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   </div>
 
                   {appt.status !== 'cancelled' && appt.status !== 'completed' && (
-                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#E6F2EC]">
+                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-kairos-border-subtle">
                       {appt.status === 'scheduled' && (
                         <button
                           type="button"
                           onClick={() => checkInAppointmentByToken(appt.tokenNumber)}
-                          className="px-3 py-1.5 rounded-lg bg-[#119655] text-white text-xs font-semibold hover:bg-[#0D7A44]"
+                          className="px-3 py-1.5 rounded-lg bg-kairos-emerald text-white text-xs font-semibold hover:bg-kairos-emerald-hover"
                         >
                           Scan QR & Join Queue
                         </button>
@@ -604,14 +604,14 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                             rescheduleTargetId === appt.appointmentId ? null : appt.appointmentId
                           )
                         }
-                        className="px-3 py-1.5 rounded-lg border border-[#CFE3D8] bg-white text-xs font-semibold text-[#0B3B2D] hover:bg-[#F1F7F4]"
+                        className="px-3 py-1.5 rounded-lg border border-kairos-border bg-kairos-surface text-xs font-semibold text-kairos-forest-ink hover:bg-kairos-mint-soft"
                       >
                         Reschedule
                       </button>
                       <button
                         type="button"
                         onClick={() => cancelAppointment(appt.appointmentId)}
-                        className="px-3 py-1.5 rounded-lg border border-red-200 bg-white text-xs font-semibold text-red-700 hover:bg-red-50"
+                        className="px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-kairos-surface text-xs font-semibold text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-950/40"
                       >
                         Cancel
                       </button>
@@ -624,7 +624,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                         value={rescheduleSlot}
                         onChange={(e) => setRescheduleSlot(e.target.value)}
                         aria-label="Choose new appointment slot"
-                        className="rounded-lg border border-[#CFE3D8] bg-white px-3 py-1.5 text-xs text-[#0B3B2D]"
+                        className="rounded-lg border border-kairos-border bg-kairos-surface px-3 py-1.5 text-xs text-kairos-forest-ink"
                       >
                         <option value="Today · 02:30 PM">Today · 02:30 PM</option>
                         <option value="Today · 04:00 PM">Today · 04:00 PM</option>
@@ -636,7 +636,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                           rescheduleAppointment(appt.appointmentId, rescheduleSlot);
                           setRescheduleTargetId(null);
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-[#0B3B2D] text-white text-xs font-semibold"
+                        className="px-3 py-1.5 rounded-lg bg-kairos-forest text-white text-xs font-semibold"
                       >
                         Save New Slot
                       </button>
@@ -656,19 +656,19 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           <div
             className={`rounded-2xl p-5 sm:p-6 border ${
               ruralMode
-                ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                : 'bg-white text-[#0B3B2D] border-[#D5E7DD]'
+                ? 'bg-kairos-forest text-white border-kairos-forest'
+                : 'bg-kairos-surface text-kairos-forest-ink border-kairos-border'
             }`}
           >
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <Languages className={`w-5 h-5 ${ruralMode ? 'text-[#F2B705]' : 'text-[#119655]'}`} />
+                  <Languages className={`w-5 h-5 ${ruralMode ? 'text-kairos-gold' : 'text-kairos-emerald-ink'}`} />
                   <h2 className={`font-display font-extrabold ${ruralMode ? 'text-2xl' : 'text-lg'}`}>
                     {t.bannerTitle}
                   </h2>
                 </div>
-                <p className={`mt-1.5 ${ruralMode ? 'text-base text-emerald-100' : 'text-xs text-slate-600'}`}>
+                <p className={`mt-1.5 ${ruralMode ? 'text-base text-emerald-100' : 'text-xs text-kairos-muted'}`}>
                   {t.bannerSub}
                 </p>
               </div>
@@ -679,19 +679,19 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   onClick={() => setRuralMode((v) => !v)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors whitespace-nowrap ${
                     ruralMode
-                      ? 'bg-[#F2B705] text-[#0B3B2D]'
-                      : 'bg-[#0B3B2D] text-white hover:bg-[#119655]'
+                      ? 'bg-kairos-gold text-[#07291F]'
+                      : 'bg-kairos-forest text-white hover:bg-kairos-emerald'
                   }`}
                 >
                   {ruralMode ? 'Standard View' : 'Rural Simplified Mode (Large Text)'}
                 </button>
 
-                <div className="inline-flex rounded-xl border border-[#CFE3D8] bg-white p-0.5 text-[#0B3B2D]">
+                <div className="inline-flex rounded-xl border border-kairos-border bg-kairos-surface p-0.5 text-kairos-forest-ink">
                   <button
                     type="button"
                     onClick={() => setRuralLang('en')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                      ruralLang === 'en' ? 'bg-[#0B3B2D] text-white' : 'text-[#0B3B2D]'
+                      ruralLang === 'en' ? 'bg-kairos-forest text-white' : 'text-kairos-forest-ink'
                     }`}
                   >
                     English
@@ -700,7 +700,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                     type="button"
                     onClick={() => setRuralLang('kn')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-                      ruralLang === 'kn' ? 'bg-[#0B3B2D] text-white' : 'text-[#0B3B2D]'
+                      ruralLang === 'kn' ? 'bg-kairos-forest text-white' : 'text-kairos-forest-ink'
                     }`}
                   >
                     ಕನ್ನಡ
@@ -712,10 +712,10 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   onClick={() => setLowBandwidth((b) => !b)}
                   className={`px-3 py-2 rounded-xl border text-xs font-semibold whitespace-nowrap ${
                     lowBandwidth
-                      ? 'bg-amber-100 text-amber-950 border-amber-300'
+                      ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-950 dark:text-amber-100 border-amber-300 dark:border-amber-700/70'
                       : ruralMode
                         ? 'border-white/25 text-white hover:bg-white/10'
-                        : 'border-[#CFE3D8] text-[#0B3B2D] bg-[#FAFDFB]'
+                        : 'border-kairos-border text-kairos-forest-ink bg-kairos-surface-subtle'
                   }`}
                 >
                   {t.lowBandwidthLabel}: {lowBandwidth ? 'ON' : 'OFF'}
@@ -723,21 +723,21 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               </div>
             </div>
 
-            <p className={`mt-3 text-xs ${ruralMode ? 'text-emerald-200' : 'text-slate-500'}`}>
+            <p className={`mt-3 text-xs ${ruralMode ? 'text-emerald-200' : 'text-kairos-muted'}`}>
               {t.disclaimer}
             </p>
           </div>
 
           {/* Filters */}
-          <div className="bg-white border border-[#D5E7DD] rounded-2xl p-4 flex flex-wrap items-center gap-3">
+          <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-4 flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-kairos-muted/80 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="search"
                 value={specSearch}
                 onChange={(e) => setSpecSearch(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                className={`w-full pl-9 pr-3 py-2 rounded-xl border border-[#CFE3D8] text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655] ${
+                className={`w-full pl-9 pr-3 py-2 rounded-xl border border-kairos-border text-kairos-forest-ink focus:outline-none focus:ring-2 focus:ring-kairos-emerald ${
                   ruralMode ? 'text-base' : 'text-sm'
                 }`}
               />
@@ -746,7 +746,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               value={specDeptFilter}
               onChange={(e) => setSpecDeptFilter(e.target.value)}
               aria-label={t.chooseSpecialty}
-              className={`rounded-xl border border-[#CFE3D8] px-3 py-2 text-[#0B3B2D] ${
+              className={`rounded-xl border border-kairos-border px-3 py-2 text-kairos-forest-ink ${
                 ruralMode ? 'text-base font-semibold' : 'text-sm'
               }`}
             >
@@ -755,12 +755,12 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 <option key={dept} value={dept}>{dept}</option>
               ))}
             </select>
-            <label className="inline-flex items-center gap-2 text-xs font-semibold text-[#0B3B2D] cursor-pointer px-2">
+            <label className="inline-flex items-center gap-2 text-xs font-semibold text-kairos-forest-ink cursor-pointer px-2">
               <input
                 type="checkbox"
                 checked={specAvailOnly}
                 onChange={(e) => setSpecAvailOnly(e.target.checked)}
-                className="rounded border-slate-300 text-[#119655]"
+                className="rounded border-slate-300 text-kairos-emerald-ink"
               />
               {t.availableToday}
             </label>
@@ -768,12 +768,12 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
           {/* Specialists Grid */}
           {filteredSpecialists.length === 0 ? (
-            <div className="bg-white border border-[#D5E7DD] rounded-2xl p-8 text-center">
-              <Stethoscope className="w-8 h-8 text-[#119655] mx-auto" />
-              <p className="font-display text-base font-bold text-[#0B3B2D] mt-3">
+            <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-8 text-center">
+              <Stethoscope className="w-8 h-8 text-kairos-emerald-ink mx-auto" />
+              <p className="font-display text-base font-bold text-kairos-forest-ink mt-3">
                 No specialists listed yet
               </p>
-              <p className="text-xs text-slate-600 mt-1">
+              <p className="text-xs text-kairos-muted mt-1">
                 Specialists registered by hospitals or administrators will appear here for booking.
               </p>
             </div>
@@ -788,38 +788,38 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               return (
                 <div
                   key={doc.doctorId}
-                  className="bg-white border border-[#D5E7DD] rounded-2xl p-5 space-y-3"
+                  className="bg-kairos-surface border border-kairos-border rounded-2xl p-5 space-y-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className={`font-display font-bold text-[#0B3B2D] ${ruralMode ? 'text-xl' : 'text-base'}`}>
+                      <p className={`font-display font-bold text-kairos-forest-ink ${ruralMode ? 'text-xl' : 'text-base'}`}>
                         {doc.name}
                       </p>
-                      <p className={`font-semibold text-[#119655] ${ruralMode ? 'text-base' : 'text-xs'}`}>
+                      <p className={`font-semibold text-kairos-emerald-ink ${ruralMode ? 'text-base' : 'text-xs'}`}>
                         {doc.specialty} · {doc.experienceYears} yrs exp
                       </p>
-                      <p className={`text-slate-600 mt-1 ${ruralMode ? 'text-sm' : 'text-xs'}`}>
+                      <p className={`text-kairos-muted mt-1 ${ruralMode ? 'text-sm' : 'text-xs'}`}>
                         {doc.hospitalName} · {doc.location}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-mono text-sm font-bold text-[#0B3B2D] tabular-nums">
+                      <p className="font-mono text-sm font-bold text-kairos-forest-ink tabular-nums">
                         ₹{doc.consultationFeeInr}
                       </p>
-                      <p className="text-[11px] text-slate-500">{doc.timings}</p>
+                      <p className="text-[11px] text-kairos-muted">{doc.timings}</p>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-kairos-muted">
                     <span>Languages: {doc.languages.join(', ')}</span>
                     <span aria-hidden="true">·</span>
                     <span>
-                      {t.nextSlotLabel}: <strong className="text-[#0B3B2D]">{doc.nextSlot}</strong>
+                      {t.nextSlotLabel}: <strong className="text-kairos-forest-ink">{doc.nextSlot}</strong>
                     </span>
                     {doc.remoteAvailable && (
                       <>
                         <span aria-hidden="true">·</span>
-                        <span className="inline-flex items-center gap-1 text-[#119655] font-medium">
+                        <span className="inline-flex items-center gap-1 text-kairos-emerald-ink font-medium">
                           <Video className="w-3.5 h-3.5" /> Remote Ready
                         </span>
                       </>
@@ -834,7 +834,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                         setSpecSlot(doc.availableSlots[0] ?? doc.nextSlot);
                         setSpecConsultType(doc.remoteAvailable ? 'remote' : 'in-person');
                       }}
-                      className={`px-4 py-2.5 rounded-xl bg-[#119655] text-white font-semibold hover:bg-[#0D7A44] transition-colors ${
+                      className={`px-4 py-2.5 rounded-xl bg-kairos-emerald text-white font-semibold hover:bg-kairos-emerald-hover transition-colors ${
                         ruralMode ? 'text-base flex-1' : 'text-xs'
                       }`}
                     >
@@ -844,9 +844,9 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                       href={mapsDir}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-[#CFE3D8] text-xs font-semibold text-[#0B3B2D] hover:bg-[#F1F7F4]"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-kairos-border text-xs font-semibold text-kairos-forest-ink hover:bg-kairos-mint-soft"
                     >
-                      <MapPin className="w-3.5 h-3.5 text-[#119655]" />
+                      <MapPin className="w-3.5 h-3.5 text-kairos-emerald-ink" />
                       {t.directionsLabel}
                     </a>
                   </div>
@@ -854,7 +854,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   {isOpen && (
                     <form
                       onSubmit={handleConfirmSpecialistBooking}
-                      className="mt-3 p-4 rounded-xl bg-[#F4FAF6] border border-[#DCECE3] space-y-3"
+                      className="mt-3 p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border space-y-3"
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <button
@@ -863,8 +863,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                           onClick={() => setSpecConsultType('remote')}
                           className={`p-2.5 rounded-xl border text-xs font-semibold text-left ${
                             specConsultType === 'remote'
-                              ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                              : 'bg-white text-[#0B3B2D] border-[#CFE3D8]'
+                              ? 'bg-kairos-forest text-white border-kairos-forest'
+                              : 'bg-kairos-surface text-kairos-forest-ink border-kairos-border'
                           } disabled:opacity-40`}
                         >
                           {t.remoteConsult}
@@ -874,8 +874,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                           onClick={() => setSpecConsultType('in-person')}
                           className={`p-2.5 rounded-xl border text-xs font-semibold text-left ${
                             specConsultType === 'in-person'
-                              ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                              : 'bg-white text-[#0B3B2D] border-[#CFE3D8]'
+                              ? 'bg-kairos-forest text-white border-kairos-forest'
+                              : 'bg-kairos-surface text-kairos-forest-ink border-kairos-border'
                           }`}
                         >
                           {t.inPersonVisit}
@@ -883,13 +883,13 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                        <label className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                           Slot
                         </label>
                         <select
                           value={specSlot}
                           onChange={(e) => setSpecSlot(e.target.value)}
-                          className="w-full rounded-xl border border-[#CFE3D8] bg-white px-3 py-2 text-xs text-[#0B3B2D]"
+                          className="w-full rounded-xl border border-kairos-border bg-kairos-surface px-3 py-2 text-xs text-kairos-forest-ink"
                         >
                           {doc.availableSlots.map((sl) => (
                             <option key={sl} value={sl}>{sl}</option>
@@ -898,32 +898,32 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                        <label className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                           {t.attachReport}
                         </label>
                         <input
                           type="file"
                           onChange={(e) => setSpecReportName(e.target.files?.[0]?.name || '')}
-                          className="w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-[#0B3B2D] file:text-white file:text-xs file:font-semibold"
+                          className="w-full text-xs text-kairos-muted file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-kairos-forest file:text-white file:text-xs file:font-semibold"
                         />
                         {specReportName && (
-                          <p className="text-[11px] text-[#119655] mt-1">Selected: {specReportName}</p>
+                          <p className="text-[11px] text-kairos-emerald-ink mt-1">Selected: {specReportName}</p>
                         )}
                       </div>
 
-                      <p className="text-[11px] text-slate-600">{t.smsNotice}</p>
+                      <p className="text-[11px] text-kairos-muted">{t.smsNotice}</p>
 
                       <div className="flex justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => setBookingSpecId(null)}
-                          className="px-3 py-2 rounded-xl border border-[#CFE3D8] bg-white text-xs font-semibold text-[#0B3B2D]"
+                          className="px-3 py-2 rounded-xl border border-kairos-border bg-kairos-surface text-xs font-semibold text-kairos-forest-ink"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
-                          className="px-4 py-2 rounded-xl bg-[#119655] text-white text-xs font-semibold hover:bg-[#0D7A44]"
+                          className="px-4 py-2 rounded-xl bg-kairos-emerald text-white text-xs font-semibold hover:bg-kairos-emerald-hover"
                         >
                           Confirm Specialist Booking
                         </button>
@@ -941,23 +941,23 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
       {/* DIAGNOSTIC CONNECT TAB */}
       {activeTab === 'diagnostics' && (
         <div className="space-y-5">
-          <div className="bg-white border border-[#D5E7DD] rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h2 className="font-display text-lg font-bold text-[#0B3B2D]">
+              <h2 className="font-display text-lg font-bold text-kairos-forest-ink">
                 Diagnostic Connect · Labs &amp; Imaging
               </h2>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-kairos-muted">
                 Browse registered diagnostic centres, compare test pricing and hours, and view reports securely once uploaded.
               </p>
             </div>
             <div className="relative w-full sm:w-72">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-kairos-muted/80 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="search"
                 value={diagSearch}
                 onChange={(e) => setDiagSearch(e.target.value)}
                 placeholder="Search CBC, ECG, Thyroid, centre..."
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#CFE3D8] text-xs text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                className="w-full pl-9 pr-3 py-2 rounded-xl border border-kairos-border text-xs text-kairos-forest-ink focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
               />
             </div>
           </div>
@@ -966,12 +966,12 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
             {/* Diagnostic Centres & Tests */}
             <div className="lg:col-span-7 space-y-4">
               {filteredCentres.length === 0 && (
-                <div className="bg-white border border-[#D5E7DD] rounded-2xl p-8 text-center">
-                  <FlaskConical className="w-8 h-8 text-[#119655] mx-auto" />
-                  <p className="font-display text-base font-bold text-[#0B3B2D] mt-3">
+                <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-8 text-center">
+                  <FlaskConical className="w-8 h-8 text-kairos-emerald-ink mx-auto" />
+                  <p className="font-display text-base font-bold text-kairos-forest-ink mt-3">
                     No diagnostic centres registered yet
                   </p>
-                  <p className="text-xs text-slate-600 mt-1">
+                  <p className="text-xs text-kairos-muted mt-1">
                     Diagnostic labs registered via the Diagnostic Centre portal will appear here.
                   </p>
                 </div>
@@ -979,18 +979,18 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               {filteredCentres.map((centre) => (
                 <div
                   key={centre.centreId}
-                  className="bg-white border border-[#D5E7DD] rounded-2xl p-5 space-y-3"
+                  className="bg-kairos-surface border border-kairos-border rounded-2xl p-5 space-y-3"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#EBF3EF]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-kairos-border-subtle">
                     <div>
-                      <h3 className="font-display text-base font-bold text-[#0B3B2D]">
+                      <h3 className="font-display text-base font-bold text-kairos-forest-ink">
                         {centre.name}
                       </h3>
-                      <p className="text-xs text-slate-600">
+                      <p className="text-xs text-kairos-muted">
                         {centre.area} · {centre.hours} · {centre.distanceKm} km
                       </p>
                     </div>
-                    <span className="text-[11px] font-semibold text-[#119655]">
+                    <span className="text-[11px] font-semibold text-kairos-emerald-ink">
                       Verified Centre
                     </span>
                   </div>
@@ -1002,16 +1002,16 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                         className="py-2.5 flex items-center justify-between gap-3"
                       >
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-[#0B3B2D] truncate">
+                          <p className="text-sm font-semibold text-kairos-forest-ink truncate">
                             {test.name}
                           </p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-kairos-muted">
                             {test.category} · Report in ~{test.turnaroundHours}h
                             {test.fastingRequired ? ' · Fasting required' : ''}
                           </p>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
-                          <span className="font-mono text-sm font-bold text-[#0B3B2D] tabular-nums">
+                          <span className="font-mono text-sm font-bold text-kairos-forest-ink tabular-nums">
                             ₹{test.priceInr}
                           </span>
                           <button
@@ -1026,7 +1026,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                               });
                               setDiagSlot(centre.slots[0] ?? 'Today · 11:30 AM');
                             }}
-                            className="px-3 py-1.5 rounded-lg bg-[#0B3B2D] text-white text-xs font-semibold hover:bg-[#119655] transition-colors"
+                            className="px-3 py-1.5 rounded-lg bg-kairos-forest text-white text-xs font-semibold hover:bg-kairos-emerald transition-colors"
                           >
                             Book Slot
                           </button>
@@ -1043,7 +1043,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               {diagBookingTarget && (
                 <form
                   onSubmit={handleConfirmDiagnosticBooking}
-                  className="bg-[#0B3B2D] text-white rounded-2xl p-5 space-y-3"
+                  className="bg-kairos-forest text-white rounded-2xl p-5 space-y-3"
                 >
                   <h3 className="font-display text-sm font-bold">
                     Book {diagBookingTarget.testName}
@@ -1058,7 +1058,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                     <select
                       value={diagSlot}
                       onChange={(e) => setDiagSlot(e.target.value)}
-                      className="w-full rounded-xl bg-white text-[#0B3B2D] px-3 py-2 text-xs font-semibold"
+                      className="w-full rounded-xl bg-kairos-surface text-kairos-forest-ink px-3 py-2 text-xs font-semibold"
                     >
                       {diagBookingTarget.slots.map((s) => (
                         <option key={s} value={s}>{s}</option>
@@ -1074,7 +1074,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                       value={diagPrescription}
                       onChange={(e) => setDiagPrescription(e.target.value)}
                       placeholder="e.g., Ordered by Dr. Meera Deshmukh"
-                      className="w-full rounded-xl bg-white text-[#0B3B2D] px-3 py-2 text-xs"
+                      className="w-full rounded-xl bg-kairos-surface text-kairos-forest-ink px-3 py-2 text-xs"
                     />
                   </div>
                   <div className="flex justify-end gap-2 pt-1">
@@ -1087,7 +1087,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-1.5 rounded-lg bg-[#119655] text-white text-xs font-semibold hover:bg-[#15B064]"
+                      className="px-4 py-1.5 rounded-lg bg-kairos-emerald text-white text-xs font-semibold hover:bg-kairos-emerald-hover"
                     >
                       Confirm Test Booking
                     </button>
@@ -1095,36 +1095,36 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 </form>
               )}
 
-              <div className="bg-white border border-[#D5E7DD] rounded-2xl p-5 space-y-3">
+              <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-5 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-display text-base font-bold text-[#0B3B2D]">
+                  <h3 className="font-display text-base font-bold text-kairos-forest-ink">
                     My Diagnostic Bookings & Reports
                   </h3>
-                  <FlaskConical className="w-4 h-4 text-[#119655]" />
+                  <FlaskConical className="w-4 h-4 text-kairos-emerald-ink" />
                 </div>
                 {diagnosticBookings.length === 0 ? (
-                  <p className="text-xs text-slate-500">No diagnostic bookings yet.</p>
+                  <p className="text-xs text-kairos-muted">No diagnostic bookings yet.</p>
                 ) : (
                   diagnosticBookings.map((bk) => (
                     <div
                       key={bk.bookingId}
-                      className="p-3.5 rounded-xl border border-[#DCECE3] bg-[#FAFDFB] space-y-1.5"
+                      className="p-3.5 rounded-xl border border-kairos-border bg-kairos-surface-subtle space-y-1.5"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-bold text-[#0B3B2D]">{bk.testName}</p>
-                        <span className="text-[11px] font-mono font-bold uppercase text-[#119655]">
+                        <p className="text-xs font-bold text-kairos-forest-ink">{bk.testName}</p>
+                        <span className="text-[11px] font-mono font-bold uppercase text-kairos-emerald-ink">
                           {bk.status.replace('_', ' ')}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-600">
+                      <p className="text-xs text-kairos-muted">
                         {bk.centreName} · {bk.slotTime} · ₹{bk.priceInr}
                       </p>
                       {bk.reportSummary && (
-                        <div className="mt-2 p-2.5 rounded-lg bg-white border border-[#CFE3D8] text-xs text-[#0B3B2D]">
-                          <p className="font-semibold flex items-center gap-1.5 text-[#119655]">
+                        <div className="mt-2 p-2.5 rounded-lg bg-kairos-surface border border-kairos-border text-xs text-kairos-forest-ink">
+                          <p className="font-semibold flex items-center gap-1.5 text-kairos-emerald-ink">
                             <FileText className="w-3.5 h-3.5" /> Provider Report Summary
                           </p>
-                          <p className="mt-1 text-slate-700">{bk.reportSummary}</p>
+                          <p className="mt-1 text-kairos-forest-ink/85">{bk.reportSummary}</p>
                         </div>
                       )}
                     </div>
@@ -1140,17 +1140,17 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
       {activeTab === 'profile' && (
         <form
           onSubmit={handleSaveProfile}
-          className="max-w-3xl bg-white border border-[#D5E7DD] rounded-2xl p-6 space-y-5"
+          className="max-w-3xl bg-kairos-surface border border-kairos-border rounded-2xl p-6 space-y-5"
         >
-          <div className="flex items-center gap-3 pb-4 border-b border-[#EBF3EF]">
-            <div className="w-10 h-10 rounded-xl bg-[#0B3B2D] text-white flex items-center justify-center">
+          <div className="flex items-center gap-3 pb-4 border-b border-kairos-border-subtle">
+            <div className="w-10 h-10 rounded-xl bg-kairos-forest text-white flex items-center justify-center">
               <User className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-display text-lg font-bold text-[#0B3B2D]">
+              <h2 className="font-display text-lg font-bold text-kairos-forest-ink">
                 Patient Medical Profile & DPDP Consent
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-kairos-muted">
                 PII is stored in an isolated private record accessible only to you and authorized clinicians during active care.
               </p>
             </div>
@@ -1158,7 +1158,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="prof-name" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+              <label htmlFor="prof-name" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                 Full Name
               </label>
               <input
@@ -1166,11 +1166,11 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 type="text"
                 value={profileName}
                 onChange={(e) => setProfileName(e.target.value)}
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2 text-sm text-[#0B3B2D]"
+                className="w-full rounded-xl border border-kairos-border px-3.5 py-2 text-sm text-kairos-forest-ink"
               />
             </div>
             <div>
-              <label htmlFor="prof-phone" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+              <label htmlFor="prof-phone" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                 Mobile Number
               </label>
               <input
@@ -1178,18 +1178,18 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 type="tel"
                 value={profilePhone}
                 onChange={(e) => setProfilePhone(e.target.value)}
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2 text-sm text-[#0B3B2D]"
+                className="w-full rounded-xl border border-kairos-border px-3.5 py-2 text-sm text-kairos-forest-ink"
               />
             </div>
             <div>
-              <label htmlFor="prof-blood" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+              <label htmlFor="prof-blood" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                 Blood Group
               </label>
               <select
                 id="prof-blood"
                 value={profileBlood}
                 onChange={(e) => setProfileBlood(e.target.value)}
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2 text-sm text-[#0B3B2D]"
+                className="w-full rounded-xl border border-kairos-border px-3.5 py-2 text-sm text-kairos-forest-ink"
               >
                 {['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map((bg) => (
                   <option key={bg} value={bg}>{bg}</option>
@@ -1197,7 +1197,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               </select>
             </div>
             <div>
-              <label htmlFor="prof-abha" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+              <label htmlFor="prof-abha" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                 ABHA Number (ABDM Integration-Ready Field)
               </label>
               <input
@@ -1205,11 +1205,11 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 type="text"
                 value={profileAbha}
                 onChange={(e) => setProfileAbha(e.target.value)}
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2 text-sm font-mono text-[#0B3B2D]"
+                className="w-full rounded-xl border border-kairos-border px-3.5 py-2 text-sm font-mono text-kairos-forest-ink"
               />
             </div>
             <div>
-              <label htmlFor="prof-allergies" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+              <label htmlFor="prof-allergies" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                 Known Allergies
               </label>
               <input
@@ -1217,11 +1217,11 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 type="text"
                 value={profileAllergies}
                 onChange={(e) => setProfileAllergies(e.target.value)}
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2 text-sm text-[#0B3B2D]"
+                className="w-full rounded-xl border border-kairos-border px-3.5 py-2 text-sm text-kairos-forest-ink"
               />
             </div>
             <div>
-              <label htmlFor="prof-emg" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+              <label htmlFor="prof-emg" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                 Emergency Contact
               </label>
               <input
@@ -1229,30 +1229,30 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 type="text"
                 value={profileEmergency}
                 onChange={(e) => setProfileEmergency(e.target.value)}
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2 text-sm text-[#0B3B2D]"
+                className="w-full rounded-xl border border-kairos-border px-3.5 py-2 text-sm text-kairos-forest-ink"
               />
             </div>
           </div>
 
-          <label className="flex items-start gap-3 p-4 rounded-xl bg-[#F4FAF6] border border-[#DCECE3] cursor-pointer">
+          <label className="flex items-start gap-3 p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border cursor-pointer">
             <input
               type="checkbox"
               checked={profileConsent}
               onChange={(e) => setProfileConsent(e.target.checked)}
-              className="mt-0.5 rounded border-slate-300 text-[#119655]"
+              className="mt-0.5 rounded border-slate-300 text-kairos-emerald-ink"
             />
-            <span className="text-xs text-slate-700 leading-relaxed">
-              <strong className="text-[#0B3B2D]">Active DPDP Clinical Sharing Consent:</strong> Authorize KAIROS to share my minimal medical summary (blood group, allergies, vitals, and attached reports) with receiving hospitals and ambulance clinicians during active bookings or emergency referrals.
+            <span className="text-xs text-kairos-forest-ink/85 leading-relaxed">
+              <strong className="text-kairos-forest-ink">Active DPDP Clinical Sharing Consent:</strong> Authorize KAIROS to share my minimal medical summary (blood group, allergies, vitals, and attached reports) with receiving hospitals and ambulance clinicians during active bookings or emergency referrals.
             </span>
           </label>
 
           <div className="flex items-center justify-between pt-2">
-            <span className="inline-flex items-center gap-1.5 text-xs text-[#119655] font-medium">
+            <span className="inline-flex items-center gap-1.5 text-xs text-kairos-emerald-ink font-medium">
               <ShieldCheck className="w-4 h-4" /> Consent logged in immutable audit trail
             </span>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0B3B2D] text-white text-sm font-semibold hover:bg-[#119655] transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-kairos-forest text-white text-sm font-semibold hover:bg-kairos-emerald transition-colors"
             >
               <CheckCircle2 className="w-4 h-4" />
               Save Profile & Consent

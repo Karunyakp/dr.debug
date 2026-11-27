@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useKairos } from '../context/KairosContext';
 import type { UserRole } from '../types/kairos';
+import { ThemeToggle } from './ThemeToggle';
 
 interface RolePortalMeta {
   role: UserRole;
@@ -246,14 +247,14 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F8F5] text-[#0B2B22] flex flex-col">
+    <div className="min-h-screen bg-kairos-mint text-kairos-forest-ink flex flex-col transition-colors duration-200">
       {/* Top Bar */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-[#DCECE3]">
+      <header className="bg-kairos-surface/95 backdrop-blur-md border-b border-kairos-border">
         <div className="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
           <button
             type="button"
             onClick={onBackHome}
-            className="flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F6A41] rounded-lg"
+            className="flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kairos-emerald rounded-lg"
           >
             <img
               src="/assets/aistudio/Kairos-Logo-Icon_f4a33af1.png"
@@ -261,19 +262,22 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
               className="w-8 h-8 object-contain"
               referrerPolicy="no-referrer"
             />
-            <span className="font-display text-xl font-extrabold tracking-tight text-[#122620]">
+            <span className="font-display text-xl font-extrabold tracking-tight text-kairos-forest-ink">
               KAIROS
             </span>
           </button>
 
-          <button
-            type="button"
-            onClick={onBackHome}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1D352D] hover:text-[#1F6A41] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={onBackHome}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-kairos-forest-ink/85 hover:text-kairos-emerald-ink transition-colors whitespace-nowrap"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </button>
+          </div>
         </div>
       </header>
 
@@ -281,7 +285,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12">
         {/* Per-Role Portal Selector */}
         <div className="w-full max-w-2xl mb-6">
-          <p className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+          <p className="text-center text-xs font-semibold uppercase tracking-wider text-kairos-muted mb-3">
             Choose Your KAIROS Portal
           </p>
           <div
@@ -301,11 +305,11 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                   onClick={() => onChangeRole(item.role)}
                   className={`flex flex-col items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-xl border text-xs font-semibold transition-all ${
                     active
-                      ? 'bg-[#0B3B2D] text-white border-[#0B3B2D] shadow-sm'
-                      : 'bg-white text-[#1D352D] border-[#D5E7DD] hover:border-[#119655] hover:text-[#119655]'
+                      ? 'bg-kairos-forest text-white border-kairos-forest shadow-sm'
+                      : 'bg-kairos-surface text-kairos-forest-ink border-kairos-border hover:border-kairos-emerald hover:text-kairos-emerald-ink'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${active ? 'text-[#4ADE80]' : 'text-[#119655]'}`} />
+                  <Icon className={`w-4 h-4 ${active ? 'text-[#4ADE80]' : 'text-kairos-emerald-ink'}`} />
                   <span className="truncate max-w-full">{item.shortLabel}</span>
                 </button>
               );
@@ -314,18 +318,18 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
         </div>
 
         {/* Standard Modern App Sign-In Card */}
-        <div className="w-full max-w-[440px] bg-white border border-[#D5E7DD] rounded-2xl shadow-[0_14px_40px_rgba(11,59,45,0.08)] p-6 sm:p-8">
+        <div className="w-full max-w-[440px] bg-kairos-surface border border-kairos-border rounded-2xl shadow-[0_14px_40px_rgba(11,59,45,0.08)] dark:shadow-[0_14px_40px_rgba(0,0,0,0.45)] p-6 sm:p-8">
           {/* Role Header */}
           <div className="text-center mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-[#E8F6EE] text-[#119655] flex items-center justify-center mx-auto mb-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-kairos-mint-soft text-kairos-emerald-ink flex items-center justify-center mx-auto mb-3.5">
               <PortalIcon className="w-6 h-6" />
             </div>
-            <h1 className="font-display text-2xl font-extrabold text-[#0B3B2D] tracking-tight">
+            <h1 className="font-display text-2xl font-extrabold text-kairos-forest-ink tracking-tight">
               {mode === 'signin'
                 ? `Sign in · ${portal.portalTitle}`
                 : `Create ${portal.shortLabel} Account`}
             </h1>
-            <p className="text-xs sm:text-[13px] text-slate-600 mt-1.5 leading-relaxed">
+            <p className="text-xs sm:text-[13px] text-kairos-muted mt-1.5 leading-relaxed">
               {mode === 'signin' ? portal.signInSubtitle : portal.signUpSubtitle}
             </p>
           </div>
@@ -333,7 +337,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
           {error && (
             <div
               role="alert"
-              className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 leading-relaxed"
+              className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900/60 text-xs text-red-800 dark:text-red-200 leading-relaxed"
             >
               {error}
             </div>
@@ -346,12 +350,12 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                 <div>
                   <label
                     htmlFor="auth-fullname"
-                    className="block text-xs font-semibold text-[#0B3B2D] mb-1.5"
+                    className="block text-xs font-semibold text-kairos-forest-ink mb-1.5"
                   >
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <User className="w-4 h-4 text-kairos-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       id="auth-fullname"
                       type="text"
@@ -360,7 +364,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Enter your full name"
                       autoComplete="name"
-                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#CFE3D8] bg-[#FAFDFB] text-sm text-[#0B3B2D] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-kairos-border bg-kairos-surface-subtle text-sm text-kairos-forest-ink placeholder:text-kairos-muted/70 focus:bg-kairos-surface focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
                     />
                   </div>
                 </div>
@@ -369,7 +373,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                   <div>
                     <label
                       htmlFor="auth-facility"
-                      className="block text-xs font-semibold text-[#0B3B2D] mb-1.5"
+                      className="block text-xs font-semibold text-kairos-forest-ink mb-1.5"
                     >
                       {portal.facilityLabel}
                     </label>
@@ -379,7 +383,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                       value={facilityName}
                       onChange={(e) => setFacilityName(e.target.value)}
                       placeholder={portal.facilityPlaceholder}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#CFE3D8] bg-[#FAFDFB] text-sm text-[#0B3B2D] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-kairos-border bg-kairos-surface-subtle text-sm text-kairos-forest-ink placeholder:text-kairos-muted/70 focus:bg-kairos-surface focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
                     />
                   </div>
                 )}
@@ -387,9 +391,9 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                 <div>
                   <label
                     htmlFor="auth-phone"
-                    className="block text-xs font-semibold text-[#0B3B2D] mb-1.5"
+                    className="block text-xs font-semibold text-kairos-forest-ink mb-1.5"
                   >
-                    Phone Number <span className="text-slate-400 font-normal">(Optional)</span>
+                    Phone Number <span className="text-kairos-muted font-normal">(Optional)</span>
                   </label>
                   <input
                     id="auth-phone"
@@ -398,7 +402,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+91-98XXXXXXXX"
                     autoComplete="tel"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#CFE3D8] bg-[#FAFDFB] text-sm text-[#0B3B2D] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-kairos-border bg-kairos-surface-subtle text-sm text-kairos-forest-ink placeholder:text-kairos-muted/70 focus:bg-kairos-surface focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
                   />
                 </div>
               </>
@@ -407,12 +411,12 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
             <div>
               <label
                 htmlFor="auth-email"
-                className="block text-xs font-semibold text-[#0B3B2D] mb-1.5"
+                className="block text-xs font-semibold text-kairos-forest-ink mb-1.5"
               >
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Mail className="w-4 h-4 text-kairos-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   id="auth-email"
                   type="email"
@@ -421,7 +425,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
                   autoComplete="email"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#CFE3D8] bg-[#FAFDFB] text-sm text-[#0B3B2D] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-kairos-border bg-kairos-surface-subtle text-sm text-kairos-forest-ink placeholder:text-kairos-muted/70 focus:bg-kairos-surface focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
                 />
               </div>
             </div>
@@ -429,12 +433,12 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
             <div>
               <label
                 htmlFor="auth-password"
-                className="block text-xs font-semibold text-[#0B3B2D] mb-1.5"
+                className="block text-xs font-semibold text-kairos-forest-ink mb-1.5"
               >
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Lock className="w-4 h-4 text-kairos-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   id="auth-password"
                   type={showPassword ? 'text' : 'password'}
@@ -444,13 +448,13 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={mode === 'signup' ? 'Create a password (min. 6 chars)' : 'Enter your password'}
                   autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#CFE3D8] bg-[#FAFDFB] text-sm text-[#0B3B2D] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-kairos-border bg-kairos-surface-subtle text-sm text-kairos-forest-ink placeholder:text-kairos-muted/70 focus:bg-kairos-surface focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#0B3B2D] p-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-kairos-muted hover:text-kairos-forest-ink p-1"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -458,14 +462,14 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
             </div>
 
             {mode === 'signup' && (
-              <label className="flex items-start gap-2.5 p-3 rounded-xl bg-[#F4FAF6] border border-[#DCECE3] cursor-pointer">
+              <label className="flex items-start gap-2.5 p-3 rounded-xl bg-kairos-mint-soft/70 border border-kairos-border cursor-pointer">
                 <input
                   type="checkbox"
                   checked={consentGranted}
                   onChange={(e) => setConsentGranted(e.target.checked)}
-                  className="mt-0.5 rounded border-slate-300 text-[#119655] focus:ring-[#119655]"
+                  className="mt-0.5 rounded border-kairos-border text-kairos-emerald focus:ring-kairos-emerald"
                 />
-                <span className="text-[11px] text-slate-700 leading-relaxed">
+                <span className="text-[11px] text-kairos-muted leading-relaxed">
                   I agree to DPDP-aligned clinical data handling and revocable consent policies for KAIROS healthcare coordination.
                 </span>
               </label>
@@ -474,7 +478,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
             <button
               type="submit"
               disabled={submitting || googleBusy}
-              className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#1F6A41] hover:bg-[#175332] text-white text-sm font-semibold transition-colors shadow-xs disabled:opacity-60"
+              className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-kairos-emerald hover:bg-kairos-emerald-hover text-white text-sm font-semibold transition-colors shadow-xs disabled:opacity-60"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {mode === 'signin' ? `Sign in to ${portal.shortLabel} Portal` : 'Create Account'}
@@ -484,10 +488,10 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
           {/* Standard Divider */}
           <div className="relative my-5">
             <div className="absolute inset-0 flex items-center" aria-hidden="true">
-              <div className="w-full border-t border-[#E3ECE6]" />
+              <div className="w-full border-t border-kairos-border" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-white px-3 text-xs font-medium text-slate-400">or</span>
+              <span className="bg-kairos-surface px-3 text-xs font-medium text-kairos-muted">or</span>
             </div>
           </div>
 
@@ -496,21 +500,21 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
             type="button"
             disabled={submitting || googleBusy}
             onClick={() => void handleGoogleSignIn()}
-            className="w-full inline-flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl bg-white hover:bg-[#F7FBF9] text-[#1D352D] border border-[#CFE3D8] hover:border-[#9CC7B1] text-sm font-semibold transition-colors shadow-2xs disabled:opacity-60"
+            className="w-full inline-flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl bg-kairos-surface hover:bg-kairos-surface-subtle text-kairos-forest-ink border border-kairos-border hover:border-kairos-emerald text-sm font-semibold transition-colors shadow-2xs disabled:opacity-60"
           >
-            {googleBusy ? <Loader2 className="w-4 h-4 animate-spin text-[#119655]" /> : <GoogleIcon />}
+            {googleBusy ? <Loader2 className="w-4 h-4 animate-spin text-kairos-emerald-ink" /> : <GoogleIcon />}
             <span>{googleBusy ? 'Connecting to Google...' : 'Continue with Google'}</span>
           </button>
 
           {/* Mode Toggle Footer */}
-          <p className="mt-6 text-center text-xs text-slate-600">
+          <p className="mt-6 text-center text-xs text-kairos-muted">
             {mode === 'signin' ? (
               <>
                 Don&apos;t have an account?{' '}
                 <button
                   type="button"
                   onClick={() => setMode('signup')}
-                  className="font-bold text-[#1F6A41] hover:underline"
+                  className="font-bold text-kairos-emerald-ink hover:underline"
                 >
                   Sign up
                 </button>
@@ -521,7 +525,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                 <button
                   type="button"
                   onClick={() => setMode('signin')}
-                  className="font-bold text-[#1F6A41] hover:underline"
+                  className="font-bold text-kairos-emerald-ink hover:underline"
                 >
                   Sign in
                 </button>
@@ -530,7 +534,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
           </p>
         </div>
 
-        <p className="mt-5 text-[11px] text-slate-500 text-center max-w-md">
+        <p className="mt-5 text-[11px] text-kairos-muted text-center max-w-md">
           Protected by Firebase Authentication, isolated PII records, and immutable clinical audit logs.
         </p>
       </main>

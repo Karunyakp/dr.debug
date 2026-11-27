@@ -242,14 +242,14 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
     <div className="space-y-6">
       {/* Offline Store-and-Forward Banner */}
       {(isOfflineSimulated || offlineReferralQueue.length > 0) && (
-        <div className="rounded-2xl bg-amber-50 border border-amber-300 p-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-start gap-2.5 text-xs text-amber-950">
-            <WifiOff className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+        <div className="rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/70 p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-start gap-2.5 text-xs text-amber-950 dark:text-amber-100">
+            <WifiOff className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
             <div>
               <p className="font-bold">
                 Offline-First Referral Queue ({offlineReferralQueue.length} pending sync · NOT YET RECEIVED BY HOSPITAL)
               </p>
-              <p className="text-amber-800 mt-0.5">
+              <p className="text-amber-800 dark:text-amber-300 mt-0.5">
                 Referrals saved offline are queued locally with idempotency keys to prevent duplicates when weak rural connectivity returns.
               </p>
             </div>
@@ -257,7 +257,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           <button
             type="button"
             onClick={syncOfflineReferralsNow}
-            className="px-4 py-2 rounded-xl bg-[#0B3B2D] text-white text-xs font-semibold hover:bg-[#119655] whitespace-nowrap"
+            className="px-4 py-2 rounded-xl bg-kairos-forest text-white text-xs font-semibold hover:bg-kairos-emerald whitespace-nowrap"
           >
             Reconnect & Sync Now
           </button>
@@ -268,51 +268,51 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
       {activeTab === 'overview' && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div className="bg-white border border-[#D5E7DD] rounded-2xl p-5">
-              <p className="text-xs font-medium text-slate-500">Today&apos;s Consultations</p>
-              <p className="font-display text-2xl font-extrabold text-[#0B3B2D] mt-1 font-mono tabular-nums">
+            <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-5">
+              <p className="text-xs font-medium text-kairos-muted">Today&apos;s Consultations</p>
+              <p className="font-display text-2xl font-extrabold text-kairos-forest-ink mt-1 font-mono tabular-nums">
                 {appointments.filter((a) => a.status !== 'cancelled').length}
               </p>
-              <p className="text-xs text-slate-600 mt-1">OPD + Rural Remote Specialist slots</p>
+              <p className="text-xs text-kairos-muted mt-1">OPD + Rural Remote Specialist slots</p>
             </div>
-            <div className="bg-[#0B3B2D] text-white rounded-2xl p-5">
+            <div className="bg-kairos-forest text-white rounded-2xl p-5">
               <p className="text-xs font-medium text-emerald-200">Pending Hospital Responses</p>
               <p className="font-display text-2xl font-extrabold mt-1 font-mono tabular-nums">
                 {pendingCount}
               </p>
               <p className="text-xs text-emerald-200/80 mt-1">Auto-escalation active at 5:00 SLA</p>
             </div>
-            <div className="bg-white border border-[#D5E7DD] rounded-2xl p-5">
-              <p className="text-xs font-medium text-slate-500">Confirmed & En Route</p>
-              <p className="font-display text-2xl font-extrabold text-[#119655] mt-1 font-mono tabular-nums">
+            <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-5">
+              <p className="text-xs font-medium text-kairos-muted">Confirmed & En Route</p>
+              <p className="font-display text-2xl font-extrabold text-kairos-emerald-ink mt-1 font-mono tabular-nums">
                 {acceptedTransitCount}
               </p>
-              <p className="text-xs text-slate-600 mt-1">Bed held before ambulance departure</p>
+              <p className="text-xs text-kairos-muted mt-1">Bed held before ambulance departure</p>
             </div>
-            <div className="bg-white border border-[#D5E7DD] rounded-2xl p-5">
-              <p className="text-xs font-medium text-slate-500">Offline Sync Queue</p>
-              <p className="font-display text-2xl font-extrabold text-[#0B3B2D] mt-1 font-mono tabular-nums">
+            <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-5">
+              <p className="text-xs font-medium text-kairos-muted">Offline Sync Queue</p>
+              <p className="font-display text-2xl font-extrabold text-kairos-forest-ink mt-1 font-mono tabular-nums">
                 {offlineReferralQueue.length}
               </p>
-              <p className="text-xs text-slate-600 mt-1">Deduplicated store-and-forward payloads</p>
+              <p className="text-xs text-kairos-muted mt-1">Deduplicated store-and-forward payloads</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            <div className="lg:col-span-7 bg-white border border-[#D5E7DD] rounded-2xl p-6 space-y-4">
+            <div className="lg:col-span-7 bg-kairos-surface border border-kairos-border rounded-2xl p-6 space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h2 className="font-display text-base font-bold text-[#0B3B2D]">
+                  <h2 className="font-display text-base font-bold text-kairos-forest-ink">
                     Active Emergency Referrals
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-kairos-muted">
                     Real-time hospital responses, vitals, and bed-hold countdowns
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => onTabChange('new-referral')}
-                  className="px-3.5 py-2 rounded-xl bg-[#119655] text-white text-xs font-semibold hover:bg-[#0D7A44]"
+                  className="px-3.5 py-2 rounded-xl bg-kairos-emerald text-white text-xs font-semibold hover:bg-kairos-emerald-hover"
                 >
                   + New ISBAR Referral
                 </button>
@@ -320,7 +320,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
               <div className="space-y-3">
                 {filteredReferrals.length === 0 && (
-                  <p className="text-xs text-slate-500 p-4 rounded-xl bg-[#FAFDFB] border border-[#E5F0EA]">
+                  <p className="text-xs text-kairos-muted p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border-subtle">
                     No emergency referrals sent yet. Create a structured ISBAR referral to coordinate a bed before transfer.
                   </p>
                 )}
@@ -329,27 +329,27 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                   return (
                     <div
                       key={ref.referralId}
-                      className="p-4 rounded-xl border border-[#DCECE3] bg-[#FAFDFB] space-y-2.5"
+                      className="p-4 rounded-xl border border-kairos-border bg-kairos-surface-subtle space-y-2.5"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-[#0B3B2D]">
+                          <span className="font-mono text-xs font-bold text-kairos-forest-ink">
                             {ref.referralId}
                           </span>
-                          <span className="text-xs font-bold text-[#0B3B2D]">
+                          <span className="text-xs font-bold text-kairos-forest-ink">
                             · {ref.category} ({ref.patientInitials})
                           </span>
                         </div>
                         <span
                           className={`text-[11px] font-mono font-bold uppercase ${
-                            ref.urgency === 'critical' ? 'text-red-700' : 'text-amber-700'
+                            ref.urgency === 'critical' ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'
                           }`}
                         >
                           {ref.urgency} · {ref.status.replace('_', ' ')}
                         </span>
                       </div>
 
-                      <div className="flex flex-wrap gap-3 text-xs font-mono text-slate-700 tabular-nums">
+                      <div className="flex flex-wrap gap-3 text-xs font-mono text-kairos-forest-ink/85 tabular-nums">
                         <span>HR {ref.vitals.heartRate}</span>
                         <span>SpO2 {ref.vitals.spo2}%</span>
                         <span>BP {ref.vitals.bp}</span>
@@ -357,19 +357,19 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                         <span>RR {ref.vitals.respRate}</span>
                       </div>
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 pt-1">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-kairos-muted pt-1">
                         <span>
-                          Receiving: <strong className="text-[#0B3B2D]">{ref.targetHospitalName}</strong>
+                          Receiving: <strong className="text-kairos-forest-ink">{ref.targetHospitalName}</strong>
                           {ref.bedHold && holdEval && (
                             <>
-                              {' '}· <strong className="text-[#119655]">{ref.bedHold.bedLabel} Held {formatCountdown(holdEval.remainingSec)}</strong>
+                              {' '}· <strong className="text-kairos-emerald-ink">{ref.bedHold.bedLabel} Held {formatCountdown(holdEval.remainingSec)}</strong>
                             </>
                           )}
                         </span>
                         <button
                           type="button"
                           onClick={() => onTabChange('referrals')}
-                          className="font-semibold text-[#119655] hover:underline"
+                          className="font-semibold text-kairos-emerald-ink hover:underline"
                         >
                           Track Handover →
                         </button>
@@ -380,33 +380,33 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
               </div>
             </div>
 
-            <div className="lg:col-span-5 bg-white border border-[#D5E7DD] rounded-2xl p-6 space-y-4">
+            <div className="lg:col-span-5 bg-kairos-surface border border-kairos-border rounded-2xl p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="font-display text-base font-bold text-[#0B3B2D]">
+                <h2 className="font-display text-base font-bold text-kairos-forest-ink">
                   Today&apos;s Specialist & OPD Schedule
                 </h2>
-                <Stethoscope className="w-4 h-4 text-[#119655]" />
+                <Stethoscope className="w-4 h-4 text-kairos-emerald-ink" />
               </div>
               <div className="space-y-2.5">
                 {appointments.length === 0 && (
-                  <p className="text-xs text-slate-500 p-3 rounded-xl bg-[#FAFDFB] border border-[#E5F0EA]">
+                  <p className="text-xs text-kairos-muted p-3 rounded-xl bg-kairos-surface-subtle border border-kairos-border-subtle">
                     No OPD consultations scheduled yet.
                   </p>
                 )}
                 {appointments.slice(0, 5).map((a) => (
                   <div
                     key={a.appointmentId}
-                    className="p-3 rounded-xl border border-[#E5F0EA] bg-[#FAFDFB] flex items-center justify-between gap-2 text-xs"
+                    className="p-3 rounded-xl border border-kairos-border-subtle bg-kairos-surface-subtle flex items-center justify-between gap-2 text-xs"
                   >
                     <div className="min-w-0">
-                      <p className="font-bold text-[#0B3B2D] truncate">
+                      <p className="font-bold text-kairos-forest-ink truncate">
                         #{a.tokenNumber} · {a.patientName}
                       </p>
-                      <p className="text-slate-600 truncate">
+                      <p className="text-kairos-muted truncate">
                         {a.department} · {a.slotTime} ({a.consultationType})
                       </p>
                     </div>
-                    <span className="font-mono text-[11px] font-semibold uppercase text-[#119655] shrink-0">
+                    <span className="font-mono text-[11px] font-semibold uppercase text-kairos-emerald-ink shrink-0">
                       {a.status}
                     </span>
                   </div>
@@ -421,13 +421,13 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
       {activeTab === 'new-referral' && (
         <form onSubmit={handleSubmitReferral} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Patient Assessment & Vitals */}
-          <div className="lg:col-span-7 bg-white border border-[#D5E7DD] rounded-2xl p-6 space-y-5">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#EBF3EF]">
+          <div className="lg:col-span-7 bg-kairos-surface border border-kairos-border rounded-2xl p-6 space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-kairos-border-subtle">
               <div>
-                <h2 className="font-display text-lg font-bold text-[#0B3B2D]">
+                <h2 className="font-display text-lg font-bold text-kairos-forest-ink">
                   Step 1–2 · Structured ISBAR Emergency Referral
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-kairos-muted">
                   Accept Before You Move · Capture vitals and required facilities before selecting a hospital
                 </p>
               </div>
@@ -439,22 +439,22 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                     (draft) => setIsbarSummary(draft)
                   )
                 }
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#EFF9F4] border border-[#BCE0CE] text-xs font-semibold text-[#0B3B2D] hover:bg-[#DFF3E8]"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-kairos-mint-soft border border-kairos-border text-xs font-semibold text-kairos-forest-ink hover:bg-kairos-mint-soft"
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#119655]" />
+                <Sparkles className="w-3.5 h-3.5 text-kairos-emerald-ink" />
                 Draft ISBAR with Assistant
               </button>
             </div>
 
             {formError && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700">
+              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-xs text-red-700 dark:text-red-400">
                 {formError}
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
               <div>
-                <label htmlFor="ref-patient" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                <label htmlFor="ref-patient" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                   Patient Name / Initials *
                 </label>
                 <input
@@ -464,11 +464,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                   value={patientInitials}
                   onChange={(e) => setPatientInitials(e.target.value)}
                   placeholder="e.g., S. Murthy"
-                  className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm text-[#0B3B2D]"
+                  className="w-full rounded-xl border border-kairos-border px-3 py-2 text-sm text-kairos-forest-ink"
                 />
               </div>
               <div>
-                <label htmlFor="ref-agesex" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                <label htmlFor="ref-agesex" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                   Age / Sex
                 </label>
                 <input
@@ -477,18 +477,18 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                   value={ageSex}
                   onChange={(e) => setAgeSex(e.target.value)}
                   placeholder="e.g., 34F"
-                  className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm text-[#0B3B2D]"
+                  className="w-full rounded-xl border border-kairos-border px-3 py-2 text-sm text-kairos-forest-ink"
                 />
               </div>
               <div>
-                <label htmlFor="ref-category" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                <label htmlFor="ref-category" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                   Emergency Category
                 </label>
                 <select
                   id="ref-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm text-[#0B3B2D]"
+                  className="w-full rounded-xl border border-kairos-border px-3 py-2 text-sm text-kairos-forest-ink"
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c.label} value={c.label}>{c.label}</option>
@@ -500,7 +500,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             {/* Urgency & Bed Type */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <span className="block text-xs font-semibold text-[#0B3B2D] mb-1.5">Urgency Level</span>
+                <span className="block text-xs font-semibold text-kairos-forest-ink mb-1.5">Urgency Level</span>
                 <div className="grid grid-cols-3 gap-2">
                   {(['critical', 'urgent', 'priority'] as ReferralUrgency[]).map((u) => (
                     <button
@@ -511,8 +511,8 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                         urgency === u
                           ? u === 'critical'
                             ? 'bg-red-600 text-white border-red-600'
-                            : 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                          : 'bg-[#FAFDFB] text-[#0B3B2D] border-[#CFE3D8]'
+                            : 'bg-kairos-forest text-white border-kairos-forest'
+                          : 'bg-kairos-surface-subtle text-kairos-forest-ink border-kairos-border'
                       }`}
                     >
                       {u}
@@ -521,7 +521,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 </div>
               </div>
               <div>
-                <span className="block text-xs font-semibold text-[#0B3B2D] mb-1.5">Required Bed Type</span>
+                <span className="block text-xs font-semibold text-kairos-forest-ink mb-1.5">Required Bed Type</span>
                 <div className="grid grid-cols-3 gap-2">
                   {(['ICU', 'General', 'Peds'] as const).map((b) => (
                     <button
@@ -530,8 +530,8 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                       onClick={() => setRequiredBedType(b)}
                       className={`py-2 rounded-xl text-xs font-bold border transition-colors ${
                         requiredBedType === b
-                          ? 'bg-[#119655] text-white border-[#119655]'
-                          : 'bg-[#FAFDFB] text-[#0B3B2D] border-[#CFE3D8]'
+                          ? 'bg-kairos-emerald text-white border-kairos-emerald'
+                          : 'bg-kairos-surface-subtle text-kairos-forest-ink border-kairos-border'
                       }`}
                     >
                       {b}
@@ -543,12 +543,12 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
             {/* 5 Mandatory Clinical Vitals */}
             <div>
-              <span className="block text-xs font-semibold text-[#0B3B2D] mb-2">
+              <span className="block text-xs font-semibold text-kairos-forest-ink mb-2">
                 Recorded Vital Signs
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                 <div>
-                  <label htmlFor="v-hr" className="block text-[11px] text-slate-600 mb-1">HR (bpm)</label>
+                  <label htmlFor="v-hr" className="block text-[11px] text-kairos-muted mb-1">HR (bpm)</label>
                   <input
                     id="v-hr"
                     type="number"
@@ -556,21 +556,21 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                     max={250}
                     value={heartRate}
                     onChange={(e) => setHeartRate(Number(e.target.value))}
-                    className="w-full rounded-xl border border-[#CFE3D8] px-2.5 py-2 text-sm font-mono tabular-nums text-[#0B3B2D]"
+                    className="w-full rounded-xl border border-kairos-border px-2.5 py-2 text-sm font-mono tabular-nums text-kairos-forest-ink"
                   />
                 </div>
                 <div>
-                  <label htmlFor="v-bp" className="block text-[11px] text-slate-600 mb-1">BP (mmHg)</label>
+                  <label htmlFor="v-bp" className="block text-[11px] text-kairos-muted mb-1">BP (mmHg)</label>
                   <input
                     id="v-bp"
                     type="text"
                     value={bp}
                     onChange={(e) => setBp(e.target.value)}
-                    className="w-full rounded-xl border border-[#CFE3D8] px-2.5 py-2 text-sm font-mono tabular-nums text-[#0B3B2D]"
+                    className="w-full rounded-xl border border-kairos-border px-2.5 py-2 text-sm font-mono tabular-nums text-kairos-forest-ink"
                   />
                 </div>
                 <div>
-                  <label htmlFor="v-spo2" className="block text-[11px] text-slate-600 mb-1">SpO2 (%)</label>
+                  <label htmlFor="v-spo2" className="block text-[11px] text-kairos-muted mb-1">SpO2 (%)</label>
                   <input
                     id="v-spo2"
                     type="number"
@@ -578,11 +578,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                     max={100}
                     value={spo2}
                     onChange={(e) => setSpo2(Number(e.target.value))}
-                    className="w-full rounded-xl border border-[#CFE3D8] px-2.5 py-2 text-sm font-mono tabular-nums text-[#0B3B2D]"
+                    className="w-full rounded-xl border border-kairos-border px-2.5 py-2 text-sm font-mono tabular-nums text-kairos-forest-ink"
                   />
                 </div>
                 <div>
-                  <label htmlFor="v-temp" className="block text-[11px] text-slate-600 mb-1">Temp (°C)</label>
+                  <label htmlFor="v-temp" className="block text-[11px] text-kairos-muted mb-1">Temp (°C)</label>
                   <input
                     id="v-temp"
                     type="number"
@@ -591,11 +591,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                     max={43}
                     value={temperatureC}
                     onChange={(e) => setTemperatureC(Number(e.target.value))}
-                    className="w-full rounded-xl border border-[#CFE3D8] px-2.5 py-2 text-sm font-mono tabular-nums text-[#0B3B2D]"
+                    className="w-full rounded-xl border border-kairos-border px-2.5 py-2 text-sm font-mono tabular-nums text-kairos-forest-ink"
                   />
                 </div>
                 <div>
-                  <label htmlFor="v-rr" className="block text-[11px] text-slate-600 mb-1">RR (/min)</label>
+                  <label htmlFor="v-rr" className="block text-[11px] text-kairos-muted mb-1">RR (/min)</label>
                   <input
                     id="v-rr"
                     type="number"
@@ -603,7 +603,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                     max={60}
                     value={respRate}
                     onChange={(e) => setRespRate(Number(e.target.value))}
-                    className="w-full rounded-xl border border-[#CFE3D8] px-2.5 py-2 text-sm font-mono tabular-nums text-[#0B3B2D]"
+                    className="w-full rounded-xl border border-kairos-border px-2.5 py-2 text-sm font-mono tabular-nums text-kairos-forest-ink"
                   />
                 </div>
               </div>
@@ -611,7 +611,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
             {/* Required Facilities */}
             <div>
-              <span className="block text-xs font-semibold text-[#0B3B2D] mb-2">
+              <span className="block text-xs font-semibold text-kairos-forest-ink mb-2">
                 Required Receiving Facilities (drives transparent matching)
               </span>
               <div className="flex flex-wrap gap-2">
@@ -624,8 +624,8 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                       onClick={() => toggleFacility(fac)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
                         selected
-                          ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                          : 'bg-[#FAFDFB] text-[#0B3B2D] border-[#CFE3D8] hover:border-[#119655]'
+                          ? 'bg-kairos-forest text-white border-kairos-forest'
+                          : 'bg-kairos-surface-subtle text-kairos-forest-ink border-kairos-border hover:border-kairos-emerald'
                       }`}
                     >
                       {fac}
@@ -638,7 +638,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             {/* Clinical Observations & ISBAR */}
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                <label htmlFor="ref-symptoms" className="block text-xs font-semibold text-[#0B3B2D]">
+                <label htmlFor="ref-symptoms" className="block text-xs font-semibold text-kairos-forest-ink">
                   Symptoms &amp; Clinical Observations *
                 </label>
                 <button
@@ -648,7 +648,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors ${
                     isDictating
                       ? 'bg-red-600 text-white border-red-600'
-                      : 'bg-[#EFF9F4] text-[#0B3B2D] border-[#BCE0CE] hover:bg-[#DFF3E8]'
+                      : 'bg-kairos-mint-soft text-kairos-forest-ink border-kairos-border hover:bg-kairos-mint-soft'
                   }`}
                 >
                   {isTranscribingNotes ? (
@@ -656,7 +656,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                   ) : isDictating ? (
                     <Square className="w-3 h-3" />
                   ) : (
-                    <Mic className="w-3 h-3 text-[#119655]" />
+                    <Mic className="w-3 h-3 text-kairos-emerald-ink" />
                   )}
                   {isTranscribingNotes
                     ? 'Transcribing...'
@@ -672,12 +672,12 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
                 placeholder="Summarize onset, primary clinical findings, IV fluids/stabilization already performed..."
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2 text-sm text-[#0B3B2D]"
+                className="w-full rounded-xl border border-kairos-border px-3.5 py-2 text-sm text-kairos-forest-ink"
               />
             </div>
 
             <div>
-              <label htmlFor="ref-isbar" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+              <label htmlFor="ref-isbar" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                 Structured ISBAR Summary (Auto-populated if blank, or drafted via Assistant)
               </label>
               <textarea
@@ -686,13 +686,13 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 value={isbarSummary}
                 onChange={(e) => setIsbarSummary(e.target.value)}
                 placeholder="I: ... S: ... B: ... A: ... R: ..."
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2 text-xs text-[#0B3B2D]"
+                className="w-full rounded-xl border border-kairos-border px-3.5 py-2 text-xs text-kairos-forest-ink"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label htmlFor="ref-inst" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                <label htmlFor="ref-inst" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                   Ambulance & ED Instructions
                 </label>
                 <input
@@ -700,32 +700,32 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                   type="text"
                   value={clinicianInstructions}
                   onChange={(e) => setClinicianInstructions(e.target.value)}
-                  className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-xs text-[#0B3B2D]"
+                  className="w-full rounded-xl border border-kairos-border px-3 py-2 text-xs text-kairos-forest-ink"
                 />
               </div>
               <div>
-                <label htmlFor="ref-file" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                <label htmlFor="ref-file" className="block text-xs font-semibold text-kairos-forest-ink mb-1">
                   Attach ECG / Lab Report
                 </label>
                 <input
                   id="ref-file"
                   type="file"
                   onChange={(e) => setReportName(e.target.files?.[0]?.name || '')}
-                  className="w-full text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-[#0B3B2D] file:text-white file:text-xs"
+                  className="w-full text-xs text-kairos-muted file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-kairos-forest file:text-white file:text-xs"
                 />
               </div>
             </div>
 
             {/* Emergency Manual Override Safety Requirement */}
-            <div className="p-4 rounded-xl bg-red-50 border border-red-200 space-y-2.5">
+            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 space-y-2.5">
               <label className="flex items-start gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={manualOverride}
                   onChange={(e) => setManualOverride(e.target.checked)}
-                  className="mt-0.5 rounded border-red-300 text-red-600"
+                  className="mt-0.5 rounded border-red-300 dark:border-red-800/70 text-red-600 dark:text-red-400"
                 />
-                <span className="text-xs text-red-900">
+                <span className="text-xs text-red-900 dark:text-red-200">
                   <strong>Emergency Manual Override Protocol:</strong> Invoke only if waiting for digital hospital acceptance could endanger the patient. Dispatches ambulance immediately while alerting the receiving ED in parallel. Clinical judgment always takes priority.
                 </span>
               </label>
@@ -735,27 +735,27 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                   value={manualOverrideReason}
                   onChange={(e) => setManualOverrideReason(e.target.value)}
                   placeholder="Required clinical reason for immediate dispatch override..."
-                  className="w-full rounded-lg border border-red-300 bg-white px-3 py-2 text-xs text-red-950"
+                  className="w-full rounded-lg border border-red-300 dark:border-red-800/70 bg-kairos-surface px-3 py-2 text-xs text-red-950"
                 />
               )}
             </div>
           </div>
 
           {/* Right: Transparent Smart Hospital Matcher */}
-          <div className="lg:col-span-5 bg-white border border-[#D5E7DD] rounded-2xl p-6 flex flex-col justify-between space-y-4">
+          <div className="lg:col-span-5 bg-kairos-surface border border-kairos-border rounded-2xl p-6 flex flex-col justify-between space-y-4">
             <div className="space-y-4">
               <div>
-                <h2 className="font-display text-lg font-bold text-[#0B3B2D]">
+                <h2 className="font-display text-lg font-bold text-kairos-forest-ink">
                   Step 3 · Transparent Hospital Matching
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-kairos-muted mt-0.5">
                   Ranked explicitly by distance, specialty, required facilities, and timestamped verified capacity — never an opaque AI black box.
                 </p>
               </div>
 
               <div className="space-y-3">
                 {rankedHospitals.length === 0 && (
-                  <div className="p-4 rounded-xl bg-[#FAFDFB] border border-[#DCECE3] text-xs text-slate-600 leading-relaxed">
+                  <div className="p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border text-xs text-kairos-muted leading-relaxed">
                     No receiving hospitals are registered in the network yet. Sign in to the Hospital Desk or Administrator portal to register hospitals and verified bed counts.
                   </div>
                 )}
@@ -768,32 +768,32 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                       onClick={() => setSelectedHospitalId(match.hospital.hospitalId)}
                       className={`w-full text-left p-4 rounded-xl border transition-colors ${
                         isSelected
-                          ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                          : 'bg-[#FAFDFB] text-[#0B3B2D] border-[#CFE3D8] hover:border-[#119655]'
+                          ? 'bg-kairos-forest text-white border-kairos-forest'
+                          : 'bg-kairos-surface-subtle text-kairos-forest-ink border-kairos-border hover:border-kairos-emerald'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <p className="text-sm font-bold">{match.hospital.name}</p>
-                          <p className={`text-[11px] ${isSelected ? 'text-emerald-200' : 'text-slate-600'}`}>
+                          <p className={`text-[11px] ${isSelected ? 'text-emerald-200' : 'text-kairos-muted'}`}>
                             {match.hospital.area} · {match.hospital.distanceKm} km (~{match.estimatedDriveMin} min)
                           </p>
                         </div>
                         <span
                           className={`font-mono text-sm font-extrabold tabular-nums ${
-                            isSelected ? 'text-[#F2B705]' : match.hasAvailableBed ? 'text-[#119655]' : 'text-red-600'
+                            isSelected ? 'text-kairos-gold' : match.hasAvailableBed ? 'text-kairos-emerald-ink' : 'text-red-600 dark:text-red-400'
                           }`}
                         >
                           {match.matchPercent}% match
                         </span>
                       </div>
 
-                      <ul className={`mt-2.5 space-y-1 text-[11px] ${isSelected ? 'text-emerald-100' : 'text-slate-600'}`}>
+                      <ul className={`mt-2.5 space-y-1 text-[11px] ${isSelected ? 'text-emerald-100' : 'text-kairos-muted'}`}>
                         {match.reasons.map((r) => (
                           <li key={r}>✓ {r}</li>
                         ))}
                         {match.warnings.map((w) => (
-                          <li key={w} className={isSelected ? 'text-amber-300 font-semibold' : 'text-red-700 font-semibold'}>
+                          <li key={w} className={isSelected ? 'text-amber-300 font-semibold' : 'text-red-700 dark:text-red-400 font-semibold'}>
                             ⚠ {w}
                           </li>
                         ))}
@@ -804,7 +804,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
               </div>
             </div>
 
-            <div className="pt-3 border-t border-[#EBF3EF] space-y-2.5">
+            <div className="pt-3 border-t border-kairos-border-subtle space-y-2.5">
               <button
                 type="submit"
                 className={`w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-white text-sm font-bold transition-colors ${
@@ -812,7 +812,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                     ? 'bg-red-600 hover:bg-red-700'
                     : isOfflineSimulated
                       ? 'bg-amber-600 hover:bg-amber-700'
-                      : 'bg-[#119655] hover:bg-[#0D7A44]'
+                      : 'bg-kairos-emerald hover:bg-kairos-emerald-hover'
                 }`}
               >
                 <Send className="w-4 h-4" />
@@ -822,7 +822,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                     ? 'Save Referral to Offline Queue'
                     : 'Send Structured Referral (Accept Before Move)'}
               </button>
-              <p className="text-[11px] text-slate-500 text-center">
+              <p className="text-[11px] text-kairos-muted text-center">
                 If declined or 5-min timer expires, KAIROS escalates to the next matched accepting hospital automatically.
               </p>
             </div>
@@ -835,17 +835,17 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="font-display text-lg font-bold text-[#0B3B2D]">
+              <h2 className="font-display text-lg font-bold text-kairos-forest-ink">
                 Sent Emergency Referrals & Handover Tracker ({filteredReferrals.length})
               </h2>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-kairos-muted">
                 Monitor real-time hospital acceptance, time-limited bed holds, ambulance assignment, and HL7 FHIR R4 payloads.
               </p>
             </div>
             <button
               type="button"
               onClick={() => onTabChange('new-referral')}
-              className="px-4 py-2 rounded-xl bg-[#0B3B2D] text-white text-xs font-semibold hover:bg-[#119655]"
+              className="px-4 py-2 rounded-xl bg-kairos-forest text-white text-xs font-semibold hover:bg-kairos-emerald"
             >
               + New Emergency Referral
             </button>
@@ -853,7 +853,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
           <div className="space-y-4">
             {filteredReferrals.length === 0 && (
-              <div className="bg-white border border-[#D5E7DD] rounded-2xl p-8 text-center text-xs text-slate-600">
+              <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-8 text-center text-xs text-kairos-muted">
                 No emergency referrals sent yet.
               </div>
             )}
@@ -864,59 +864,59 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
               return (
                 <div
                   key={ref.referralId}
-                  className="bg-white border border-[#D5E7DD] rounded-2xl p-5 space-y-4"
+                  className="bg-kairos-surface border border-kairos-border rounded-2xl p-5 space-y-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-sm font-extrabold text-[#0B3B2D]">
+                        <span className="font-mono text-sm font-extrabold text-kairos-forest-ink">
                           {ref.referralId}
                         </span>
-                        <span className="text-sm font-bold text-[#0B3B2D]">
+                        <span className="text-sm font-bold text-kairos-forest-ink">
                           · {ref.category} · {ref.patientInitials} ({ref.ageSex})
                         </span>
                         {ref.manualOverrideActive && (
-                          <span className="inline-flex items-center gap-1 text-xs font-bold text-red-700">
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-red-700 dark:text-red-400">
                             <ShieldAlert className="w-3.5 h-3.5" /> MANUAL OVERRIDE
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-600 mt-1">
-                        Target: <strong className="text-[#0B3B2D]">{ref.targetHospitalName}</strong> · Required: {ref.requiredBedType} ({ref.requiredFacilities.join(', ')})
+                      <p className="text-xs text-kairos-muted mt-1">
+                        Target: <strong className="text-kairos-forest-ink">{ref.targetHospitalName}</strong> · Required: {ref.requiredBedType} ({ref.requiredFacilities.join(', ')})
                       </p>
                     </div>
 
                     <div className="text-right">
-                      <p className="font-mono text-xs font-extrabold uppercase text-[#119655]">
+                      <p className="font-mono text-xs font-extrabold uppercase text-kairos-emerald-ink">
                         {ref.status.replace('_', ' ')}
                       </p>
                       {(ref.status === 'pending' || ref.status === 'escalated') && (
-                        <p className="text-xs font-mono text-amber-700 tabular-nums mt-0.5">
+                        <p className="text-xs font-mono text-amber-700 dark:text-amber-400 tabular-nums mt-0.5">
                           <Clock className="w-3 h-3 inline mr-1" />
                           SLA {formatCountdown(slaRemaining)}
                         </p>
                       )}
                       {ref.bedHold && holdEval && (
-                        <p className="text-xs font-mono font-bold text-[#0B3B2D] tabular-nums mt-0.5">
+                        <p className="text-xs font-mono font-bold text-kairos-forest-ink tabular-nums mt-0.5">
                           {ref.bedHold.bedLabel} · {holdEval.status === 'converted_admitted' ? 'Admitted' : `Held ${formatCountdown(holdEval.remainingSec)}`}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-700 bg-[#F4FAF6] border border-[#DCECE3] rounded-xl p-3 leading-relaxed">
+                  <p className="text-xs text-kairos-forest-ink/85 bg-kairos-surface-subtle border border-kairos-border rounded-xl p-3 leading-relaxed">
                     {ref.isbarSummary}
                   </p>
 
                   {ref.declineReason && (
-                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+                    <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0" />
                       <span>{ref.declineReason}</span>
                     </div>
                   )}
 
-                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#EBF3EF]">
-                    <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-700 tabular-nums">
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-kairos-border-subtle">
+                    <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-kairos-forest-ink/85 tabular-nums">
                       <span>HR {ref.vitals.heartRate}</span>
                       <span>SpO2 {ref.vitals.spo2}%</span>
                       <span>BP {ref.vitals.bp}</span>
@@ -928,7 +928,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                         <button
                           type="button"
                           onClick={() => assignAmbulanceToReferral(ref.referralId)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#119655] text-white text-xs font-semibold hover:bg-[#0D7A44]"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-kairos-emerald text-white text-xs font-semibold hover:bg-kairos-emerald-hover"
                         >
                           <Ambulance className="w-3.5 h-3.5" />
                           Assign Ambulance KA-01
@@ -937,7 +937,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                       <button
                         type="button"
                         onClick={() => setFhirPreviewRefId(showFhir ? null : ref.referralId)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#CFE3D8] text-xs font-semibold text-[#0B3B2D] hover:bg-[#F1F7F4]"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-kairos-border text-xs font-semibold text-kairos-forest-ink hover:bg-kairos-mint-soft"
                       >
                         <Code2 className="w-3.5 h-3.5" />
                         {showFhir ? 'Hide HL7 FHIR R4' : 'Inspect HL7 FHIR R4'}
@@ -946,7 +946,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                   </div>
 
                   {showFhir && (
-                    <pre className="p-4 rounded-xl bg-[#07291F] text-emerald-100 text-[11px] font-mono overflow-x-auto max-h-64">
+                    <pre className="p-4 rounded-xl bg-kairos-forest-deep text-emerald-100 text-[11px] font-mono overflow-x-auto max-h-64">
                       {JSON.stringify(buildFhirReferralBundle(ref), null, 2)}
                     </pre>
                   )}

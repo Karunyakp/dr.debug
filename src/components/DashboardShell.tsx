@@ -14,6 +14,7 @@ import {
 import { useKairos } from '../context/KairosContext';
 import type { UserRole } from '../types/kairos';
 import type { AssistantTab } from './KairosAssistantModal';
+import { ThemeToggle } from './ThemeToggle';
 
 export interface NavItem {
   id: string;
@@ -78,7 +79,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
   const greetingName = currentUser?.displayName || 'KAIROS User';
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-[#0B3B2D] text-white">
+    <div className="flex flex-col h-full bg-[#0B3B2D] dark:bg-[#071A14] text-white border-r border-transparent dark:border-kairos-border">
       {/* Brand Lockup */}
       <div className="px-5 pt-5 pb-4 flex items-center justify-between">
         <button
@@ -109,7 +110,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
         </button>
       </div>
 
-      {/* Primary Sidebar CTA (Matching PDF Page 2 "+ New Referral" green button) */}
+      {/* Primary Sidebar CTA */}
       <div className="px-4 pb-4">
         <button
           type="button"
@@ -117,7 +118,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
             onPrimaryCta();
             setMobileMenuOpen(false);
           }}
-          className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#119655] hover:bg-[#15B064] text-white text-sm font-semibold transition-colors whitespace-nowrap"
+          className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-kairos-emerald hover:bg-kairos-emerald-hover text-white text-sm font-semibold transition-colors whitespace-nowrap"
         >
           <Plus className="w-4 h-4 shrink-0" />
           {primaryCtaLabel}
@@ -148,7 +149,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
               }}
               className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 active
-                  ? 'bg-[#175542] text-white font-semibold'
+                  ? 'bg-[#175542] dark:bg-kairos-forest text-white font-semibold'
                   : 'text-emerald-100/80 hover:bg-white/10 hover:text-white'
               }`}
             >
@@ -166,10 +167,10 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
         })}
       </nav>
 
-      {/* Kairos Assistant Card (Matching PDF Page 2 bottom-left card) */}
+      {/* Kairos Assistant Card */}
       <div className="px-4 py-3">
-        <div className="rounded-2xl bg-[#F4FAF6] text-[#0B3B2D] p-3.5 overflow-hidden">
-          <div className="rounded-xl overflow-hidden bg-white/80 mb-2.5">
+        <div className="rounded-2xl bg-[#F4FAF6] dark:bg-[#0D251D] text-[#0B3B2D] dark:text-[#E6F4EC] border border-transparent dark:border-kairos-border p-3.5 overflow-hidden">
+          <div className="rounded-xl overflow-hidden bg-white/80 dark:bg-[#081A14] mb-2.5">
             <img
               src="/assets/aistudio/kairos-assistant-doctor.png"
               alt="Kairos Assistant Doctor"
@@ -178,10 +179,10 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#119655] shrink-0" />
+            <Sparkles className="w-3.5 h-3.5 text-kairos-emerald-ink shrink-0" />
             <p className="text-xs font-bold">Kairos Assistant</p>
           </div>
-          <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
+          <p className="text-[11px] text-slate-600 dark:text-kairos-muted mt-1 leading-relaxed">
             AI chat, live voice, mic transcription &amp; Google Maps grounding.
           </p>
           <button
@@ -190,7 +191,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
               onOpenAssistant('chat');
               setMobileMenuOpen(false);
             }}
-            className="mt-2.5 w-full py-2 px-3 rounded-xl bg-[#0B3B2D] hover:bg-[#119655] text-white text-xs font-semibold transition-colors"
+            className="mt-2.5 w-full py-2 px-3 rounded-xl bg-kairos-forest hover:bg-kairos-emerald text-white text-xs font-semibold transition-colors"
           >
             Open AI Chat
           </button>
@@ -209,7 +210,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                   onOpenAssistant(tabId);
                   setMobileMenuOpen(false);
                 }}
-                className="py-1.5 px-1.5 rounded-lg bg-[#E1F3E9] hover:bg-[#CFEAD9] text-[#0B3B2D] text-[11px] font-semibold transition-colors"
+                className="py-1.5 px-1.5 rounded-lg bg-[#E1F3E9] dark:bg-[#133629] hover:bg-[#CFEAD9] dark:hover:bg-[#1B4A38] text-[#0B3B2D] dark:text-[#E6F4EC] text-[11px] font-semibold transition-colors"
               >
                 {label}
               </button>
@@ -227,7 +228,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
           id="portal-signin-switcher"
           value={currentUser?.role ?? 'patient'}
           onChange={(e) => onSwitchPortalSignIn(e.target.value as UserRole)}
-          className="w-full rounded-xl bg-[#07291F] border border-[#1B604C] px-3 py-2 text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-[#119655]"
+          className="w-full rounded-xl bg-kairos-forest-deep border border-[#1B604C] px-3 py-2 text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
         >
           <option value="patient">Patient Portal</option>
           <option value="doctor">Referring Doctor</option>
@@ -265,7 +266,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-[#F1F7F4] flex">
+    <div className="min-h-screen bg-kairos-mint text-kairos-forest-ink flex transition-colors duration-200">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 shrink-0 sticky top-0 h-screen">
         {sidebarContent}
@@ -278,7 +279,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
           <button
             type="button"
             aria-label="Close menu backdrop"
-            className="flex-1 bg-black/45"
+            className="flex-1 bg-black/55"
             onClick={() => setMobileMenuOpen(false)}
           />
         </div>
@@ -286,25 +287,25 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
 
       {/* Main Content Column */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Top Workspace Header (Matching PDF Page 2) */}
-        <header className="sticky top-0 z-30 bg-[#F1F7F4]/95 backdrop-blur-md border-b border-[#DCECE3] px-4 sm:px-6 py-3.5">
+        {/* Top Workspace Header */}
+        <header className="sticky top-0 z-30 bg-kairos-mint/95 backdrop-blur-md border-b border-kairos-border px-4 sm:px-6 py-3.5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Open navigation menu"
-                className="lg:hidden p-2 rounded-xl bg-white border border-[#CFE3D8] text-[#0B3B2D]"
+                className="lg:hidden p-2 rounded-xl bg-kairos-surface border border-kairos-border text-kairos-forest-ink"
               >
                 <Menu className="w-4 h-4" />
               </button>
               <div className="min-w-0">
-                <h1 className="font-display text-lg sm:text-xl font-extrabold text-[#0B3B2D] truncate">
+                <h1 className="font-display text-lg sm:text-xl font-extrabold text-kairos-forest-ink truncate">
                   Welcome, {greetingName}
                 </h1>
-                <p className="text-xs text-slate-600 truncate">
+                <p className="text-xs text-kairos-muted truncate">
                   Live coordination for OPD &amp; Emergency · Signed in as{' '}
-                  <span className="capitalize font-semibold text-[#0B3B2D]">{currentUser?.role}</span>
+                  <span className="capitalize font-semibold text-kairos-forest-ink">{currentUser?.role}</span>
                 </p>
               </div>
             </div>
@@ -312,14 +313,14 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
             <div className="flex items-center gap-2.5 flex-wrap">
               {/* Global Search */}
               <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className="w-3.5 h-3.5 text-kairos-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="search"
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
                   placeholder="Search patient, bed, hospital..."
                   aria-label="Search patient, bed, or hospital"
-                  className="w-48 sm:w-64 pl-8 pr-3 py-2 rounded-xl bg-white border border-[#CFE3D8] text-xs text-[#0B3B2D] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                  className="w-48 sm:w-64 pl-8 pr-3 py-2 rounded-xl bg-kairos-surface border border-kairos-border text-xs text-kairos-forest-ink placeholder:text-kairos-muted/70 focus:outline-none focus:ring-2 focus:ring-kairos-emerald"
                 />
               </div>
 
@@ -335,16 +336,23 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                 }}
                 className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-colors whitespace-nowrap ${
                   isOfflineSimulated
-                    ? 'bg-amber-50 border-amber-300 text-amber-900'
-                    : 'bg-white border-[#CFE3D8] text-[#0B3B2D] hover:border-[#119655]'
+                    ? 'bg-amber-50 dark:bg-amber-950/50 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200'
+                    : 'bg-kairos-surface border-kairos-border text-kairos-forest-ink hover:border-kairos-emerald'
                 }`}
                 title="Simulate weak rural connectivity for offline-first referral queue"
               >
-                {isOfflineSimulated ? <WifiOff className="w-3.5 h-3.5 text-amber-700" /> : <Wifi className="w-3.5 h-3.5 text-[#119655]" />}
+                {isOfflineSimulated ? (
+                  <WifiOff className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
+                ) : (
+                  <Wifi className="w-3.5 h-3.5 text-kairos-emerald-ink" />
+                )}
                 {isOfflineSimulated
                   ? `Offline (${offlineReferralQueue.length} queued)`
                   : 'Online Sync'}
               </button>
+
+              {/* Theme Toggle */}
+              <ThemeToggle />
 
               {/* Notifications Popover */}
               <div className="relative">
@@ -352,7 +360,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                   type="button"
                   onClick={() => setNotifOpen((o) => !o)}
                   aria-label={`Notifications (${unreadCount} unread)`}
-                  className="relative p-2 rounded-xl bg-white border border-[#CFE3D8] text-[#0B3B2D] hover:border-[#119655]"
+                  className="relative p-2 rounded-xl bg-kairos-surface border border-kairos-border text-kairos-forest-ink hover:border-kairos-emerald"
                 >
                   <Bell className="w-4 h-4" />
                   {unreadCount > 0 && (
@@ -363,43 +371,43 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                 </button>
 
                 {notifOpen && (
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-[#CFE3D8] rounded-2xl shadow-xl z-50 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-[#E5F0EA] flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#0B3B2D]">
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-kairos-surface border border-kairos-border rounded-2xl shadow-xl z-50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-kairos-border-subtle flex items-center justify-between">
+                      <span className="text-xs font-bold text-kairos-forest-ink">
                         Coordination Alerts ({roleNotifications.length})
                       </span>
                       <button
                         type="button"
                         onClick={markAllNotificationsRead}
-                        className="text-[11px] font-semibold text-[#119655] hover:underline"
+                        className="text-[11px] font-semibold text-kairos-emerald-ink hover:underline"
                       >
                         Mark all read
                       </button>
                     </div>
-                    <div className="max-h-80 overflow-y-auto divide-y divide-[#EEF5F1]">
+                    <div className="max-h-80 overflow-y-auto divide-y divide-kairos-border-subtle">
                       {roleNotifications.length === 0 ? (
-                        <p className="p-4 text-xs text-slate-500">No notifications yet.</p>
+                        <p className="p-4 text-xs text-kairos-muted">No notifications yet.</p>
                       ) : (
                         roleNotifications.slice(0, 12).map((n) => (
                           <div
                             key={n.id}
-                            className={`p-3.5 text-xs ${n.read ? 'bg-white' : 'bg-[#F5FBF8]'}`}
+                            className={`p-3.5 text-xs ${n.read ? 'bg-kairos-surface' : 'bg-kairos-mint-soft/50'}`}
                           >
                             <div className="flex items-center justify-between gap-2">
                               <span
                                 className={`font-semibold ${
                                   n.severity === 'critical'
-                                    ? 'text-red-700'
+                                    ? 'text-red-700 dark:text-red-400'
                                     : n.severity === 'warning'
-                                      ? 'text-amber-800'
-                                      : 'text-[#0B3B2D]'
+                                      ? 'text-amber-800 dark:text-amber-300'
+                                      : 'text-kairos-forest-ink'
                                 }`}
                               >
                                 {n.title}
                               </span>
-                              <span className="text-[10px] text-slate-500 shrink-0">{n.channel}</span>
+                              <span className="text-[10px] text-kairos-muted shrink-0">{n.channel}</span>
                             </div>
-                            <p className="text-slate-600 mt-1 leading-relaxed">{n.message}</p>
+                            <p className="text-kairos-muted mt-1 leading-relaxed">{n.message}</p>
                           </div>
                         ))
                       )}
@@ -407,7 +415,6 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                   </div>
                 )}
               </div>
-
             </div>
           </div>
         </header>

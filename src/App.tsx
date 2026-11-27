@@ -32,6 +32,7 @@ import { HospitalDashboard } from './components/HospitalDashboard';
 import { AmbulanceDashboard } from './components/AmbulanceDashboard';
 import { DiagnosticDashboard } from './components/DiagnosticDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
+import { NotFoundPage } from './components/NotFoundPage';
 
 const DEFAULT_TAB_BY_ROLE: Record<UserRole, string> = {
   patient: 'overview',
@@ -51,6 +52,11 @@ const VALID_ROLES: UserRole[] = [
   'admin',
 ];
 
+function isUnknownPath(pathname: string): boolean {
+  const clean = pathname.replace(/\/+$/, '') || '/';
+  return clean !== '/' && clean !== '/index.html';
+}
+
 export default function App() {
   const {
     currentUser,
@@ -60,7 +66,15 @@ export default function App() {
     logout,
   } = useKairos();
 
-  const [view, setView] = useState<'landing' | 'auth' | 'dashboard'>('landing');
+  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'not-found'>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('page') === '404' || isUnknownPath(window.location.pathname)) {
+        return 'not-found';
+      }
+    }
+    return 'landing';
+  });
   const [authRole, setAuthRole] = useState<UserRole>('patient');
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [pendingTab, setPendingTab] = useState<string | undefined>(undefined);
@@ -81,9 +95,13 @@ export default function App() {
     return () => window.removeEventListener('gmp-quota-exceeded', handler);
   }, []);
 
-  // Support ?role=<role> to navigate directly to that role's Sign-In page
+  // Support ?role=<role> or unknown path / ?page=404
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    if (params.get('page') === '404' || isUnknownPath(window.location.pathname)) {
+      setView('not-found');
+      return;
+    }
     const roleParam = params.get('role') as UserRole | null;
     if (roleParam && VALID_ROLES.includes(roleParam)) {
       setAuthRole(roleParam);
@@ -91,6 +109,14 @@ export default function App() {
       setView('auth');
     }
   }, []);
+
+  const handleGoHomepageFromNotFound = () => {
+    if (typeof window !== 'undefined' && (window.location.pathname !== '/' || window.location.search)) {
+      window.history.replaceState({}, '', '/');
+    }
+    setView('landing');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const enterRolePortal = (role: UserRole, initialTab?: string) => {
     setSearchQuery('');
@@ -276,17 +302,17 @@ export default function App() {
       {quotaBannerVisible && (
         <div
           role="alert"
-          className="sticky top-0 z-50 bg-amber-100 border-b border-amber-300 text-amber-950 px-4 py-2.5 text-xs flex items-center justify-between gap-3"
+          className="sticky top-0 z-50 bg-amber-100 dark:bg-amber-950/90 border-b border-amber-300 dark:border-amber-800 text-amber-950 dark:text-amber-100 px-4 py-2.5 text-xs flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-800 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-amber-800 dark:text-amber-400 shrink-0" />
             <span>
               Google Maps quota reached — interactive facility corridor fallback is active.{' '}
               <a
                 href="https://developers.google.com/maps/ai/ai-studio?utm_campaign=gmp_mcp_codeassist_v1_aistudio#quota_exceeded_errors"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-bold underline hover:text-amber-900"
+                className="font-bold underline hover:text-amber-900 dark:hover:text-amber-200"
               >
                 Learn how to switch to your own Google Maps API key
               </a>
@@ -297,14 +323,19 @@ export default function App() {
             type="button"
             onClick={() => setQuotaBannerVisible(false)}
             aria-label="Dismiss quota notice"
-            className="p-1 rounded-lg hover:bg-amber-200/70 shrink-0"
+            className="p-1 rounded-lg hover:bg-amber-200/70 dark:hover:bg-amber-900/70 shrink-0"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
 
-      {view === 'auth' ? (
+      {view === 'not-found' ? (
+        <NotFoundPage
+          onGoHome={handleGoHomepageFromNotFound}
+          onOpenPlatform={() => handleOpenAuth('patient', 'signin')}
+        />
+      ) : view === 'auth' ? (
         <RoleAuthPage
           role={authRole}
           initialMode={authMode}
@@ -390,7 +421,7 @@ export default function App() {
           type="button"
           onClick={() => handleOpenAssistant(undefined, undefined, 'chat')}
           aria-label="Open KAIROS AI Voice, Chat, Transcribe & Maps Hub"
-          className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#0B3B2D] hover:bg-[#119655] text-white text-xs font-bold shadow-xl border border-emerald-700/60 transition-colors"
+          className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-kairos-forest hover:bg-kairos-emerald text-white text-xs font-bold shadow-xl border border-emerald-700/60 transition-colors"
         >
           <Sparkles className="w-4 h-4 text-[#4ADE80] shrink-0" />
           <span>KAIROS AI Hub</span>
@@ -401,7 +432,7 @@ export default function App() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-16 right-5 z-50 max-w-sm rounded-xl bg-[#0B3B2D] text-white px-4 py-3 shadow-xl border border-emerald-700/60 flex items-center gap-2.5 text-xs font-medium"
+          className="fixed bottom-16 right-5 z-50 max-w-sm rounded-xl bg-kairos-forest text-white px-4 py-3 shadow-xl border border-emerald-700/60 flex items-center gap-2.5 text-xs font-medium"
         >
           <CheckCircle2 className="w-4 h-4 text-[#4ADE80] shrink-0" />
           <span>{toastMessage}</span>

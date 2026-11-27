@@ -121,11 +121,11 @@ export const MapPanel: React.FC<MapPanelProps> = ({
   const canRenderLiveGoogleMap = Boolean(apiKey && !quotaReached);
 
   return (
-    <div className="bg-white border border-[#D5E7DD] rounded-2xl overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-[#E5F0EA] flex flex-wrap items-center justify-between gap-2">
+    <div className="bg-kairos-surface border border-kairos-border rounded-2xl overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-kairos-border-subtle flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="text-sm font-semibold text-[#0B3B2D]">{title}</h3>
-          <p className="text-xs text-slate-500">
+          <h3 className="text-sm font-semibold text-kairos-forest-ink">{title}</h3>
+          <p className="text-xs text-kairos-muted">
             Facility locator &amp; transfer overview (follow local emergency protocols)
           </p>
         </div>
@@ -134,7 +134,7 @@ export const MapPanel: React.FC<MapPanelProps> = ({
             href={directionsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#119655] hover:text-[#0B3B2D] whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-kairos-emerald-ink hover:text-kairos-forest-ink whitespace-nowrap shrink-0"
           >
             <Navigation className="w-3.5 h-3.5" />
             Open Directions
@@ -143,7 +143,7 @@ export const MapPanel: React.FC<MapPanelProps> = ({
         )}
       </div>
 
-      <div className={`relative w-full ${heightClass} bg-[#EBF5F0]`}>
+      <div className={`relative w-full ${heightClass} bg-kairos-mint-soft`}>
         {canRenderLiveGoogleMap ? (
           <APIProvider apiKey={apiKey} libraries={['marker']} language="en" region="IN">
             <GoogleMap
@@ -180,25 +180,25 @@ export const MapPanel: React.FC<MapPanelProps> = ({
           </APIProvider>
         ) : (
           /* Clean interactive Bengaluru Hospital Corridor Map Fallback */
-          <div className="w-full h-full relative p-5 flex flex-col justify-between bg-gradient-to-br from-[#EAF5EF] via-[#F4FAF7] to-[#E2F1E9]">
+          <div className="w-full h-full relative p-5 flex flex-col justify-between bg-gradient-to-br from-[#EAF5EF] via-[#F4FAF7] to-[#E2F1E9] dark:from-[#081C15] dark:via-[#0B231B] dark:to-[#0F2F24]">
             <svg
               viewBox="0 0 640 280"
-              className="absolute inset-0 w-full h-full opacity-50 pointer-events-none"
+              className="absolute inset-0 w-full h-full opacity-50 dark:opacity-35 pointer-events-none"
               aria-hidden="true"
             >
-              <path d="M 40 230 Q 190 190 340 140 T 600 60" stroke="#9FC7B3" strokeWidth="3" fill="none" strokeDasharray="6 6" />
-              <path d="M 90 40 Q 250 110 420 175 T 590 220" stroke="#C0DDD0" strokeWidth="2" fill="none" />
-              <circle cx="340" cy="140" r="78" stroke="#CBE3D6" strokeWidth="1" fill="none" />
-              <circle cx="340" cy="140" r="140" stroke="#D8EAE0" strokeWidth="1" fill="none" />
+              <path d="M 40 230 Q 190 190 340 140 T 600 60" stroke="#9FC7B3" className="dark:stroke-[#235945]" strokeWidth="3" fill="none" strokeDasharray="6 6" />
+              <path d="M 90 40 Q 250 110 420 175 T 590 220" stroke="#C0DDD0" className="dark:stroke-[#1B4636]" strokeWidth="2" fill="none" />
+              <circle cx="340" cy="140" r="78" stroke="#CBE3D6" className="dark:stroke-[#1B4636]" strokeWidth="1" fill="none" />
+              <circle cx="340" cy="140" r="140" stroke="#D8EAE0" className="dark:stroke-[#163A2C]" strokeWidth="1" fill="none" />
             </svg>
 
-            <div className="relative z-10 flex items-center justify-between text-xs text-[#0B3B2D]/80">
+            <div className="relative z-10 flex items-center justify-between text-xs text-kairos-forest-ink/85">
               <span className="inline-flex items-center gap-1.5 font-medium">
-                <Compass className="w-3.5 h-3.5 text-[#119655]" />
-                Bengaluru & Rural Corridor · Interactive Facility Map
+                <Compass className="w-3.5 h-3.5 text-kairos-emerald-ink" />
+                Bengaluru &amp; Rural Corridor · Interactive Facility Map
               </span>
               {quotaReached && (
-                <span className="inline-flex items-center gap-1 text-amber-800 font-medium">
+                <span className="inline-flex items-center gap-1 text-amber-800 dark:text-amber-300 font-medium">
                   <ShieldAlert className="w-3.5 h-3.5" />
                   Corridor Fallback Active
                 </span>
@@ -219,8 +219,8 @@ export const MapPanel: React.FC<MapPanelProps> = ({
                     }}
                     className={`text-left p-3 rounded-xl border transition-colors ${
                       isSelected
-                        ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                        : 'bg-white/95 text-[#0B3B2D] border-[#CFE3D8] hover:border-[#119655]'
+                        ? 'bg-kairos-forest text-white border-kairos-forest'
+                        : 'bg-kairos-surface/95 text-kairos-forest-ink border-kairos-border hover:border-kairos-emerald'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -228,16 +228,16 @@ export const MapPanel: React.FC<MapPanelProps> = ({
                       <MapPin
                         className={`w-3.5 h-3.5 shrink-0 ${
                           isSelected
-                            ? 'text-[#F2B705]'
+                            ? 'text-kairos-gold'
                             : isFull
-                              ? 'text-red-600'
-                              : 'text-[#119655]'
+                              ? 'text-red-600 dark:text-red-400'
+                              : 'text-kairos-emerald-ink'
                         }`}
                       />
                     </div>
                     <p
                       className={`text-[11px] mt-1 font-mono tabular-nums ${
-                        isSelected ? 'text-emerald-100' : 'text-slate-600'
+                        isSelected ? 'text-emerald-100' : 'text-kairos-muted'
                       }`}
                     >
                       ICU {h.icuAvailable}/{h.icuTotal} · {h.distanceKm} km
@@ -248,7 +248,7 @@ export const MapPanel: React.FC<MapPanelProps> = ({
             </div>
 
             {activeReferral && (
-              <div className="relative z-10 bg-[#0B3B2D] text-white rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="relative z-10 bg-kairos-forest text-white rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <span className="font-medium">
                   Active Transfer: {activeReferral.ambulanceUnitName || 'Ambulance KA-01'} → {activeReferral.targetHospitalName}
                 </span>

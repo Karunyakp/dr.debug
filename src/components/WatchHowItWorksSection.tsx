@@ -93,18 +93,18 @@ export const WatchHowItWorksSection: React.FC<WatchHowItWorksSectionProps> = ({
   return (
     <section
       id="watch-how-it-works"
-      className="py-12 px-6 bg-white border-t border-[#DCECE3]"
+      className="py-10 px-5 sm:px-6 bg-kairos-surface border-t border-kairos-border"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
           <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#119655]">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-kairos-emerald-ink">
               03. Watch How It Works
             </p>
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#0B3B2D] mt-1.5">
+            <h2 className="font-display text-xl sm:text-2xl font-extrabold text-kairos-forest-ink mt-1">
               Watch How KAIROS Coordinates a Golden-Hour Rescue
             </h2>
-            <p className="text-sm text-slate-600 mt-2">
+            <p className="text-xs sm:text-sm text-kairos-muted mt-1.5">
               A 30-second visual walkthrough from rural ISBAR referral to verified ICU bed hold and tracked ambulance handover.
             </p>
           </div>
@@ -112,7 +112,7 @@ export const WatchHowItWorksSection: React.FC<WatchHowItWorksSectionProps> = ({
             <button
               type="button"
               onClick={handleTogglePlay}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0B3B2D] hover:bg-[#14503E] text-white text-xs font-semibold transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-kairos-forest hover:bg-kairos-emerald text-white text-xs font-semibold transition-colors whitespace-nowrap"
             >
               {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
               {isPlaying ? 'Pause Overview' : 'Play 30s Overview'}
@@ -122,7 +122,7 @@ export const WatchHowItWorksSection: React.FC<WatchHowItWorksSectionProps> = ({
                 type="button"
                 onClick={handleReplay}
                 aria-label="Replay video from start"
-                className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-[#CFE3D8] text-[#0B3B2D] text-xs font-semibold hover:border-[#119655] transition-colors whitespace-nowrap"
+                className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-kairos-border bg-kairos-surface-subtle text-kairos-forest-ink text-xs font-semibold hover:border-kairos-emerald transition-colors whitespace-nowrap"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Replay
@@ -134,7 +134,7 @@ export const WatchHowItWorksSection: React.FC<WatchHowItWorksSectionProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           {/* Primary 16:9 HTML5 Embedded Video Player */}
           <div className="lg:col-span-8 flex flex-col">
-            <div className="relative rounded-2xl overflow-hidden bg-[#07261D] border border-[#145542] shadow-[0_14px_34px_rgba(11,59,45,0.12)] aspect-video w-full">
+            <div className="relative rounded-2xl overflow-hidden bg-[#07261D] border border-[#145542] shadow-[0_14px_34px_rgba(11,59,45,0.12)] dark:shadow-[0_14px_34px_rgba(0,0,0,0.45)] aspect-video w-full">
               <video
                 ref={videoRef}
                 className="w-full h-full object-cover"
@@ -168,29 +168,29 @@ export const WatchHowItWorksSection: React.FC<WatchHowItWorksSectionProps> = ({
                   aria-label="Play KAIROS emergency coordination overview video"
                   className="absolute inset-0 bg-[#0B3B2D]/25 hover:bg-[#0B3B2D]/15 transition-colors flex items-center justify-center group"
                 >
-                  <span className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#119655] group-hover:bg-[#15B064] text-white flex items-center justify-center shadow-2xl ring-4 ring-white/30 transition-transform group-hover:scale-105">
+                  <span className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-kairos-emerald group-hover:bg-kairos-emerald-hover text-white flex items-center justify-center shadow-2xl ring-4 ring-white/30 transition-transform group-hover:scale-105">
                     <Play className="w-7 h-7 sm:w-8 sm:h-8 ml-1 fill-white" />
                   </span>
                 </button>
               )}
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-kairos-muted">
               <span>
-                HD 720p · Captions included (CC) · Duration <strong className="font-mono tabular-nums text-[#0B3B2D]">00:30</strong>
+                HD 720p · Captions included (CC) · Duration <strong className="font-mono tabular-nums text-kairos-forest-ink">00:30</strong>
               </span>
               <span>Overview walkthrough of the KAIROS emergency workflow</span>
             </div>
           </div>
 
           {/* Interactive Chapter Jump List */}
-          <div className="lg:col-span-4 bg-[#F5FBF8] border border-[#D5E7DD] rounded-2xl p-5 flex flex-col justify-between">
+          <div className="lg:col-span-4 bg-kairos-surface-subtle border border-kairos-border rounded-2xl p-5 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-display text-sm font-bold text-[#0B3B2D]">
+                <h3 className="font-display text-sm font-bold text-kairos-forest-ink">
                   Workflow Chapters
                 </h3>
-                <span className="font-mono text-[11px] font-semibold text-[#119655] tabular-nums">
+                <span className="font-mono text-[11px] font-semibold text-kairos-emerald-ink tabular-nums">
                   Click to jump
                 </span>
               </div>
@@ -205,15 +205,15 @@ export const WatchHowItWorksSection: React.FC<WatchHowItWorksSectionProps> = ({
                       onClick={() => handleJumpToChapter(chapter.timeSec)}
                       className={`w-full text-left p-3 rounded-xl border transition-colors ${
                         active
-                          ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                          : 'bg-white text-[#0B3B2D] border-[#DCECE3] hover:border-[#119655]'
+                          ? 'bg-kairos-forest text-white border-kairos-forest'
+                          : 'bg-kairos-surface text-kairos-forest-ink border-kairos-border hover:border-kairos-emerald'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-bold">{chapter.title}</span>
                         <span
                           className={`font-mono text-[11px] font-semibold tabular-nums shrink-0 ${
-                            active ? 'text-[#F2B705]' : 'text-[#119655]'
+                            active ? 'text-kairos-gold' : 'text-kairos-emerald-ink'
                           }`}
                         >
                           {chapter.timeLabel}
@@ -221,7 +221,7 @@ export const WatchHowItWorksSection: React.FC<WatchHowItWorksSectionProps> = ({
                       </div>
                       <p
                         className={`text-[11px] mt-1 leading-relaxed ${
-                          active ? 'text-emerald-100/90' : 'text-slate-600'
+                          active ? 'text-emerald-100/90' : 'text-kairos-muted'
                         }`}
                       >
                         {chapter.caption}
@@ -232,11 +232,11 @@ export const WatchHowItWorksSection: React.FC<WatchHowItWorksSectionProps> = ({
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-[#DCECE3]">
+            <div className="mt-4 pt-4 border-t border-kairos-border">
               <button
                 type="button"
                 onClick={onLaunchEmergency}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#119655] hover:bg-[#0D7A44] text-white text-xs font-semibold transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-kairos-emerald hover:bg-kairos-emerald-hover text-white text-xs font-semibold transition-colors"
               >
                 Try Live Referral Workflow
                 <ArrowRight className="w-3.5 h-3.5" />
