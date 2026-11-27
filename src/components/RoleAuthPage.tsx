@@ -567,7 +567,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
             <span>{googleBusy ? 'Connecting to Google...' : 'Continue with Google'}</span>
           </button>
 
-          {/* Demo Login Section for Judges */}
+          {/* Demo Login Section */}
           <div className="mt-5 rounded-xl border border-kairos-border bg-kairos-surface-subtle p-4 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
@@ -577,22 +577,16 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                 </h2>
               </div>
               <span className="text-[11px] font-medium text-kairos-muted">
-                Quick judge auto-fill
+                Quick auto-fill
               </span>
             </div>
 
             <p className="text-[11px] text-kairos-muted leading-relaxed">
-              Auto-fill dummy credentials for a role to test the full flow without creating a real account:
+              Auto-fill sample credentials for any role to test the full flow without creating an account:
             </p>
 
             <div className="grid grid-cols-3 gap-2">
-              {(
-                [
-                  { role: 'patient' as UserRole, label: 'Patient', icon: Users },
-                  { role: 'doctor' as UserRole, label: 'Doctor', icon: Stethoscope },
-                  { role: 'hospital' as UserRole, label: 'Hospital', icon: Building2 },
-                ]
-              ).map((item) => {
+              {ROLE_PORTALS.map((item) => {
                 const Icon = item.icon;
                 const isFilled =
                   email.trim().toLowerCase() ===
@@ -609,21 +603,11 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5 text-kairos-emerald-ink" />
-                    <span>{item.label}</span>
+                    <span className="truncate max-w-full">{item.shortLabel}</span>
                   </button>
                 );
               })}
             </div>
-
-            {role !== 'patient' && role !== 'doctor' && role !== 'hospital' && (
-              <button
-                type="button"
-                onClick={() => handleAutoFillDemo(role)}
-                className="w-full py-1.5 px-3 rounded-lg border border-kairos-border bg-kairos-surface hover:border-kairos-emerald text-[11px] font-semibold text-kairos-forest-ink hover:text-kairos-emerald-ink transition-colors"
-              >
-                Auto-fill {portal.shortLabel} Demo Credentials
-              </button>
-            )}
 
             {demoNotice && (
               <div className="rounded-lg bg-kairos-mint-soft/80 border border-kairos-border px-3 py-2 space-y-2">

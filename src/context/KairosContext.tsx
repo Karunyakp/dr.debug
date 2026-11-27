@@ -596,7 +596,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setAuthCallbackError(null);
       clearPendingAuthContext();
       const profile: UserProfile = {
-        uid: `demo-${creds.role}-judge`,
+        uid: `demo-${creds.role}`,
         displayName: creds.displayName,
         email: creds.email,
         role: creds.role,
@@ -614,7 +614,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setCurrentUser(profile);
       upsertRegisteredUser(
         profile,
-        'DEMO_JUDGE_SIGN_IN',
+        'DEMO_SIGN_IN',
         `${profile.displayName} entered ${creds.role} portal via Demo Login.`
       );
       showToast(`Demo session started · ${creds.displayName}`);
