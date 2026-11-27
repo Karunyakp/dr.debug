@@ -15,6 +15,7 @@ import {
   syncReferralAuditToFirestore,
   syncUserProfileToFirestore,
 } from '../firebase';
+import { matchDummyCredentials, type DummyCredentials } from '../utils/demoCredentials';
 import type {
   AmbulanceStage,
   AppointmentStatus,
@@ -231,6 +232,7 @@ interface KairosContextValue {
   loginWithEmail: (email: string, password: string, selectedRole: UserRole) => Promise<void>;
   registerWithEmailAccount: (input: RegisterEmailAccountInput) => Promise<void>;
   loginWithGoogle: (selectedRole?: UserRole, facilityName?: string) => Promise<boolean>;
+  loginWithDemoCredentials: (creds: DummyCredentials) => void;
   logout: () => Promise<void>;
   updateCurrentProfile: (patch: Partial<UserProfile>) => void;
   // Facility & Directory Registration
@@ -461,7 +463,20 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const mapped = hydrateProfile(fbUser);
         setCurrentUser(mapped);
       } else {
-        setCurrentUser(null);
+        setCurrentUser((prev) => {
+          if (prev && prev.uid.startsWith('demo-')) {
+            return prev;
+          }
+          try {
+            const rawDemo = window.sessionStorage.getItem('kairos_demo_session_v1');
+            if (rawDemo) {
+              return JSON.parse(rawDemo) as UserProfile;
+            }
+          } catch {
+            // Ignore sessionStorage read failures
+          }
+          return null;
+        });
       }
     });
 
@@ -576,8 +591,44 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => window.clearInterval(interval);
   }, [persistAndBroadcast]);
 
+  const loginWithDemoCredentials = useCallback(
+    (creds: DummyCredentials) => {
+      setAuthCallbackError(null);
+      clearPendingAuthContext();
+      const profile: UserProfile = {
+        uid: `demo-${creds.role}-judge`,
+        displayName: creds.displayName,
+        email: creds.email,
+        role: creds.role,
+        phone: creds.phone,
+        facilityName: creds.facilityName,
+        bloodGroup: creds.bloodGroup,
+        consentGranted: true,
+      };
+      saveStoredProfile(profile);
+      try {
+        window.sessionStorage.setItem('kairos_demo_session_v1', JSON.stringify(profile));
+      } catch {
+        // Ignore sessionStorage quota issues
+      }
+      setCurrentUser(profile);
+      upsertRegisteredUser(
+        profile,
+        'DEMO_JUDGE_SIGN_IN',
+        `${profile.displayName} entered ${creds.role} portal via Demo Login.`
+      );
+      showToast(`Demo session started · ${creds.displayName}`);
+    },
+    [showToast, upsertRegisteredUser]
+  );
+
   const loginWithEmail = useCallback(
     async (email: string, password: string, selectedRole: UserRole) => {
+      const matchedDemo = matchDummyCredentials(email, password, selectedRole);
+      if (matchedDemo) {
+        loginWithDemoCredentials(matchedDemo);
+        return;
+      }
       setAuthCallbackError(null);
       savePendingAuthContext({ role: selectedRole, isRedirect: false });
       try {
@@ -614,7 +665,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         throw err;
       }
     },
-    [showToast, upsertRegisteredUser]
+    [loginWithDemoCredentials, showToast, upsertRegisteredUser]
   );
 
   const registerWithEmailAccount = useCallback(
@@ -709,6 +760,11 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   );
 
   const logout = useCallback(async () => {
+    try {
+      window.sessionStorage.removeItem('kairos_demo_session_v1');
+    } catch {
+      // Ignore storage errors
+    }
     setCurrentUser(null);
     if (auth.currentUser) {
       await signOutFirebase();
@@ -1856,6 +1912,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       loginWithEmail,
       registerWithEmailAccount,
       loginWithGoogle,
+      loginWithDemoCredentials,
       logout,
       updateCurrentProfile,
       addHospitalFacility,
@@ -1900,6 +1957,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       loginWithEmail,
       registerWithEmailAccount,
       loginWithGoogle,
+      loginWithDemoCredentials,
       logout,
       updateCurrentProfile,
       addHospitalFacility,

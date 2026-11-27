@@ -10,13 +10,17 @@ import {
   Lock,
   Mail,
   ShieldCheck,
+  Sparkles,
   Stethoscope,
   User,
   Users,
 } from 'lucide-react';
 import { useKairos } from '../context/KairosContext';
 import type { UserRole } from '../types/kairos';
+import { generateDummyCredentials } from '../utils/demoCredentials';
 import { ThemeToggle } from './ThemeToggle';
+
+export { generateDummyCredentials };
 
 interface RolePortalMeta {
   role: UserRole;
@@ -95,7 +99,7 @@ interface RoleAuthPageProps {
   initialMode?: 'signin' | 'signup';
   onChangeRole: (role: UserRole) => void;
   onBackHome: () => void;
-  onAuthenticated: () => void;
+  onAuthenticated: (authenticatedRole?: UserRole) => void;
 }
 
 function formatFirebaseAuthError(err: unknown): string {
@@ -179,6 +183,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
     loginWithEmail,
     registerWithEmailAccount,
     loginWithGoogle,
+    loginWithDemoCredentials,
     authCallbackError,
     clearAuthCallbackError,
   } = useKairos();
@@ -192,6 +197,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
   const [facilityName, setFacilityName] = useState('');
   const [consentGranted, setConsentGranted] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [demoNotice, setDemoNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
 
@@ -252,7 +258,7 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
           consentGranted,
         });
       }
-      onAuthenticated();
+      onAuthenticated(role);
     } catch (err) {
       setError(formatFirebaseAuthError(err));
     } finally {
@@ -267,13 +273,38 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
     try {
       const completedImmediately = await loginWithGoogle(role, facilityName.trim() || undefined);
       if (completedImmediately) {
-        onAuthenticated();
+        onAuthenticated(role);
       }
     } catch (err) {
       setError(formatFirebaseAuthError(err));
     } finally {
       setGoogleBusy(false);
     }
+  };
+
+  const handleAutoFillDemo = (targetRole: UserRole) => {
+    const creds = generateDummyCredentials(targetRole);
+    setError(null);
+    clearAuthCallbackError();
+    onChangeRole(targetRole);
+    setMode('signin');
+    setFullName(creds.displayName);
+    setEmail(creds.email);
+    setPassword(creds.password);
+    setPhone(creds.phone);
+    setFacilityName(creds.facilityName ?? '');
+    setDemoNotice(
+      `Auto-filled ${targetRole} demo credentials (${creds.email}). Click "Sign in" above or launch directly below.`
+    );
+  };
+
+  const handleInstantDemoLaunch = (targetRole: UserRole) => {
+    const creds = generateDummyCredentials(targetRole);
+    setError(null);
+    clearAuthCallbackError();
+    onChangeRole(targetRole);
+    loginWithDemoCredentials(creds);
+    onAuthenticated(targetRole);
   };
 
   return (
@@ -535,6 +566,78 @@ export const RoleAuthPage: React.FC<RoleAuthPageProps> = ({
             {googleBusy ? <Loader2 className="w-4 h-4 animate-spin text-kairos-emerald-ink" /> : <GoogleIcon />}
             <span>{googleBusy ? 'Connecting to Google...' : 'Continue with Google'}</span>
           </button>
+
+          {/* Demo Login Section for Judges */}
+          <div className="mt-5 rounded-xl border border-kairos-border bg-kairos-surface-subtle p-4 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-kairos-emerald-ink shrink-0" />
+                <h2 className="text-xs font-bold text-kairos-forest-ink uppercase tracking-wider">
+                  Demo Login
+                </h2>
+              </div>
+              <span className="text-[11px] font-medium text-kairos-muted">
+                Quick judge auto-fill
+              </span>
+            </div>
+
+            <p className="text-[11px] text-kairos-muted leading-relaxed">
+              Auto-fill dummy credentials for a role to test the full flow without creating a real account:
+            </p>
+
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  { role: 'patient' as UserRole, label: 'Patient', icon: Users },
+                  { role: 'doctor' as UserRole, label: 'Doctor', icon: Stethoscope },
+                  { role: 'hospital' as UserRole, label: 'Hospital', icon: Building2 },
+                ]
+              ).map((item) => {
+                const Icon = item.icon;
+                const isFilled =
+                  email.trim().toLowerCase() ===
+                  generateDummyCredentials(item.role).email.toLowerCase();
+                return (
+                  <button
+                    key={item.role}
+                    type="button"
+                    onClick={() => handleAutoFillDemo(item.role)}
+                    className={`flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-lg border text-[11px] font-semibold transition-colors ${
+                      isFilled
+                        ? 'bg-kairos-mint-soft border-kairos-emerald text-kairos-forest-ink'
+                        : 'bg-kairos-surface border-kairos-border text-kairos-forest-ink hover:border-kairos-emerald hover:text-kairos-emerald-ink'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5 text-kairos-emerald-ink" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {role !== 'patient' && role !== 'doctor' && role !== 'hospital' && (
+              <button
+                type="button"
+                onClick={() => handleAutoFillDemo(role)}
+                className="w-full py-1.5 px-3 rounded-lg border border-kairos-border bg-kairos-surface hover:border-kairos-emerald text-[11px] font-semibold text-kairos-forest-ink hover:text-kairos-emerald-ink transition-colors"
+              >
+                Auto-fill {portal.shortLabel} Demo Credentials
+              </button>
+            )}
+
+            {demoNotice && (
+              <div className="rounded-lg bg-kairos-mint-soft/80 border border-kairos-border px-3 py-2 space-y-2">
+                <p className="text-[11px] text-kairos-forest-ink leading-snug">{demoNotice}</p>
+                <button
+                  type="button"
+                  onClick={() => handleInstantDemoLaunch(role)}
+                  className="w-full py-1.5 px-3 rounded-lg bg-kairos-forest hover:bg-kairos-emerald text-white text-xs font-semibold transition-colors"
+                >
+                  Enter {portal.shortLabel} Demo Now →
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Mode Toggle Footer */}
           <p className="mt-6 text-center text-xs text-kairos-muted">

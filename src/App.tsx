@@ -160,8 +160,10 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleAuthenticated = () => {
-    setActiveTab(pendingTab ?? DEFAULT_TAB_BY_ROLE[authRole]);
+  const handleAuthenticated = (authenticatedRole?: UserRole) => {
+    const resolvedRole = authenticatedRole ?? authRole;
+    setAuthRole(resolvedRole);
+    setActiveTab(pendingTab ?? DEFAULT_TAB_BY_ROLE[resolvedRole]);
     setPendingTab(undefined);
     setView('dashboard');
     window.scrollTo({ top: 0, behavior: 'smooth' });
