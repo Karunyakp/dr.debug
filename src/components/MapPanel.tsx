@@ -126,7 +126,7 @@ export const MapPanel: React.FC<MapPanelProps> = ({
         <div>
           <h3 className="text-sm font-semibold text-[#0B3B2D]">{title}</h3>
           <p className="text-xs text-slate-500">
-            DEMO DATA · Facility locator & transfer overview (follow local emergency protocols)
+            Facility locator &amp; transfer overview (follow local emergency protocols)
           </p>
         </div>
         {focusedHospital && (

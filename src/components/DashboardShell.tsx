@@ -5,7 +5,6 @@ import {
   LogOut,
   Menu,
   Plus,
-  RotateCcw,
   Search,
   Sparkles,
   Wifi,
@@ -14,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useKairos } from '../context/KairosContext';
 import type { UserRole } from '../types/kairos';
+import type { AssistantTab } from './KairosAssistantModal';
 
 export interface NavItem {
   id: string;
@@ -31,8 +31,8 @@ interface DashboardShellProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onGoHome: () => void;
-  onOpenAssistant: () => void;
-  onSwitchRole: (role: UserRole) => void;
+  onOpenAssistant: (tab?: AssistantTab) => void;
+  onSwitchPortalSignIn: (role: UserRole) => void;
   children: React.ReactNode;
 }
 
@@ -46,7 +46,7 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
   onSearchChange,
   onGoHome,
   onOpenAssistant,
-  onSwitchRole,
+  onSwitchPortalSignIn,
   children,
 }) => {
   const {
@@ -57,7 +57,6 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
     setOfflineSimulated,
     offlineReferralQueue,
     syncOfflineReferralsNow,
-    resetDemoData,
     logout,
   } = useKairos();
 
@@ -183,30 +182,51 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
             <p className="text-xs font-bold">Kairos Assistant</p>
           </div>
           <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
-            I check bed status and structure ISBAR handovers before you send.
+            AI chat, live voice, mic transcription &amp; Google Maps grounding.
           </p>
           <button
             type="button"
             onClick={() => {
-              onOpenAssistant();
+              onOpenAssistant('chat');
               setMobileMenuOpen(false);
             }}
-            className="mt-2.5 w-full py-2 px-3 rounded-xl bg-[#E1F3E9] hover:bg-[#CFEAD9] text-[#0B3B2D] text-xs font-semibold transition-colors"
+            className="mt-2.5 w-full py-2 px-3 rounded-xl bg-[#0B3B2D] hover:bg-[#119655] text-white text-xs font-semibold transition-colors"
           >
-            Ask Assistant
+            Open AI Chat
           </button>
+          <div className="mt-1.5 grid grid-cols-3 gap-1">
+            {(
+              [
+                ['voice', 'Voice'],
+                ['transcribe', 'Mic'],
+                ['maps', 'Maps'],
+              ] as [AssistantTab, string][]
+            ).map(([tabId, label]) => (
+              <button
+                key={tabId}
+                type="button"
+                onClick={() => {
+                  onOpenAssistant(tabId);
+                  setMobileMenuOpen(false);
+                }}
+                className="py-1.5 px-1.5 rounded-lg bg-[#E1F3E9] hover:bg-[#CFEAD9] text-[#0B3B2D] text-[11px] font-semibold transition-colors"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Role Switcher for Live Multi-Role Judging Demos */}
+      {/* Switch Portal Sign-In */}
       <div className="px-4 pb-3">
-        <label htmlFor="demo-role-switcher" className="block text-[10px] uppercase tracking-wider text-emerald-300/80 font-semibold mb-1">
-          Switch Demo Workspace
+        <label htmlFor="portal-signin-switcher" className="block text-[10px] uppercase tracking-wider text-emerald-300/80 font-semibold mb-1">
+          Sign In to Another Portal
         </label>
         <select
-          id="demo-role-switcher"
+          id="portal-signin-switcher"
           value={currentUser?.role ?? 'patient'}
-          onChange={(e) => onSwitchRole(e.target.value as UserRole)}
+          onChange={(e) => onSwitchPortalSignIn(e.target.value as UserRole)}
           className="w-full rounded-xl bg-[#07291F] border border-[#1B604C] px-3 py-2 text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-[#119655]"
         >
           <option value="patient">Patient Portal</option>
@@ -283,8 +303,8 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                   Welcome, {greetingName}
                 </h1>
                 <p className="text-xs text-slate-600 truncate">
-                  Live coordination for OPD + Emergency · DEMO DATA ·{' '}
-                  {currentUser?.isDemoAccount ? 'Demo Session' : 'Firebase Authenticated'}
+                  Live coordination for OPD &amp; Emergency · Signed in as{' '}
+                  <span className="capitalize font-semibold text-[#0B3B2D]">{currentUser?.role}</span>
                 </p>
               </div>
             </div>
@@ -388,15 +408,6 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                 )}
               </div>
 
-              <button
-                type="button"
-                onClick={resetDemoData}
-                aria-label="Reset demo dataset"
-                title="Reset demo dataset"
-                className="p-2 rounded-xl bg-white border border-[#CFE3D8] text-slate-600 hover:text-[#0B3B2D] hover:border-[#119655]"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
             </div>
           </div>
         </header>

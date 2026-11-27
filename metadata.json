@@ -1,6 +1,6 @@
 {
   "name": "KAIROS – The Golden Hour Rescue Platform",
   "description": "Right Hospital. Right Resources. Right Now. Unified Smart OPD, Specialist Connect, Diagnostic Connect, and Accept-Before-You-Move Emergency Hospital Coordination.",
-  "requestFramePermissions": ["geolocation"],
+  "requestFramePermissions": ["geolocation", "microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

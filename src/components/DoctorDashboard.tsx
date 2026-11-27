@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -6,9 +6,12 @@ import {
   CheckCircle2,
   Clock,
   Code2,
+  Loader2,
+  Mic,
   Send,
   ShieldAlert,
   Sparkles,
+  Square,
   Stethoscope,
   WifiOff,
 } from 'lucide-react';
@@ -20,6 +23,7 @@ import {
   formatCountdown,
   rankReceivingHospitals,
 } from '../utils/kairosEngine';
+import { blobToBase64, pickSupportedAudioMimeType } from '../utils/audioUtils';
 
 const ALL_FACILITIES = ['ICU', 'Ventilator', 'NICU/OB-GYN', 'Cath Lab', 'Trauma OT', 'CT/MRI', 'Blood Bank'];
 const CATEGORIES = [
@@ -79,6 +83,62 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   const [manualOverrideReason, setManualOverrideReason] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [fhirPreviewRefId, setFhirPreviewRefId] = useState<string | null>(null);
+  const [isDictating, setIsDictating] = useState(false);
+  const [isTranscribingNotes, setIsTranscribingNotes] = useState(false);
+  const dictationRecorderRef = useRef<MediaRecorder | null>(null);
+  const dictationChunksRef = useRef<Blob[]>([]);
+
+  const handleToggleDictateSymptoms = async () => {
+    if (isDictating && dictationRecorderRef.current) {
+      dictationRecorderRef.current.stop();
+      setIsDictating(false);
+      return;
+    }
+
+    setFormError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = pickSupportedAudioMimeType();
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      dictationChunksRef.current = [];
+      recorder.ondataavailable = (ev) => {
+        if (ev.data.size > 0) dictationChunksRef.current.push(ev.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(dictationChunksRef.current, { type: mimeType || 'audio/webm' });
+        if (blob.size < 150) return;
+        setIsTranscribingNotes(true);
+        try {
+          const audioBase64 = await blobToBase64(blob);
+          const res = await fetch('/api/ai/transcribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              audioBase64,
+              mimeType: blob.type || mimeType,
+              contextHint: 'Emergency clinical referral observations and vitals',
+            }),
+          });
+          const data = (await res.json()) as { transcript?: string; error?: string };
+          if (!res.ok || !data.transcript) {
+            setFormError(data.error || 'Unable to transcribe clinical dictation.');
+          } else {
+            setSymptoms((prev) => (prev.trim() ? `${prev.trim()} ${data.transcript}` : data.transcript!));
+          }
+        } catch {
+          setFormError('Network error reaching /api/ai/transcribe.');
+        } finally {
+          setIsTranscribingNotes(false);
+        }
+      };
+      dictationRecorderRef.current = recorder;
+      recorder.start();
+      setIsDictating(true);
+    } catch {
+      setFormError('Microphone permission is required to dictate clinical observations.');
+    }
+  };
 
   const matchedDept =
     CATEGORIES.find((c) => c.label === category)?.dept ?? 'Emergency Medicine';
@@ -119,6 +179,10 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
     e.preventDefault();
     setFormError(null);
 
+    if (!effectiveTargetId || hospitals.length === 0) {
+      setFormError('No receiving hospitals are registered yet. Register a hospital from the Hospital Desk or Admin portal first.');
+      return;
+    }
     if (!patientInitials.trim() || !symptoms.trim()) {
       setFormError('Patient initials/identifier and clinical observations are required.');
       return;
@@ -255,6 +319,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
               </div>
 
               <div className="space-y-3">
+                {filteredReferrals.length === 0 && (
+                  <p className="text-xs text-slate-500 p-4 rounded-xl bg-[#FAFDFB] border border-[#E5F0EA]">
+                    No emergency referrals sent yet. Create a structured ISBAR referral to coordinate a bed before transfer.
+                  </p>
+                )}
                 {filteredReferrals.map((ref) => {
                   const holdEval = ref.bedHold ? evaluateBedHoldState(ref.bedHold, nowMs) : null;
                   return (
@@ -319,6 +388,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 <Stethoscope className="w-4 h-4 text-[#119655]" />
               </div>
               <div className="space-y-2.5">
+                {appointments.length === 0 && (
+                  <p className="text-xs text-slate-500 p-3 rounded-xl bg-[#FAFDFB] border border-[#E5F0EA]">
+                    No OPD consultations scheduled yet.
+                  </p>
+                )}
                 {appointments.slice(0, 5).map((a) => (
                   <div
                     key={a.appointmentId}
@@ -563,9 +637,34 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
             {/* Clinical Observations & ISBAR */}
             <div>
-              <label htmlFor="ref-symptoms" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
-                Symptoms & Clinical Observations *
-              </label>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                <label htmlFor="ref-symptoms" className="block text-xs font-semibold text-[#0B3B2D]">
+                  Symptoms &amp; Clinical Observations *
+                </label>
+                <button
+                  type="button"
+                  disabled={isTranscribingNotes}
+                  onClick={() => void handleToggleDictateSymptoms()}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors ${
+                    isDictating
+                      ? 'bg-red-600 text-white border-red-600'
+                      : 'bg-[#EFF9F4] text-[#0B3B2D] border-[#BCE0CE] hover:bg-[#DFF3E8]'
+                  }`}
+                >
+                  {isTranscribingNotes ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : isDictating ? (
+                    <Square className="w-3 h-3" />
+                  ) : (
+                    <Mic className="w-3 h-3 text-[#119655]" />
+                  )}
+                  {isTranscribingNotes
+                    ? 'Transcribing...'
+                    : isDictating
+                      ? 'Stop Dictation'
+                      : 'Dictate (Mic)'}
+                </button>
+              </div>
               <textarea
                 id="ref-symptoms"
                 rows={3}
@@ -655,6 +754,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
               </div>
 
               <div className="space-y-3">
+                {rankedHospitals.length === 0 && (
+                  <div className="p-4 rounded-xl bg-[#FAFDFB] border border-[#DCECE3] text-xs text-slate-600 leading-relaxed">
+                    No receiving hospitals are registered in the network yet. Sign in to the Hospital Desk or Administrator portal to register hospitals and verified bed counts.
+                  </div>
+                )}
                 {rankedHospitals.map((match) => {
                   const isSelected = effectiveTargetId === match.hospital.hospitalId;
                   return (
@@ -748,6 +852,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           </div>
 
           <div className="space-y-4">
+            {filteredReferrals.length === 0 && (
+              <div className="bg-white border border-[#D5E7DD] rounded-2xl p-8 text-center text-xs text-slate-600">
+                No emergency referrals sent yet.
+              </div>
+            )}
             {filteredReferrals.map((ref) => {
               const holdEval = ref.bedHold ? evaluateBedHoldState(ref.bedHold, nowMs) : null;
               const slaRemaining = Math.max(0, Math.floor((Date.parse(ref.responseDeadlineAt) - nowMs) / 1000));

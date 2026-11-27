@@ -2,6 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
 import {
   auth,
+  registerWithEmail,
+  signInWithEmail,
   signInWithGoogle,
   signOutFirebase,
   syncAppointmentToFirestore,
@@ -9,17 +11,6 @@ import {
   syncReferralAuditToFirestore,
   syncUserProfileToFirestore,
 } from '../firebase';
-import {
-  DEMO_ACCOUNTS,
-  INITIAL_APPOINTMENTS,
-  INITIAL_AUDIT_LOGS,
-  INITIAL_DIAGNOSTIC_BOOKINGS,
-  INITIAL_DIAGNOSTIC_CENTRES,
-  INITIAL_HOSPITALS,
-  INITIAL_NOTIFICATIONS,
-  INITIAL_REFERRALS,
-  INITIAL_SPECIALISTS,
-} from '../data/seedData';
 import type {
   AmbulanceStage,
   AppointmentStatus,
@@ -45,8 +36,9 @@ import {
   recalculateOpdQueue,
 } from '../utils/kairosEngine';
 
-const STORAGE_KEY = 'kairos_platform_state_v1';
-const CHANNEL_NAME = 'kairos-live-sync';
+const STORAGE_KEY = 'kairos_platform_state_v2';
+const PROFILE_STORAGE_PREFIX = 'kairos_user_profile_v2_';
+const CHANNEL_NAME = 'kairos-live-sync-v2';
 
 interface PersistedState {
   hospitals: HospitalFacility[];
@@ -61,41 +53,63 @@ interface PersistedState {
   registeredUsers: UserProfile[];
 }
 
+const EMPTY_STATE: PersistedState = {
+  hospitals: [],
+  specialists: [],
+  appointments: [],
+  referrals: [],
+  offlineReferralQueue: [],
+  diagnosticCentres: [],
+  diagnosticBookings: [],
+  notifications: [],
+  auditLogs: [],
+  registeredUsers: [],
+};
+
 function loadInitialState(): PersistedState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<PersistedState>;
-      if (parsed.hospitals && parsed.appointments && parsed.referrals) {
-        return {
-          hospitals: parsed.hospitals,
-          specialists: parsed.specialists ?? INITIAL_SPECIALISTS,
-          appointments: parsed.appointments,
-          referrals: parsed.referrals,
-          offlineReferralQueue: parsed.offlineReferralQueue ?? [],
-          diagnosticCentres: parsed.diagnosticCentres ?? INITIAL_DIAGNOSTIC_CENTRES,
-          diagnosticBookings: parsed.diagnosticBookings ?? INITIAL_DIAGNOSTIC_BOOKINGS,
-          notifications: parsed.notifications ?? INITIAL_NOTIFICATIONS,
-          auditLogs: parsed.auditLogs ?? INITIAL_AUDIT_LOGS,
-          registeredUsers: parsed.registeredUsers ?? Object.values(DEMO_ACCOUNTS),
-        };
-      }
+      return {
+        hospitals: Array.isArray(parsed.hospitals) ? parsed.hospitals : [],
+        specialists: Array.isArray(parsed.specialists) ? parsed.specialists : [],
+        appointments: Array.isArray(parsed.appointments) ? parsed.appointments : [],
+        referrals: Array.isArray(parsed.referrals) ? parsed.referrals : [],
+        offlineReferralQueue: Array.isArray(parsed.offlineReferralQueue)
+          ? parsed.offlineReferralQueue
+          : [],
+        diagnosticCentres: Array.isArray(parsed.diagnosticCentres) ? parsed.diagnosticCentres : [],
+        diagnosticBookings: Array.isArray(parsed.diagnosticBookings)
+          ? parsed.diagnosticBookings
+          : [],
+        notifications: Array.isArray(parsed.notifications) ? parsed.notifications : [],
+        auditLogs: Array.isArray(parsed.auditLogs) ? parsed.auditLogs : [],
+        registeredUsers: Array.isArray(parsed.registeredUsers) ? parsed.registeredUsers : [],
+      };
     }
   } catch {
-    // Fallback to clean seed data
+    // Fallback to clean empty state
   }
-  return {
-    hospitals: INITIAL_HOSPITALS,
-    specialists: INITIAL_SPECIALISTS,
-    appointments: INITIAL_APPOINTMENTS,
-    referrals: INITIAL_REFERRALS,
-    offlineReferralQueue: [],
-    diagnosticCentres: INITIAL_DIAGNOSTIC_CENTRES,
-    diagnosticBookings: INITIAL_DIAGNOSTIC_BOOKINGS,
-    notifications: INITIAL_NOTIFICATIONS,
-    auditLogs: INITIAL_AUDIT_LOGS,
-    registeredUsers: Object.values(DEMO_ACCOUNTS),
-  };
+  return EMPTY_STATE;
+}
+
+function loadStoredProfile(uid: string): UserProfile | null {
+  try {
+    const raw = localStorage.getItem(`${PROFILE_STORAGE_PREFIX}${uid}`);
+    if (!raw) return null;
+    return JSON.parse(raw) as UserProfile;
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredProfile(profile: UserProfile): void {
+  try {
+    localStorage.setItem(`${PROFILE_STORAGE_PREFIX}${profile.uid}`, JSON.stringify(profile));
+  } catch {
+    // Ignore storage quota warnings
+  }
 }
 
 export interface BookAppointmentInput {
@@ -137,6 +151,55 @@ export interface BookDiagnosticInput {
   prescriptionNote?: string;
 }
 
+export interface AddHospitalInput {
+  name: string;
+  area: string;
+  city: string;
+  phone: string;
+  departments: string[];
+  facilities: string[];
+  icuTotal: number;
+  generalTotal: number;
+  pedsTotal: number;
+  lat?: number;
+  lng?: number;
+  distanceKm?: number;
+}
+
+export interface AddSpecialistInput {
+  name: string;
+  specialty: string;
+  hospitalId: string;
+  location: string;
+  languages: string[];
+  timings: string;
+  consultationFeeInr: number;
+  experienceYears: number;
+  remoteAvailable: boolean;
+  ruralFriendly: boolean;
+}
+
+export interface AddDiagnosticCentreInput {
+  name: string;
+  area: string;
+  hours: string;
+  distanceKm?: number;
+}
+
+export interface RegisterEmailAccountInput {
+  displayName: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  phone?: string;
+  facilityName?: string;
+  bloodGroup?: string;
+  allergies?: string;
+  emergencyContact?: string;
+  abhaId?: string;
+  consentGranted: boolean;
+}
+
 interface KairosContextValue {
   currentUser: UserProfile | null;
   firebaseUser: FirebaseUser | null;
@@ -157,29 +220,24 @@ interface KairosContextValue {
   toastMessage: string | null;
   showToast: (msg: string) => void;
   // Auth & Profile
-  loginAsDemoRole: (role: UserRole) => void;
-  registerPatient: (data: {
-    displayName: string;
-    email: string;
-    phone: string;
-    bloodGroup: string;
-    allergies: string;
-    emergencyContact: string;
-    abhaId: string;
-    consentGranted: boolean;
-  }) => void;
-  loginWithGoogle: (selectedRole?: UserRole) => Promise<void>;
+  loginWithEmail: (email: string, password: string, selectedRole: UserRole) => Promise<void>;
+  registerWithEmailAccount: (input: RegisterEmailAccountInput) => Promise<void>;
+  loginWithGoogle: (selectedRole?: UserRole, facilityName?: string) => Promise<void>;
   logout: () => Promise<void>;
   updateCurrentProfile: (patch: Partial<UserProfile>) => void;
+  // Facility & Directory Registration
+  addHospitalFacility: (input: AddHospitalInput) => HospitalFacility;
+  addSpecialistDoctor: (input: AddSpecialistInput) => SpecialistDoctor | null;
+  addDiagnosticCentre: (input: AddDiagnosticCentreInput) => DiagnosticCentre;
   // Smart OPD & Specialist Connect
-  bookAppointment: (input: BookAppointmentInput) => OpdAppointment;
+  bookAppointment: (input: BookAppointmentInput) => OpdAppointment | null;
   checkInAppointmentByToken: (tokenOrId: string) => { ok: boolean; message: string };
   updateAppointmentStatus: (appointmentId: string, status: AppointmentStatus) => void;
   rescheduleAppointment: (appointmentId: string, newSlot: string) => void;
   cancelAppointment: (appointmentId: string) => void;
   applyDoctorDelay: (hospitalId: string, department: string, delayMin: number) => void;
   // Diagnostic Connect
-  bookDiagnosticTest: (input: BookDiagnosticInput) => DiagnosticBooking;
+  bookDiagnosticTest: (input: BookDiagnosticInput) => DiagnosticBooking | null;
   updateDiagnosticBooking: (
     bookingId: string,
     status: DiagnosticBookingStatus,
@@ -190,7 +248,7 @@ interface KairosContextValue {
     test: { name: string; category: string; priceInr: number; turnaroundHours: number; fastingRequired: boolean }
   ) => void;
   // Emergency Hospital Coordination ("Accept Before You Move")
-  createEmergencyReferral: (input: CreateReferralInput) => EmergencyReferral;
+  createEmergencyReferral: (input: CreateReferralInput) => EmergencyReferral | null;
   syncOfflineReferralsNow: () => number;
   acceptReferral: (referralId: string, bedLabel: string, receivingDoctor: string) => void;
   declineReferral: (referralId: string, reason: string) => void;
@@ -216,7 +274,6 @@ interface KairosContextValue {
   updateUserRoleByAdmin: (uid: string, role: UserRole) => void;
   broadcastNotification: (title: string, message: string, severity: KairosNotification['severity']) => void;
   markAllNotificationsRead: () => void;
-  resetDemoData: () => void;
 }
 
 const KairosContext = createContext<KairosContextValue | null>(null);
@@ -263,7 +320,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     [persistAndBroadcast]
   );
 
-  // Cross-tab real-time sync for multi-role live judging demos
+  // Cross-tab real-time sync
   useEffect(() => {
     if (typeof BroadcastChannel === 'undefined') return;
     const ch = new BroadcastChannel(CHANNEL_NAME);
@@ -279,26 +336,77 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
 
+  const appendAudit = (
+    prev: PersistedState,
+    action: string,
+    entityType: AuditLogEntry['entityType'],
+    entityId: string,
+    summary: string,
+    actor?: UserProfile | null
+  ): AuditLogEntry[] => {
+    const who = actor ?? currentUser;
+    const entry: AuditLogEntry = {
+      logId: `aud-${Date.now()}-${Math.floor(Math.random() * 900 + 100)}`,
+      actorUid: who?.uid ?? 'system',
+      actorName: who?.displayName ?? 'KAIROS System',
+      actorRole: who?.role ?? 'admin',
+      action,
+      entityType,
+      entityId,
+      summary,
+      createdAt: new Date().toISOString(),
+    };
+    return [entry, ...prev.auditLogs].slice(0, 100);
+  };
+
+  const prependNotification = (
+    list: KairosNotification[],
+    item: KairosNotification
+  ): KairosNotification[] => [item, ...list].slice(0, 40);
+
+  const upsertRegisteredUser = useCallback(
+    (profile: UserProfile, action: string, summary: string) => {
+      updateState((prev) => {
+        const exists = prev.registeredUsers.some((u) => u.uid === profile.uid);
+        const nextUsers = exists
+          ? prev.registeredUsers.map((u) => (u.uid === profile.uid ? profile : u))
+          : [profile, ...prev.registeredUsers];
+        return {
+          ...prev,
+          registeredUsers: nextUsers,
+          auditLogs: appendAudit(prev, action, 'user', profile.uid, summary, profile),
+        };
+      });
+    },
+    [updateState]
+  );
+
   // Firebase Auth listener
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (fbUser) => {
       setFirebaseUser(fbUser);
       setAuthReady(true);
-      if (fbUser && !currentUser) {
-        const isBootstrapAdmin = fbUser.email === 'karunyayashu6@gmail.com';
-        const mapped: UserProfile = {
-          uid: fbUser.uid,
-          displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
-          email: fbUser.email || '',
-          role: isBootstrapAdmin ? 'admin' : 'patient',
-          consentGranted: true,
-          isDemoAccount: false,
-        };
+      if (fbUser) {
+        const stored = loadStoredProfile(fbUser.uid);
+        const mapped: UserProfile = stored
+          ? {
+              ...stored,
+              displayName: stored.displayName || fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
+              email: fbUser.email || stored.email,
+            }
+          : {
+              uid: fbUser.uid,
+              displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
+              email: fbUser.email || '',
+              role: 'patient',
+              consentGranted: true,
+            };
         setCurrentUser(mapped);
+      } else {
+        setCurrentUser(null);
       }
     });
     return () => unsub();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Live 1-second timer for bed-hold countdowns, auto-release on expiry, & response SLA escalations
@@ -308,18 +416,17 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setNowMs(tickNow);
 
       setState((prev) => {
+        if (prev.referrals.length === 0) return prev;
         let changed = false;
         let nextHospitals = prev.hospitals;
         const nextNotifications = [...prev.notifications];
 
         const nextReferrals = prev.referrals.map((ref) => {
-          // 1. Evaluate active bed-hold state machine
           if (ref.bedHold && (ref.bedHold.status === 'held' || ref.bedHold.status === 'expiring_soon')) {
             const evalRes = evaluateBedHoldState(ref.bedHold, tickNow, 120);
             if (evalRes.status !== ref.bedHold.status) {
               changed = true;
               if (evalRes.status === 'expired') {
-                // Auto-release bed so it is never double-promised indefinitely
                 nextHospitals = nextHospitals.map((h) => {
                   if (h.hospitalId !== ref.bedHold?.hospitalId) return h;
                   if (ref.bedHold.bedType === 'ICU') {
@@ -359,7 +466,6 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             }
           }
 
-          // 2. Auto-escalate pending referral if response SLA expires and fallback exists
           if (ref.status === 'pending' && ref.fallbackHospitalIds.length > 0) {
             const deadlineMs = Date.parse(ref.responseDeadlineAt);
             if (Number.isFinite(deadlineMs) && tickNow > deadlineMs) {
@@ -408,141 +514,124 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => window.clearInterval(interval);
   }, [persistAndBroadcast]);
 
-  const appendAudit = (
-    prev: PersistedState,
-    action: string,
-    entityType: AuditLogEntry['entityType'],
-    entityId: string,
-    summary: string,
-    actor?: UserProfile | null
-  ): AuditLogEntry[] => {
-    const who = actor ?? currentUser;
-    const entry: AuditLogEntry = {
-      logId: `aud-${Date.now()}-${Math.floor(Math.random() * 900 + 100)}`,
-      actorUid: who?.uid ?? 'system',
-      actorName: who?.displayName ?? 'KAIROS System',
-      actorRole: who?.role ?? 'admin',
-      action,
-      entityType,
-      entityId,
-      summary,
-      createdAt: new Date().toISOString(),
-    };
-    return [entry, ...prev.auditLogs].slice(0, 100);
-  };
-
-  const prependNotification = (
-    list: KairosNotification[],
-    item: KairosNotification
-  ): KairosNotification[] => [item, ...list].slice(0, 40);
-
-  const loginAsDemoRole = useCallback(
-    (role: UserRole) => {
-      const account = DEMO_ACCOUNTS[role];
-      setCurrentUser(account);
-      showToast(`Signed in as ${account.displayName} (${role.toUpperCase()} Demo)`);
+  const loginWithEmail = useCallback(
+    async (email: string, password: string, selectedRole: UserRole) => {
+      const fbUser = await signInWithEmail(email, password);
+      const existing = loadStoredProfile(fbUser.uid);
+      const profile: UserProfile = {
+        uid: fbUser.uid,
+        displayName: existing?.displayName || fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
+        email: fbUser.email || email.trim(),
+        role: selectedRole,
+        phone: existing?.phone,
+        facilityId: existing?.facilityId,
+        facilityName: existing?.facilityName,
+        bloodGroup: existing?.bloodGroup,
+        allergies: existing?.allergies,
+        emergencyContact: existing?.emergencyContact,
+        abhaId: existing?.abhaId,
+        consentGranted: existing?.consentGranted ?? true,
+      };
+      saveStoredProfile(profile);
+      setCurrentUser(profile);
+      upsertRegisteredUser(
+        profile,
+        'USER_SIGNED_IN',
+        `${profile.displayName} signed in to ${selectedRole} portal via Email & Password.`
+      );
+      syncUserProfileToFirestore(profile).catch(() => {
+        // Firestore sync runs when email is verified
+      });
+      showToast(`Signed in as ${profile.displayName}`);
     },
-    [showToast]
+    [showToast, upsertRegisteredUser]
   );
 
-  const registerPatient = useCallback(
-    (data: {
-      displayName: string;
-      email: string;
-      phone: string;
-      bloodGroup: string;
-      allergies: string;
-      emergencyContact: string;
-      abhaId: string;
-      consentGranted: boolean;
-    }) => {
-      const uid = `pat-${Date.now()}`;
-      const newProfile: UserProfile = {
-        uid,
-        displayName: data.displayName.trim(),
-        email: data.email.trim(),
-        role: 'patient',
-        phone: data.phone.trim(),
-        bloodGroup: data.bloodGroup,
-        allergies: data.allergies.trim() || 'None reported',
-        emergencyContact: data.emergencyContact.trim(),
-        abhaId: data.abhaId.trim(),
-        consentGranted: data.consentGranted,
-        isDemoAccount: !firebaseUser,
+  const registerWithEmailAccount = useCallback(
+    async (input: RegisterEmailAccountInput) => {
+      const fbUser = await registerWithEmail(input.email, input.password, input.displayName);
+      const profile: UserProfile = {
+        uid: fbUser.uid,
+        displayName: input.displayName.trim(),
+        email: fbUser.email || input.email.trim(),
+        role: input.role,
+        phone: input.phone?.trim() || undefined,
+        facilityName: input.facilityName?.trim() || undefined,
+        bloodGroup: input.bloodGroup,
+        allergies: input.allergies?.trim() || undefined,
+        emergencyContact: input.emergencyContact?.trim() || undefined,
+        abhaId: input.abhaId?.trim() || undefined,
+        consentGranted: input.consentGranted,
       };
-      setCurrentUser(newProfile);
-      updateState((prev) => ({
-        ...prev,
-        registeredUsers: [newProfile, ...prev.registeredUsers],
-        auditLogs: appendAudit(
-          prev,
-          'PATIENT_REGISTERED',
-          'user',
-          uid,
-          `Registered patient ${newProfile.displayName} with DPDP consent=${data.consentGranted}.`,
-          newProfile
-        ),
-      }));
-      if (firebaseUser) {
-        syncUserProfileToFirestore(newProfile).catch((err) => console.error(err));
-      }
-      showToast(`Welcome, ${newProfile.displayName}. Patient profile created.`);
+      saveStoredProfile(profile);
+      setCurrentUser(profile);
+      upsertRegisteredUser(
+        profile,
+        'ACCOUNT_REGISTERED',
+        `Created ${input.role} account for ${profile.displayName} with DPDP consent=${input.consentGranted}.`
+      );
+      syncUserProfileToFirestore(profile).catch(() => {
+        // Firestore sync runs when email is verified
+      });
+      showToast(`Welcome, ${profile.displayName}. Your account is ready.`);
     },
-    [firebaseUser, showToast, updateState]
+    [showToast, upsertRegisteredUser]
   );
 
   const loginWithGoogle = useCallback(
-    async (selectedRole: UserRole = 'patient') => {
+    async (selectedRole: UserRole = 'patient', facilityName?: string) => {
       const fbUser = await signInWithGoogle();
-      const role: UserRole = fbUser.email === 'karunyayashu6@gmail.com' && selectedRole === 'admin'
-        ? 'admin'
-        : selectedRole;
+      const existing = loadStoredProfile(fbUser.uid);
       const profile: UserProfile = {
         uid: fbUser.uid,
-        displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
+        displayName: fbUser.displayName || existing?.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
         email: fbUser.email || '',
-        role,
-        facilityId: role === 'hospital' ? 'hosp-cmrit' : role === 'diagnostic' ? 'diag-prana' : undefined,
-        facilityName:
-          role === 'hospital'
-            ? 'CMRIT General'
-            : role === 'doctor'
-              ? 'Nandi Rural PHC'
-              : role === 'ambulance'
-                ? 'ALS Ambulance KA-01'
-                : role === 'diagnostic'
-                  ? 'Prana Diagnostics Whitefield'
-                  : undefined,
-        consentGranted: true,
-        isDemoAccount: false,
+        role: selectedRole,
+        phone: existing?.phone,
+        facilityId: existing?.facilityId,
+        facilityName: facilityName?.trim() || existing?.facilityName,
+        bloodGroup: existing?.bloodGroup,
+        allergies: existing?.allergies,
+        emergencyContact: existing?.emergencyContact,
+        abhaId: existing?.abhaId,
+        consentGranted: existing?.consentGranted ?? true,
       };
+      saveStoredProfile(profile);
       setCurrentUser(profile);
+      upsertRegisteredUser(
+        profile,
+        'GOOGLE_SIGN_IN',
+        `${profile.displayName} signed in to ${selectedRole} portal via Google.`
+      );
       try {
         await syncUserProfileToFirestore(profile);
       } catch (err) {
         console.error('Firestore profile sync warning:', err);
       }
-      showToast(`Signed in via Google as ${profile.displayName}`);
+      showToast(`Signed in with Google as ${profile.displayName}`);
     },
-    [showToast]
+    [showToast, upsertRegisteredUser]
   );
 
   const logout = useCallback(async () => {
     setCurrentUser(null);
-    if (firebaseUser) {
+    if (auth.currentUser) {
       await signOutFirebase();
     }
     showToast('Signed out of KAIROS.');
-  }, [firebaseUser, showToast]);
+  }, [showToast]);
 
   const updateCurrentProfile = useCallback(
     (patch: Partial<UserProfile>) => {
       setCurrentUser((prev) => {
         if (!prev) return prev;
         const updated = { ...prev, ...patch };
+        saveStoredProfile(updated);
         updateState((s) => ({
           ...s,
-          registeredUsers: s.registeredUsers.map((u) => (u.uid === updated.uid ? updated : u)),
+          registeredUsers: s.registeredUsers.some((u) => u.uid === updated.uid)
+            ? s.registeredUsers.map((u) => (u.uid === updated.uid ? updated : u))
+            : [updated, ...s.registeredUsers],
           auditLogs: appendAudit(
             s,
             'PROFILE_UPDATED',
@@ -562,10 +651,148 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     [firebaseUser, showToast, updateState]
   );
 
+  const addHospitalFacility = useCallback(
+    (input: AddHospitalInput): HospitalFacility => {
+      const nowIso = new Date().toISOString();
+      const hospital: HospitalFacility = {
+        hospitalId: `hosp-${Date.now().toString(36)}`,
+        name: input.name.trim(),
+        area: input.area.trim(),
+        city: input.city.trim() || 'Bengaluru',
+        lat: input.lat ?? 12.9716,
+        lng: input.lng ?? 77.5946,
+        distanceKm: input.distanceKm ?? 2.5,
+        phone: input.phone.trim(),
+        departments: input.departments.length > 0 ? input.departments : ['General Medicine', 'Emergency'],
+        facilities: input.facilities.length > 0 ? input.facilities : ['ICU'],
+        icuAvailable: Math.max(0, input.icuTotal),
+        icuTotal: Math.max(0, input.icuTotal),
+        generalAvailable: Math.max(0, input.generalTotal),
+        generalTotal: Math.max(0, input.generalTotal),
+        pedsAvailable: Math.max(0, input.pedsTotal),
+        pedsTotal: Math.max(0, input.pedsTotal),
+        acceptingEmergencies: true,
+        lastVerifiedBy: currentUser?.displayName || 'Authorized Hospital Staff',
+        lastVerifiedAt: nowIso,
+        avgAcceptanceMin: 4.0,
+      };
+
+      updateState((prev) => ({
+        ...prev,
+        hospitals: [hospital, ...prev.hospitals],
+        auditLogs: appendAudit(
+          prev,
+          'HOSPITAL_REGISTERED',
+          'hospital',
+          hospital.hospitalId,
+          `Registered hospital ${hospital.name} (${hospital.area}, ${hospital.city}).`
+        ),
+      }));
+
+      if (currentUser && currentUser.role === 'hospital' && !currentUser.facilityId) {
+        const updatedProfile = {
+          ...currentUser,
+          facilityId: hospital.hospitalId,
+          facilityName: hospital.name,
+        };
+        saveStoredProfile(updatedProfile);
+        setCurrentUser(updatedProfile);
+      }
+
+      showToast(`Hospital "${hospital.name}" registered in KAIROS.`);
+      return hospital;
+    },
+    [currentUser, showToast, updateState]
+  );
+
+  const addSpecialistDoctor = useCallback(
+    (input: AddSpecialistInput): SpecialistDoctor | null => {
+      const hospital = state.hospitals.find((h) => h.hospitalId === input.hospitalId);
+      if (!hospital) {
+        showToast('Please register a hospital before adding a specialist.');
+        return null;
+      }
+      const specialist: SpecialistDoctor = {
+        doctorId: `doc-${Date.now().toString(36)}`,
+        name: input.name.trim(),
+        specialty: input.specialty.trim(),
+        hospitalId: hospital.hospitalId,
+        hospitalName: hospital.name,
+        location: input.location.trim() || `${hospital.area}, ${hospital.city}`,
+        ruralFriendly: input.ruralFriendly,
+        remoteAvailable: input.remoteAvailable,
+        languages: input.languages.length > 0 ? input.languages : ['English'],
+        timings: input.timings.trim() || '09:30 AM – 04:00 PM',
+        nextSlot: 'Today · 11:00 AM',
+        availableSlots: ['Today · 11:00 AM', 'Today · 12:30 PM', 'Today · 03:00 PM', 'Tomorrow · 10:00 AM'],
+        consultationFeeInr: Math.max(0, input.consultationFeeInr),
+        experienceYears: Math.max(1, input.experienceYears),
+        availableToday: true,
+      };
+      updateState((prev) => ({
+        ...prev,
+        specialists: [specialist, ...prev.specialists],
+        auditLogs: appendAudit(
+          prev,
+          'SPECIALIST_ADDED',
+          'hospital',
+          specialist.doctorId,
+          `Added specialist ${specialist.name} (${specialist.specialty}) at ${hospital.name}.`
+        ),
+      }));
+      showToast(`Added ${specialist.name} to specialist directory.`);
+      return specialist;
+    },
+    [showToast, state.hospitals, updateState]
+  );
+
+  const addDiagnosticCentre = useCallback(
+    (input: AddDiagnosticCentreInput): DiagnosticCentre => {
+      const centre: DiagnosticCentre = {
+        centreId: `diag-${Date.now().toString(36)}`,
+        name: input.name.trim(),
+        area: input.area.trim(),
+        hours: input.hours.trim() || '07:00 AM – 08:00 PM',
+        distanceKm: input.distanceKm ?? 2.0,
+        verifiedPricing: true,
+        slots: ['Today · 10:00 AM', 'Today · 11:30 AM', 'Today · 02:00 PM', 'Tomorrow · 08:30 AM'],
+        tests: [],
+      };
+      updateState((prev) => ({
+        ...prev,
+        diagnosticCentres: [centre, ...prev.diagnosticCentres],
+        auditLogs: appendAudit(
+          prev,
+          'DIAGNOSTIC_CENTRE_REGISTERED',
+          'diagnostic',
+          centre.centreId,
+          `Registered diagnostic centre ${centre.name} (${centre.area}).`
+        ),
+      }));
+      if (currentUser && currentUser.role === 'diagnostic' && !currentUser.facilityId) {
+        const updatedProfile = {
+          ...currentUser,
+          facilityId: centre.centreId,
+          facilityName: centre.name,
+        };
+        saveStoredProfile(updatedProfile);
+        setCurrentUser(updatedProfile);
+      }
+      showToast(`Diagnostic centre "${centre.name}" registered.`);
+      return centre;
+    },
+    [currentUser, showToast, updateState]
+  );
+
   const bookAppointment = useCallback(
-    (input: BookAppointmentInput): OpdAppointment => {
+    (input: BookAppointmentInput): OpdAppointment | null => {
       const hospital =
         state.hospitals.find((h) => h.hospitalId === input.hospitalId) ?? state.hospitals[0];
+      if (!hospital) {
+        showToast('No registered hospitals available yet. Ask a hospital desk or admin to add a facility.');
+        return null;
+      }
+
       const existingDeptActive = state.appointments.filter(
         (a) =>
           a.hospitalId === hospital.hospitalId &&
@@ -573,20 +800,20 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           a.status !== 'cancelled' &&
           a.status !== 'completed'
       );
-      const nextNum = 46 + state.appointments.length;
+      const nextNum = 101 + state.appointments.length;
       const prefix = input.department.charAt(0).toUpperCase() || 'A';
-      const tokenNumber = `${prefix}-0${nextNum}`;
+      const tokenNumber = `${prefix}-${nextNum}`;
       const queuePosition = existingDeptActive.length + 1;
       const nowIso = new Date().toISOString();
 
       const newAppt: OpdAppointment = {
         appointmentId: `apt-${Date.now()}`,
-        ownerId: currentUser?.uid ?? DEMO_ACCOUNTS.patient.uid,
-        patientName: input.patientName?.trim() || currentUser?.displayName || 'Ananya Patel',
+        ownerId: currentUser?.uid ?? 'guest',
+        patientName: input.patientName?.trim() || currentUser?.displayName || 'Patient',
         hospitalId: hospital.hospitalId,
         hospitalName: hospital.name,
         department: input.department,
-        doctorName: input.doctorName,
+        doctorName: input.doctorName.trim() || 'Duty Clinician',
         slotTime: input.slotTime,
         tokenNumber,
         channel: input.channel ?? (input.ruralModeBooking ? 'SMS' : 'QR'),
@@ -797,14 +1024,19 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   );
 
   const bookDiagnosticTest = useCallback(
-    (input: BookDiagnosticInput): DiagnosticBooking => {
+    (input: BookDiagnosticInput): DiagnosticBooking | null => {
       const centre =
         state.diagnosticCentres.find((c) => c.centreId === input.centreId) ?? state.diagnosticCentres[0];
+      if (!centre) {
+        showToast('No registered diagnostic centres available yet.');
+        return null;
+      }
+
       const nowIso = new Date().toISOString();
       const booking: DiagnosticBooking = {
         bookingId: `diag-bk-${Date.now().toString().slice(-5)}`,
-        ownerId: currentUser?.uid ?? DEMO_ACCOUNTS.patient.uid,
-        patientName: currentUser?.displayName ?? 'Ananya Patel',
+        ownerId: currentUser?.uid ?? 'guest',
+        patientName: currentUser?.displayName || 'Patient',
         centreId: centre.centreId,
         centreName: centre.name,
         testName: input.testName,
@@ -909,22 +1141,27 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   );
 
   const createEmergencyReferral = useCallback(
-    (input: CreateReferralInput): EmergencyReferral => {
+    (input: CreateReferralInput): EmergencyReferral | null => {
       const targetHospital =
         state.hospitals.find((h) => h.hospitalId === input.targetHospitalId) ?? state.hospitals[0];
+      if (!targetHospital) {
+        showToast('No receiving hospitals registered yet. Register a hospital first.');
+        return null;
+      }
+
       const nowIso = new Date().toISOString();
-      const nextNum = 103 + state.referrals.length + state.offlineReferralQueue.length;
+      const nextNum = 101 + state.referrals.length + state.offlineReferralQueue.length;
       const referralId = `REF-${nextNum}`;
-      const dedupeKey = `${input.patientInitials.trim().toLowerCase()}-${input.category.toLowerCase()}-${input.targetHospitalId}-${Math.floor(Date.now() / 15000)}`;
+      const dedupeKey = `${input.patientInitials.trim().toLowerCase()}-${input.category.toLowerCase()}-${targetHospital.hospitalId}-${Math.floor(Date.now() / 15000)}`;
 
       const shouldStoreOffline = Boolean(input.saveOffline || isOfflineSimulated);
 
       const newRef: EmergencyReferral = {
         referralId,
         clientDedupeKey: dedupeKey,
-        referringDoctorId: currentUser?.uid ?? DEMO_ACCOUNTS.doctor.uid,
-        referringDoctorName: currentUser?.displayName ?? 'Dr. Kavitha Rao',
-        referringHospitalName: currentUser?.facilityName ?? 'Nandi Rural PHC & Triage',
+        referringDoctorId: currentUser?.uid ?? 'doctor',
+        referringDoctorName: currentUser?.displayName || 'Referring Clinician',
+        referringHospitalName: currentUser?.facilityName || 'Referring Clinic',
         targetHospitalId: targetHospital.hospitalId,
         targetHospitalName: targetHospital.name,
         fallbackHospitalIds: input.fallbackHospitalIds,
@@ -942,11 +1179,13 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         manualOverrideActive: input.manualOverrideActive,
         manualOverrideReason: input.manualOverrideReason,
         responseDeadlineAt: new Date(Date.now() + 5 * 60_000).toISOString(),
-        ambulanceId: input.manualOverrideActive ? 'amb-ka01' : undefined,
-        ambulanceUnitName: input.manualOverrideActive ? 'Ambulance · KA-01 (Override Dispatch)' : undefined,
+        ambulanceId: input.manualOverrideActive ? 'amb-unit-1' : undefined,
+        ambulanceUnitName: input.manualOverrideActive ? 'Emergency Ambulance (Override Dispatch)' : undefined,
         ambulanceStatus: input.manualOverrideActive ? 'dispatched' : 'unassigned',
         ambulanceEtaMin: input.manualOverrideActive ? Math.max(4, Math.round(targetHospital.distanceKm * 2)) : undefined,
-        ambulanceLocation: input.manualOverrideActive ? { lat: 12.978, lng: 77.705 } : undefined,
+        ambulanceLocation: input.manualOverrideActive
+          ? { lat: targetHospital.lat, lng: targetHospital.lng }
+          : undefined,
         clinicianInstructions: input.clinicianInstructions,
         syncStatus: shouldStoreOffline ? 'pending_sync' : 'synced',
         createdAt: nowIso,
@@ -998,7 +1237,9 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }));
 
       if (firebaseUser) {
-        syncReferralAuditToFirestore(newRef).catch((err) => console.error(err));
+        syncReferralAuditToFirestore(newRef, currentUser?.role || 'doctor').catch((err) =>
+          console.error(err)
+        );
       }
       showToast(
         input.manualOverrideActive
@@ -1098,11 +1339,10 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 acceptedAt: nowIso,
                 receivingDoctorName: receivingDoctor,
                 bedHold: hold,
-                ambulanceId: r.ambulanceId ?? 'amb-ka01',
-                ambulanceUnitName: r.ambulanceUnitName ?? 'Ambulance · KA-01',
+                ambulanceId: r.ambulanceId ?? 'amb-assigned',
+                ambulanceUnitName: r.ambulanceUnitName ?? 'Assigned Ambulance Unit',
                 ambulanceStatus: r.ambulanceStatus === 'unassigned' ? ('assigned' as const) : r.ambulanceStatus,
                 ambulanceEtaMin: r.ambulanceEtaMin ?? 8,
-                ambulanceLocation: r.ambulanceLocation ?? { lat: 12.989, lng: 77.701 },
                 updatedAt: nowIso,
               }
             : r
@@ -1115,7 +1355,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           notifications: prependNotification(prev.notifications, {
             id: `notif-acc-${Date.now()}`,
             title: `ACCEPTED · ${referralId} (${bedLabel} Held 15:00)`,
-            message: `${receivingDoctor} at ${ref.targetHospitalName} confirmed ${bedLabel}. Ambulance KA-01 cleared to move.`,
+            message: `${receivingDoctor} at ${ref.targetHospitalName} confirmed ${bedLabel}. Ambulance cleared to move.`,
             channel: 'SMS Ready',
             targetRoles: ['doctor', 'hospital', 'ambulance', 'admin'],
             severity: 'success',
@@ -1232,7 +1472,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   );
 
   const assignAmbulanceToReferral = useCallback(
-    (referralId: string, unitName = 'Ambulance · KA-01') => {
+    (referralId: string, unitName = 'Assigned Ambulance Unit') => {
       const nowIso = new Date().toISOString();
       updateState((prev) => ({
         ...prev,
@@ -1240,11 +1480,10 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           r.referralId === referralId
             ? {
                 ...r,
-                ambulanceId: 'amb-ka01',
+                ambulanceId: `amb-${Date.now().toString(36)}`,
                 ambulanceUnitName: unitName,
                 ambulanceStatus: 'assigned',
                 ambulanceEtaMin: 9,
-                ambulanceLocation: { lat: 12.989, lng: 77.701 },
                 updatedAt: nowIso,
               }
             : r
@@ -1495,25 +1734,6 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }));
   }, [updateState]);
 
-  const resetDemoData = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    const fresh: PersistedState = {
-      hospitals: INITIAL_HOSPITALS,
-      specialists: INITIAL_SPECIALISTS,
-      appointments: INITIAL_APPOINTMENTS,
-      referrals: INITIAL_REFERRALS,
-      offlineReferralQueue: [],
-      diagnosticCentres: INITIAL_DIAGNOSTIC_CENTRES,
-      diagnosticBookings: INITIAL_DIAGNOSTIC_BOOKINGS,
-      notifications: INITIAL_NOTIFICATIONS,
-      auditLogs: INITIAL_AUDIT_LOGS,
-      registeredUsers: Object.values(DEMO_ACCOUNTS),
-    };
-    setState(fresh);
-    persistAndBroadcast(fresh);
-    showToast('Demonstration dataset reset to clean initial state.');
-  }, [persistAndBroadcast, showToast]);
-
   const value = useMemo<KairosContextValue>(
     () => ({
       currentUser,
@@ -1534,11 +1754,14 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       registeredUsers: state.registeredUsers,
       toastMessage,
       showToast,
-      loginAsDemoRole,
-      registerPatient,
+      loginWithEmail,
+      registerWithEmailAccount,
       loginWithGoogle,
       logout,
       updateCurrentProfile,
+      addHospitalFacility,
+      addSpecialistDoctor,
+      addDiagnosticCentre,
       bookAppointment,
       checkInAppointmentByToken,
       updateAppointmentStatus,
@@ -1561,7 +1784,6 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updateUserRoleByAdmin,
       broadcastNotification,
       markAllNotificationsRead,
-      resetDemoData,
     }),
     [
       currentUser,
@@ -1572,11 +1794,14 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       state,
       toastMessage,
       showToast,
-      loginAsDemoRole,
-      registerPatient,
+      loginWithEmail,
+      registerWithEmailAccount,
       loginWithGoogle,
       logout,
       updateCurrentProfile,
+      addHospitalFacility,
+      addSpecialistDoctor,
+      addDiagnosticCentre,
       bookAppointment,
       checkInAppointmentByToken,
       updateAppointmentStatus,
@@ -1599,7 +1824,6 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updateUserRoleByAdmin,
       broadcastNotification,
       markAllNotificationsRead,
-      resetDemoData,
     ]
   );
 

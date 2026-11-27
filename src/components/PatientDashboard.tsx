@@ -49,10 +49,10 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
   } = useKairos();
 
   // Smart OPD Booking Form state
-  const [opdHospitalId, setOpdHospitalId] = useState(hospitals[0]?.hospitalId ?? 'hosp-cmrit');
+  const [opdHospitalId, setOpdHospitalId] = useState(hospitals[0]?.hospitalId ?? '');
   const opdHospital = hospitals.find((h) => h.hospitalId === opdHospitalId) ?? hospitals[0];
-  const [opdDept, setOpdDept] = useState('General Medicine');
-  const [opdDoctor, setOpdDoctor] = useState('Dr. Meera Deshmukh');
+  const [opdDept, setOpdDept] = useState(opdHospital?.departments[0] ?? 'General Medicine');
+  const [opdDoctor, setOpdDoctor] = useState(specialists[0]?.name ?? 'Duty Clinician');
   const [opdSlot, setOpdSlot] = useState('Today · 10:30 AM');
   const [rescheduleTargetId, setRescheduleTargetId] = useState<string | null>(null);
   const [rescheduleSlot, setRescheduleSlot] = useState('Today · 02:30 PM');
@@ -97,8 +97,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
     return appointments.filter((a) => {
       const belongs =
         a.ownerId === currentUser?.uid ||
-        a.patientName.toLowerCase().includes((currentUser?.displayName || '').split(' ')[0].toLowerCase()) ||
-        a.tokenNumber === 'A-042';
+        (Boolean(currentUser?.displayName) &&
+          a.patientName.toLowerCase().includes((currentUser?.displayName || '').split(' ')[0].toLowerCase()));
       if (!belongs) return false;
       if (!q) return true;
       return (
@@ -142,10 +142,11 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
   const handleBookOpd = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!opdHospital) return;
     bookAppointment({
-      hospitalId: opdHospitalId,
+      hospitalId: opdHospital.hospitalId,
       department: opdDept,
-      doctorName: opdDoctor,
+      doctorName: opdDoctor || 'Duty Clinician',
       slotTime: opdSlot,
       consultationType: 'in-person',
       channel: 'QR',
@@ -344,38 +345,44 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 </div>
 
                 <div className="space-y-3">
-                  {referrals.slice(0, 2).map((ref) => (
-                    <div
-                      key={ref.referralId}
-                      className="p-4 rounded-xl border border-[#DCECE3] bg-[#FAFDFB] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                    >
-                      <div>
-                        <p className="text-xs font-semibold text-[#0B3B2D]">
-                          {ref.referralId} · {ref.category} → {ref.targetHospitalName}
-                        </p>
-                        <p className="text-xs text-slate-600 mt-1">
-                          {ref.bedHold
-                            ? `Confirmed ${ref.bedHold.bedLabel} (${ref.bedHold.bedType}) by ${ref.bedHold.reservedByDoctor}`
-                            : 'Awaiting receiving hospital acceptance (Accept Before You Move)'}
-                        </p>
-                      </div>
-                      <span
-                        className={`text-xs font-semibold uppercase font-mono shrink-0 ${
-                          ref.status === 'in_transit' || ref.status === 'accepted'
-                            ? 'text-[#119655]'
-                            : 'text-amber-700'
-                        }`}
+                  {referrals.length === 0 ? (
+                    <p className="text-xs text-slate-500 p-4 rounded-xl bg-[#FAFDFB] border border-[#E5F0EA]">
+                      No active emergency referrals recorded yet.
+                    </p>
+                  ) : (
+                    referrals.slice(0, 2).map((ref) => (
+                      <div
+                        key={ref.referralId}
+                        className="p-4 rounded-xl border border-[#DCECE3] bg-[#FAFDFB] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                       >
-                        {ref.status.replace('_', ' ')}
-                      </span>
-                    </div>
-                  ))}
+                        <div>
+                          <p className="text-xs font-semibold text-[#0B3B2D]">
+                            {ref.referralId} · {ref.category} → {ref.targetHospitalName}
+                          </p>
+                          <p className="text-xs text-slate-600 mt-1">
+                            {ref.bedHold
+                              ? `Confirmed ${ref.bedHold.bedLabel} (${ref.bedHold.bedType}) by ${ref.bedHold.reservedByDoctor}`
+                              : 'Awaiting receiving hospital acceptance (Accept Before You Move)'}
+                          </p>
+                        </div>
+                        <span
+                          className={`text-xs font-semibold uppercase font-mono shrink-0 ${
+                            ref.status === 'in_transit' || ref.status === 'accepted'
+                              ? 'text-[#119655]'
+                              : 'text-amber-700'
+                          }`}
+                        >
+                          {ref.status.replace('_', ' ')}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
               <MapPanel
                 hospitals={hospitals}
-                title="Nearby Partner Hospitals (DEMO DATA)"
+                title="Nearby Partner Hospitals"
                 heightClass="h-[240px]"
               />
             </div>
@@ -403,98 +410,117 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               </div>
             </div>
 
-            <div>
-              <label htmlFor="opd-hosp" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
-                Select Hospital
-              </label>
-              <select
-                id="opd-hosp"
-                value={opdHospitalId}
-                onChange={(e) => {
-                  const id = e.target.value;
-                  setOpdHospitalId(id);
-                  const h = hospitals.find((item) => item.hospitalId === id);
-                  if (h) {
-                    const dept = h.departments[0] ?? 'General Medicine';
-                    setOpdDept(dept);
-                    const doc = specialists.find((s) => s.hospitalId === id) ?? specialists[0];
-                    setOpdDoctor(doc.name);
-                  }
-                }}
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
-              >
-                {hospitals.map((h) => (
-                  <option key={h.hospitalId} value={h.hospitalId}>
-                    {h.name} · {h.area} ({h.distanceKm} km)
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="opd-dept" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
-                Select Department
-              </label>
-              <select
-                id="opd-dept"
-                value={opdDept}
-                onChange={(e) => setOpdDept(e.target.value)}
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
-              >
-                {(opdHospital?.departments ?? ['General Medicine']).map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="opd-doc" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
-                Select Doctor
-              </label>
-              <select
-                id="opd-doc"
-                value={opdDoctor}
-                onChange={(e) => setOpdDoctor(e.target.value)}
-                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
-              >
-                {specialists.map((s) => (
-                  <option key={s.doctorId} value={s.name}>
-                    {s.name} — {s.specialty} (₹{s.consultationFeeInr})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <span className="block text-xs font-semibold text-[#0B3B2D] mb-1.5">
-                Choose Available Slot
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                {['Today · 10:30 AM', 'Today · 11:15 AM', 'Today · 12:00 PM', 'Today · 02:30 PM'].map(
-                  (slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setOpdSlot(slot)}
-                      className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-colors ${
-                        opdSlot === slot
-                          ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
-                          : 'bg-[#FAFDFB] text-[#0B3B2D] border-[#CFE3D8] hover:border-[#119655]'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  )
-                )}
+            {hospitals.length === 0 ? (
+              <div className="p-4 rounded-xl bg-[#F4FAF6] border border-[#DCECE3] text-xs text-slate-600 leading-relaxed">
+                No hospitals are registered yet. Once a hospital registers via the Hospital Desk or Administrator portal, you can book Smart OPD tokens here.
               </div>
-            </div>
+            ) : (
+              <>
+                <div>
+                  <label htmlFor="opd-hosp" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                    Select Hospital
+                  </label>
+                  <select
+                    id="opd-hosp"
+                    value={opdHospital?.hospitalId ?? ''}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setOpdHospitalId(id);
+                      const h = hospitals.find((item) => item.hospitalId === id);
+                      if (h) {
+                        const dept = h.departments[0] ?? 'General Medicine';
+                        setOpdDept(dept);
+                        const doc = specialists.find((s) => s.hospitalId === id) ?? specialists[0];
+                        setOpdDoctor(doc?.name ?? 'Duty Clinician');
+                      }
+                    }}
+                    className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                  >
+                    {hospitals.map((h) => (
+                      <option key={h.hospitalId} value={h.hospitalId}>
+                        {h.name} · {h.area} ({h.distanceKm} km)
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <button
-              type="submit"
-              className="w-full py-2.5 px-5 rounded-xl bg-[#119655] text-white text-sm font-semibold hover:bg-[#0D7A44] transition-colors"
-            >
-              Confirm Booking & Generate QR Token
-            </button>
+                <div>
+                  <label htmlFor="opd-dept" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                    Select Department
+                  </label>
+                  <select
+                    id="opd-dept"
+                    value={opdDept}
+                    onChange={(e) => setOpdDept(e.target.value)}
+                    className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                  >
+                    {(opdHospital?.departments ?? ['General Medicine']).map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="opd-doc" className="block text-xs font-semibold text-[#0B3B2D] mb-1">
+                    Select Doctor
+                  </label>
+                  {specialists.length > 0 ? (
+                    <select
+                      id="opd-doc"
+                      value={opdDoctor}
+                      onChange={(e) => setOpdDoctor(e.target.value)}
+                      className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                    >
+                      {specialists.map((s) => (
+                        <option key={s.doctorId} value={s.name}>
+                          {s.name} — {s.specialty} (₹{s.consultationFeeInr})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      id="opd-doc"
+                      type="text"
+                      value={opdDoctor}
+                      onChange={(e) => setOpdDoctor(e.target.value)}
+                      placeholder="Duty Clinician"
+                      className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D] focus:outline-none focus:ring-2 focus:ring-[#119655]"
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <span className="block text-xs font-semibold text-[#0B3B2D] mb-1.5">
+                    Choose Available Slot
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['Today · 10:30 AM', 'Today · 11:15 AM', 'Today · 12:00 PM', 'Today · 02:30 PM'].map(
+                      (slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => setOpdSlot(slot)}
+                          className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-colors ${
+                            opdSlot === slot
+                              ? 'bg-[#0B3B2D] text-white border-[#0B3B2D]'
+                              : 'bg-[#FAFDFB] text-[#0B3B2D] border-[#CFE3D8] hover:border-[#119655]'
+                          }`}
+                        >
+                          {slot}
+                        </button>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-2.5 px-5 rounded-xl bg-[#119655] text-white text-sm font-semibold hover:bg-[#0D7A44] transition-colors"
+                >
+                  Confirm Booking &amp; Generate QR Token
+                </button>
+              </>
+            )}
           </form>
 
           {/* My Appointments & Live Queue History */}
@@ -505,13 +531,18 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   My OPD Tokens & Live Queue ({myAppointments.length})
                 </h2>
                 <p className="text-xs text-slate-500">
-                  DEMO DATA · Scan QR on arrival, reschedule, or cancel anytime
+                  Scan QR on arrival, reschedule, or cancel anytime
                 </p>
               </div>
               <Clock className="w-5 h-5 text-[#119655]" />
             </div>
 
             <div className="space-y-3">
+              {myAppointments.length === 0 && (
+                <p className="text-xs text-slate-500 p-4 rounded-xl bg-[#FAFDFB] border border-[#E5F0EA]">
+                  No OPD appointments booked yet.
+                </p>
+              )}
               {myAppointments.map((appt) => (
                 <div
                   key={appt.appointmentId}
@@ -736,6 +767,17 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           </div>
 
           {/* Specialists Grid */}
+          {filteredSpecialists.length === 0 ? (
+            <div className="bg-white border border-[#D5E7DD] rounded-2xl p-8 text-center">
+              <Stethoscope className="w-8 h-8 text-[#119655] mx-auto" />
+              <p className="font-display text-base font-bold text-[#0B3B2D] mt-3">
+                No specialists listed yet
+              </p>
+              <p className="text-xs text-slate-600 mt-1">
+                Specialists registered by hospitals or administrators will appear here for booking.
+              </p>
+            </div>
+          ) : (
           <div className={`grid grid-cols-1 ${lowBandwidth ? '' : 'md:grid-cols-2'} gap-4`}>
             {filteredSpecialists.map((doc) => {
               const isOpen = bookingSpecId === doc.doctorId;
@@ -892,6 +934,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               );
             })}
           </div>
+          )}
         </div>
       )}
 
@@ -901,10 +944,10 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           <div className="bg-white border border-[#D5E7DD] rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="font-display text-lg font-bold text-[#0B3B2D]">
-                Diagnostic Connect · Labs & Imaging
+                Diagnostic Connect · Labs &amp; Imaging
               </h2>
               <p className="text-xs text-slate-600">
-                DEMO DATA · Approximate verified demonstration pricing & hours. Reports appear securely once uploaded by the diagnostic centre.
+                Browse registered diagnostic centres, compare test pricing and hours, and view reports securely once uploaded.
               </p>
             </div>
             <div className="relative w-full sm:w-72">
@@ -922,6 +965,17 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* Diagnostic Centres & Tests */}
             <div className="lg:col-span-7 space-y-4">
+              {filteredCentres.length === 0 && (
+                <div className="bg-white border border-[#D5E7DD] rounded-2xl p-8 text-center">
+                  <FlaskConical className="w-8 h-8 text-[#119655] mx-auto" />
+                  <p className="font-display text-base font-bold text-[#0B3B2D] mt-3">
+                    No diagnostic centres registered yet
+                  </p>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Diagnostic labs registered via the Diagnostic Centre portal will appear here.
+                  </p>
+                </div>
+              )}
               {filteredCentres.map((centre) => (
                 <div
                   key={centre.centreId}
@@ -937,7 +991,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                       </p>
                     </div>
                     <span className="text-[11px] font-semibold text-[#119655]">
-                      Demo Pricing Verified
+                      Verified Centre
                     </span>
                   </div>
 
@@ -995,7 +1049,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                     Book {diagBookingTarget.testName}
                   </h3>
                   <p className="text-xs text-emerald-200">
-                    {diagBookingTarget.centreName} · Approx. ₹{diagBookingTarget.priceInr} (DEMO)
+                    {diagBookingTarget.centreName} · ₹{diagBookingTarget.priceInr}
                   </p>
                   <div>
                     <label className="block text-xs font-medium text-emerald-100 mb-1">

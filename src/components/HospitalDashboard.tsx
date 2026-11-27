@@ -44,13 +44,23 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
     confirmPatientArrival,
     updateHospitalCapacity,
     addHospitalDepartment,
+    addHospitalFacility,
   } = useKairos();
 
   const [managedHospitalId, setManagedHospitalId] = useState(
-    currentUser?.facilityId ?? 'hosp-cmrit'
+    currentUser?.facilityId ?? hospitals[0]?.hospitalId ?? ''
   );
   const myHospital =
-    hospitals.find((h) => h.hospitalId === managedHospitalId) ?? hospitals[0];
+    hospitals.find((h) => h.hospitalId === managedHospitalId) ?? hospitals[0] ?? null;
+
+  // Register Hospital onboarding form state
+  const [regName, setRegName] = useState(currentUser?.facilityName ?? '');
+  const [regArea, setRegArea] = useState('');
+  const [regCity, setRegCity] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regIcu, setRegIcu] = useState('10');
+  const [regGen, setRegGen] = useState('40');
+  const [regPeds, setRegPeds] = useState('12');
 
   const [qrInput, setQrInput] = useState('');
   const [qrFeedback, setQrFeedback] = useState<{ ok: boolean; msg: string } | null>(null);
@@ -64,6 +74,7 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
   const [newDeptName, setNewDeptName] = useState('');
 
   const hospitalAppointments = useMemo(() => {
+    if (!myHospital) return [];
     const q = searchQuery.trim().toLowerCase();
     return appointments
       .filter((a) => a.hospitalId === myHospital.hospitalId && a.status !== 'cancelled')
@@ -76,7 +87,7 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
         );
       })
       .sort((a, b) => a.queuePosition - b.queuePosition);
-  }, [appointments, myHospital.hospitalId, searchQuery]);
+  }, [appointments, myHospital, searchQuery]);
 
   const activeQueueCount = hospitalAppointments.filter((a) => a.status !== 'completed').length;
   const waitingCount = hospitalAppointments.filter((a) => a.status === 'checked-in' || a.status === 'scheduled').length;
@@ -130,6 +141,134 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
     setDeclineReason('');
   };
 
+  const handleRegisterHospital = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regName.trim() || !regArea.trim()) return;
+    const created = addHospitalFacility({
+      name: regName,
+      area: regArea,
+      city: regCity || 'Bengaluru',
+      phone: regPhone || '+91-80-0000-0000',
+      departments: ['General Medicine', 'Emergency', 'Cardiology', 'Obstetrics & Gynaecology'],
+      facilities: ['ICU', 'Ventilator', 'Blood Bank'],
+      icuTotal: Number(regIcu) || 0,
+      generalTotal: Number(regGen) || 0,
+      pedsTotal: Number(regPeds) || 0,
+    });
+    setManagedHospitalId(created.hospitalId);
+    setRegName('');
+    setRegArea('');
+    setRegCity('');
+    setRegPhone('');
+  };
+
+  if (!myHospital) {
+    return (
+      <div className="max-w-2xl mx-auto bg-white border border-[#D5E7DD] rounded-2xl p-6 sm:p-8 space-y-5">
+        <div className="flex items-start gap-3">
+          <div className="w-11 h-11 rounded-xl bg-[#E8F6EE] text-[#119655] flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="font-display text-xl font-extrabold text-[#0B3B2D]">
+              Register Your Hospital Facility
+            </h2>
+            <p className="text-xs text-slate-600 mt-1">
+              Add your hospital details and verified bed capacities to begin accepting Smart OPD bookings and Golden-Hour emergency referrals.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleRegisterHospital} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">Hospital Name *</label>
+              <input
+                type="text"
+                required
+                value={regName}
+                onChange={(e) => setRegName(e.target.value)}
+                placeholder="e.g., City General Hospital"
+                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">Area / Locality *</label>
+              <input
+                type="text"
+                required
+                value={regArea}
+                onChange={(e) => setRegArea(e.target.value)}
+                placeholder="e.g., Whitefield"
+                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">City</label>
+              <input
+                type="text"
+                value={regCity}
+                onChange={(e) => setRegCity(e.target.value)}
+                placeholder="e.g., Bengaluru"
+                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">Emergency Phone</label>
+              <input
+                type="tel"
+                value={regPhone}
+                onChange={(e) => setRegPhone(e.target.value)}
+                placeholder="+91-80-XXXX-XXXX"
+                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">ICU Beds</label>
+              <input
+                type="number"
+                min={0}
+                value={regIcu}
+                onChange={(e) => setRegIcu(e.target.value)}
+                className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm font-mono text-[#0B3B2D]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">General Beds</label>
+              <input
+                type="number"
+                min={0}
+                value={regGen}
+                onChange={(e) => setRegGen(e.target.value)}
+                className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm font-mono text-[#0B3B2D]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">Paediatric Beds</label>
+              <input
+                type="number"
+                min={0}
+                value={regPeds}
+                onChange={(e) => setRegPeds(e.target.value)}
+                className="w-full rounded-xl border border-[#CFE3D8] px-3 py-2 text-sm font-mono text-[#0B3B2D]"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2.5 px-5 rounded-xl bg-[#119655] hover:bg-[#0D7A44] text-white text-sm font-semibold transition-colors"
+          >
+            Register Hospital &amp; Open Command Center
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   const minutesSinceVerify = Math.max(
     0,
     Math.round((nowMs - Date.parse(myHospital.lastVerifiedAt)) / 60000)
@@ -137,7 +276,7 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Hospital Selector Bar (for switching managed hospital during multi-hospital demos) */}
+      {/* Hospital Selector Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white border border-[#D5E7DD] rounded-2xl px-5 py-3">
         <div className="flex items-center gap-2.5 text-xs">
           <Building2 className="w-4 h-4 text-[#119655]" />
@@ -149,7 +288,7 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
           </span>
         </div>
         <select
-          value={managedHospitalId}
+          value={myHospital.hospitalId}
           onChange={(e) => setManagedHospitalId(e.target.value)}
           aria-label="Select hospital desk to manage"
           className="rounded-xl border border-[#CFE3D8] bg-[#FAFDFB] px-3 py-1.5 text-xs font-semibold text-[#0B3B2D]"
@@ -452,7 +591,7 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
                   Bed Status · Live
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Verified {minutesSinceVerify} min ago · DEMO DATA
+                  Verified {minutesSinceVerify} min ago
                 </p>
               </div>
 

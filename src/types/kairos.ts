@@ -19,7 +19,6 @@ export interface UserProfile {
   emergencyContact?: string;
   abhaId?: string;
   consentGranted: boolean;
-  isDemoAccount?: boolean;
 }
 
 export interface HospitalFacility {
@@ -191,7 +190,7 @@ export interface DiagnosticCentre {
   area: string;
   hours: string;
   distanceKm: number;
-  verifiedPricingDemo: boolean;
+  verifiedPricing: boolean;
   slots: string[];
   tests: DiagnosticTestItem[];
 }

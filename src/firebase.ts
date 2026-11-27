@@ -1,9 +1,12 @@
 import { initializeApp } from 'firebase/app';
 import {
   GoogleAuthProvider,
+  createUserWithEmailAndPassword,
   getAuth,
+  signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
+  updateProfile,
   type User,
 } from 'firebase/auth';
 import {
@@ -96,6 +99,23 @@ void testConnection();
 
 export async function signInWithGoogle(): Promise<User> {
   const result = await signInWithPopup(auth, googleProvider);
+  return result.user;
+}
+
+export async function signInWithEmail(email: string, password: string): Promise<User> {
+  const result = await signInWithEmailAndPassword(auth, email.trim(), password);
+  return result.user;
+}
+
+export async function registerWithEmail(
+  email: string,
+  password: string,
+  displayName: string
+): Promise<User> {
+  const result = await createUserWithEmailAndPassword(auth, email.trim(), password);
+  if (displayName.trim()) {
+    await updateProfile(result.user, { displayName: displayName.trim() });
+  }
   return result.user;
 }
 
@@ -214,7 +234,10 @@ export async function syncDiagnosticBookingToFirestore(booking: DiagnosticBookin
   }
 }
 
-export async function syncReferralAuditToFirestore(referral: EmergencyReferral): Promise<void> {
+export async function syncReferralAuditToFirestore(
+  referral: EmergencyReferral,
+  actorRole: string = 'clinical'
+): Promise<void> {
   const current = auth.currentUser;
   if (!current || !current.emailVerified) return;
 
@@ -224,7 +247,7 @@ export async function syncReferralAuditToFirestore(referral: EmergencyReferral):
     await setDoc(doc(db, 'auditLogs', logId), {
       logId,
       actorUid: sanitizeId(current.uid),
-      actorRole: 'clinical_demo',
+      actorRole: actorRole.slice(0, 40),
       action: `referral_${referral.status}`,
       entityType: 'referral',
       entityId: sanitizeId(referral.referralId),

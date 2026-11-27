@@ -298,7 +298,7 @@ export function buildFhirReferralBundle(referral: EmergencyReferral) {
         {
           system: 'https://kairos.health/fhir/tags',
           code: 'abdm-integration-ready',
-          display: 'ABDM Compatible Structure (Demo)',
+          display: 'ABDM Compatible Structure',
         },
       ],
     },

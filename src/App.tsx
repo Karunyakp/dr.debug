@@ -14,6 +14,7 @@ import {
   MapPin,
   Send,
   ShieldCheck,
+  Sparkles,
   Stethoscope,
   User,
   Users,
@@ -23,8 +24,8 @@ import { useKairos } from './context/KairosContext';
 import type { UserRole } from './types/kairos';
 import { LandingPage } from './components/LandingPage';
 import { DashboardShell, type NavItem } from './components/DashboardShell';
-import { AuthModal } from './components/AuthModal';
-import { KairosAssistantModal } from './components/KairosAssistantModal';
+import { RoleAuthPage } from './components/RoleAuthPage';
+import { KairosAssistantModal, type AssistantTab } from './components/KairosAssistantModal';
 import { PatientDashboard } from './components/PatientDashboard';
 import { DoctorDashboard } from './components/DoctorDashboard';
 import { HospitalDashboard } from './components/HospitalDashboard';
@@ -56,72 +57,89 @@ export default function App() {
     referrals,
     diagnosticBookings,
     toastMessage,
-    loginAsDemoRole,
+    logout,
   } = useKairos();
 
-  const [view, setView] = useState<'landing' | 'dashboard'>('landing');
+  const [view, setView] = useState<'landing' | 'auth' | 'dashboard'>('landing');
+  const [authRole, setAuthRole] = useState<UserRole>('patient');
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [pendingTab, setPendingTab] = useState<string | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [searchQuery, setSearchQuery] = useState('');
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authInitialTab, setAuthInitialTab] = useState<'demo' | 'register' | 'google'>('demo');
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [assistantTab, setAssistantTab] = useState<AssistantTab>('chat');
   const [assistantNotes, setAssistantNotes] = useState('');
   const [assistantApplyCb, setAssistantApplyCb] = useState<((summary: string) => void) | undefined>(
     undefined
   );
   const [quotaBannerVisible, setQuotaBannerVisible] = useState(false);
 
-  // Google Maps Case A Demo Key quota listener (mandatory top-level sticky amber banner)
+  // Google Maps quota listener (mandatory top-level sticky amber banner)
   useEffect(() => {
     const handler = () => setQuotaBannerVisible(true);
     window.addEventListener('gmp-quota-exceeded', handler);
     return () => window.removeEventListener('gmp-quota-exceeded', handler);
   }, []);
 
-  // Support ?autostart=1 or ?role=<role> for direct workspace launch
+  // Support ?role=<role> to navigate directly to that role's Sign-In page
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const roleParam = params.get('role') as UserRole | null;
-    const autostart = params.get('autostart') === '1';
-
     if (roleParam && VALID_ROLES.includes(roleParam)) {
-      loginAsDemoRole(roleParam);
-      setActiveTab(DEFAULT_TAB_BY_ROLE[roleParam]);
-      setView('dashboard');
-    } else if (autostart) {
-      loginAsDemoRole('hospital');
-      setActiveTab(DEFAULT_TAB_BY_ROLE.hospital);
-      setView('dashboard');
+      setAuthRole(roleParam);
+      setAuthMode('signin');
+      setView('auth');
     }
-    // Run once on initial mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const enterRoleWorkspace = (role: UserRole, initialTab?: string) => {
-    loginAsDemoRole(role);
-    setActiveTab(initialTab ?? DEFAULT_TAB_BY_ROLE[role]);
+  const enterRolePortal = (role: UserRole, initialTab?: string) => {
     setSearchQuery('');
+    if (currentUser && currentUser.role === role) {
+      setActiveTab(initialTab ?? DEFAULT_TAB_BY_ROLE[role]);
+      setView('dashboard');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setAuthRole(role);
+    setAuthMode('signin');
+    setPendingTab(initialTab);
+    setView('auth');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenAuth = (role: UserRole = 'patient', mode: 'signin' | 'signup' = 'signin') => {
+    if (currentUser && mode === 'signin' && currentUser.role === role) {
+      setActiveTab(DEFAULT_TAB_BY_ROLE[currentUser.role]);
+      setView('dashboard');
+      return;
+    }
+    setAuthRole(role);
+    setAuthMode(mode);
+    setPendingTab(undefined);
+    setView('auth');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAuthenticated = () => {
+    setActiveTab(pendingTab ?? DEFAULT_TAB_BY_ROLE[authRole]);
+    setPendingTab(undefined);
     setView('dashboard');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSwitchRole = (role: UserRole) => {
-    loginAsDemoRole(role);
-    setActiveTab(DEFAULT_TAB_BY_ROLE[role]);
-    setSearchQuery('');
+  const handleOpenPortalSignIn = async (targetRole: UserRole) => {
+    if (currentUser && currentUser.role === targetRole) {
+      return;
+    }
+    await logout();
+    setAuthRole(targetRole);
+    setAuthMode('signin');
+    setPendingTab(undefined);
+    setView('auth');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenAuth = (tab: 'demo' | 'register' | 'google' = 'demo') => {
-    setAuthInitialTab(tab);
-    setAuthModalOpen(true);
-  };
-
-  const handleAuthenticated = () => {
-    setAuthModalOpen(false);
-    setView('dashboard');
-  };
-
-  // Keep activeTab valid whenever role changes via AuthModal
+  // Keep activeTab valid whenever role changes
   useEffect(() => {
     if (currentUser && view === 'dashboard') {
       const roleNavs: Record<UserRole, string[]> = {
@@ -241,15 +259,20 @@ export default function App() {
     }
   }, [activeTransferCount, currentUser?.role, pendingDiagCount, pendingReferralCount]);
 
-  const handleOpenAssistant = (notes?: string, applyCb?: (summary: string) => void) => {
+  const handleOpenAssistant = (
+    notes?: string,
+    applyCb?: (summary: string) => void,
+    tab?: AssistantTab
+  ) => {
     setAssistantNotes(notes ?? '');
     setAssistantApplyCb(() => applyCb);
+    setAssistantTab(tab ?? (notes || applyCb ? 'isbar' : 'chat'));
     setAssistantOpen(true);
   };
 
   return (
     <>
-      {/* Mandatory Google Maps Demo Key Quota Exceeded Banner */}
+      {/* Mandatory Google Maps Quota Exceeded Banner */}
       {quotaBannerVisible && (
         <div
           role="alert"
@@ -258,7 +281,7 @@ export default function App() {
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-800 shrink-0" />
             <span>
-              Google Maps demo quota reached — interactive Bengaluru corridor fallback is active.{' '}
+              Google Maps quota reached — interactive facility corridor fallback is active.{' '}
               <a
                 href="https://developers.google.com/maps/ai/ai-studio?utm_campaign=gmp_mcp_codeassist_v1_aistudio#quota_exceeded_errors"
                 target="_blank"
@@ -281,9 +304,15 @@ export default function App() {
         </div>
       )}
 
-      {view === 'landing' || !currentUser ? (
-        <LandingPage onOpenAuth={handleOpenAuth} onEnterRole={enterRoleWorkspace} />
-      ) : (
+      {view === 'auth' ? (
+        <RoleAuthPage
+          role={authRole}
+          initialMode={authMode}
+          onChangeRole={(nextRole) => setAuthRole(nextRole)}
+          onBackHome={() => setView('landing')}
+          onAuthenticated={handleAuthenticated}
+        />
+      ) : view === 'dashboard' && currentUser ? (
         <DashboardShell
           navItems={navConfig.items}
           activeTab={activeTab}
@@ -293,8 +322,8 @@ export default function App() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onGoHome={() => setView('landing')}
-          onOpenAssistant={() => handleOpenAssistant()}
-          onSwitchRole={handleSwitchRole}
+          onOpenAssistant={(tab) => handleOpenAssistant(undefined, undefined, tab ?? 'chat')}
+          onSwitchPortalSignIn={(targetRole) => void handleOpenPortalSignIn(targetRole)}
         >
           {currentUser.role === 'patient' && (
             <PatientDashboard
@@ -340,27 +369,39 @@ export default function App() {
             />
           )}
         </DashboardShell>
+      ) : (
+        <LandingPage
+          onOpenAuth={handleOpenAuth}
+          onEnterRole={enterRolePortal}
+          onOpenAssistant={(tab) => handleOpenAssistant(undefined, undefined, tab ?? 'chat')}
+        />
       )}
-
-      <AuthModal
-        open={authModalOpen}
-        initialTab={authInitialTab}
-        onClose={() => setAuthModalOpen(false)}
-        onAuthenticated={handleAuthenticated}
-      />
 
       <KairosAssistantModal
         open={assistantOpen}
         onClose={() => setAssistantOpen(false)}
+        initialTab={assistantTab}
         initialNotes={assistantNotes}
         onApplySummary={assistantApplyCb}
       />
+
+      {!assistantOpen && (
+        <button
+          type="button"
+          onClick={() => handleOpenAssistant(undefined, undefined, 'chat')}
+          aria-label="Open KAIROS AI Voice, Chat, Transcribe & Maps Hub"
+          className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#0B3B2D] hover:bg-[#119655] text-white text-xs font-bold shadow-xl border border-emerald-700/60 transition-colors"
+        >
+          <Sparkles className="w-4 h-4 text-[#4ADE80] shrink-0" />
+          <span>KAIROS AI Hub</span>
+        </button>
+      )}
 
       {toastMessage && (
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 right-5 z-50 max-w-sm rounded-xl bg-[#0B3B2D] text-white px-4 py-3 shadow-xl border border-emerald-700/60 flex items-center gap-2.5 text-xs font-medium"
+          className="fixed bottom-16 right-5 z-50 max-w-sm rounded-xl bg-[#0B3B2D] text-white px-4 py-3 shadow-xl border border-emerald-700/60 flex items-center gap-2.5 text-xs font-medium"
         >
           <CheckCircle2 className="w-4 h-4 text-[#4ADE80] shrink-0" />
           <span>{toastMessage}</span>

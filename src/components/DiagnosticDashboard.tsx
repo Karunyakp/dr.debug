@@ -28,10 +28,15 @@ export const DiagnosticDashboard: React.FC<DiagnosticDashboardProps> = ({
     diagnosticBookings,
     updateDiagnosticBooking,
     addDiagnosticTestToCentre,
+    addDiagnosticCentre,
   } = useKairos();
 
   const myCentre =
-    diagnosticCentres.find((c) => c.centreId === currentUser?.facilityId) ?? diagnosticCentres[0];
+    diagnosticCentres.find((c) => c.centreId === currentUser?.facilityId) ?? diagnosticCentres[0] ?? null;
+
+  const [regCentreName, setRegCentreName] = useState(currentUser?.facilityName ?? '');
+  const [regCentreArea, setRegCentreArea] = useState('');
+  const [regCentreHours, setRegCentreHours] = useState('07:00 AM – 08:00 PM');
 
   const [reportDrafts, setReportDrafts] = useState<Record<string, string>>({});
   const [testName, setTestName] = useState('');
@@ -62,7 +67,7 @@ export const DiagnosticDashboard: React.FC<DiagnosticDashboardProps> = ({
       bookingId,
       status,
       status === 'report_ready'
-        ? draft || 'Verified laboratory parameters uploaded (DEMO). Clinician review advised.'
+        ? draft || 'Verified laboratory parameters uploaded. Clinician review advised.'
         : undefined
     );
   };
@@ -80,6 +85,79 @@ export const DiagnosticDashboard: React.FC<DiagnosticDashboardProps> = ({
     setTestName('');
   };
 
+  const handleRegisterCentre = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regCentreName.trim() || !regCentreArea.trim()) return;
+    addDiagnosticCentre({
+      name: regCentreName,
+      area: regCentreArea,
+      hours: regCentreHours,
+    });
+    setRegCentreName('');
+    setRegCentreArea('');
+  };
+
+  if (!myCentre) {
+    return (
+      <div className="max-w-xl mx-auto bg-white rounded-2xl border border-[#DCECE3] p-6 sm:p-8 space-y-5">
+        <div className="flex items-start gap-3">
+          <div className="w-11 h-11 rounded-xl bg-[#E8F6EE] text-[#119655] flex items-center justify-center shrink-0">
+            <FlaskConical className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="font-display text-xl font-extrabold text-[#0B3B2D]">
+              Register Your Diagnostic Centre
+            </h2>
+            <p className="text-xs text-slate-600 mt-1">
+              Add your lab profile to list diagnostic tests, confirm patient bookings, and publish reports securely.
+            </p>
+          </div>
+        </div>
+        <form onSubmit={handleRegisterCentre} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">Centre Name *</label>
+            <input
+              type="text"
+              required
+              value={regCentreName}
+              onChange={(e) => setRegCentreName(e.target.value)}
+              placeholder="e.g., Metro Diagnostics & Imaging"
+              className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D]"
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">Area / Location *</label>
+              <input
+                type="text"
+                required
+                value={regCentreArea}
+                onChange={(e) => setRegCentreArea(e.target.value)}
+                placeholder="e.g., Indiranagar"
+                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">Operating Hours</label>
+              <input
+                type="text"
+                value={regCentreHours}
+                onChange={(e) => setRegCentreHours(e.target.value)}
+                className="w-full rounded-xl border border-[#CFE3D8] px-3.5 py-2.5 text-sm text-[#0B3B2D]"
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="w-full py-2.5 px-5 rounded-xl bg-[#119655] hover:bg-[#0D7A44] text-white text-sm font-semibold transition-colors"
+          >
+            Register Diagnostic Centre
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* KPI Strip */}
@@ -87,10 +165,10 @@ export const DiagnosticDashboard: React.FC<DiagnosticDashboardProps> = ({
         <div className="bg-white rounded-2xl border border-[#DCECE3] p-5">
           <p className="text-xs font-medium text-slate-600">Diagnostic Centre</p>
           <p className="font-display text-lg font-extrabold text-[#0B3B2D] mt-1 truncate">
-            {myCentre?.name}
+            {myCentre.name}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
-            {myCentre?.area} · {myCentre?.hours}
+            {myCentre.area} · {myCentre.hours}
           </p>
         </div>
 
@@ -108,7 +186,7 @@ export const DiagnosticDashboard: React.FC<DiagnosticDashboardProps> = ({
             {readyCount}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
-            {myCentre?.tests.length ?? 0} verified-demo lab tests listed
+            {myCentre.tests.length} lab tests listed
           </p>
         </div>
       </div>
@@ -163,7 +241,7 @@ export const DiagnosticDashboard: React.FC<DiagnosticDashboardProps> = ({
                     <p className="text-sm font-bold text-[#0B3B2D]">
                       {booking.testName}{' '}
                       <span className="font-mono text-xs font-semibold text-slate-600">
-                        · ₹{booking.priceInr} (DEMO)
+                        · ₹{booking.priceInr}
                       </span>
                     </p>
                     <p className="text-xs text-slate-600">
@@ -252,7 +330,7 @@ export const DiagnosticDashboard: React.FC<DiagnosticDashboardProps> = ({
               Available Lab Tests · {myCentre.name}
             </h2>
             <p className="text-xs text-slate-600 mt-0.5">
-              Pricing and turnaround hours are clearly tagged as verified DEMO DATA for patients.
+              Pricing and turnaround hours are published directly to patients in Diagnostic Connect.
             </p>
             <div className="mt-4 divide-y divide-[#EEF5F1]">
               {myCentre.tests.map((t) => (
@@ -306,7 +384,7 @@ export const DiagnosticDashboard: React.FC<DiagnosticDashboardProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-[#0B3B2D] mb-1">
-                    Demo Price (₹)
+                    Price (₹)
                   </label>
                   <input
                     type="number"

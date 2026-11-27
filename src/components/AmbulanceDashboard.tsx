@@ -151,21 +151,13 @@ export const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({
           setGeoStatus('Live GPS permission granted and synced to receiving hospital.');
         },
         () => {
-          updateAmbulanceTransfer(activeTransfer.referralId, activeTransfer.ambulanceStatus, {
-            locationConsentGranted: true,
-            coords: { lat: 12.9765, lng: 77.7112 },
-          });
-          setGeoStatus('Device GPS unavailable in preview — sharing verified demo corridor coordinates.');
-          showToast('Consent active — streaming corridor GPS coordinates (DEMO).');
+          setGeoStatus('Device GPS permission was denied or unavailable. Enable location access in your browser to stream live GPS.');
+          showToast('Location access unavailable — enable device GPS to share live coordinates.');
         },
         { timeout: 4000 }
       );
     } else {
-      updateAmbulanceTransfer(activeTransfer.referralId, activeTransfer.ambulanceStatus, {
-        locationConsentGranted: true,
-        coords: { lat: 12.9765, lng: 77.7112 },
-      });
-      setGeoStatus('Sharing demo corridor coordinates with receiving ER.');
+      setGeoStatus('Geolocation is not supported by this browser. Hospital will receive manual ETA updates.');
     }
   };
 
