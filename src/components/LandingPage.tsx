@@ -1163,16 +1163,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </li>
                 <li>
                   <a
-                    href="tel:+918041239108"
+                    href="tel:+1234567890"
                     className="inline-flex items-center gap-2 hover:text-kairos-emerald-ink transition-colors font-mono"
                   >
                     <Phone className="w-3.5 h-3.5 text-kairos-emerald-ink shrink-0" />
-                    +91 80 4123 9108 (24/7 Desk)
+                    +1234567890 (24/7 Desk)
                   </a>
                 </li>
                 <li className="inline-flex items-start gap-2">
                   <MapPin className="w-3.5 h-3.5 text-kairos-emerald-ink shrink-0 mt-0.5" />
-                  <span>CMRIT Campus, AECS Layout, Bengaluru, KA 560037</span>
+                  <span>Bengaluru, KA 560049</span>
                 </li>
               </ul>
               <button
