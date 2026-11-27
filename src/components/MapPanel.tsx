@@ -74,9 +74,7 @@ export const MapPanel: React.FC<MapPanelProps> = ({
   title = 'Hospital & Transfer Corridor Map',
   heightClass = 'h-[340px]',
 }) => {
-  const [apiKey, setApiKey] = useState<string>(
-    () => import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
-  );
+  const [apiKey, setApiKey] = useState<string>('');
   const [quotaReached, setQuotaReached] = useState(false);
   const [focusedHospital, setFocusedHospital] = useState<HospitalFacility | null>(
     () => hospitals.find((h) => h.hospitalId === selectedHospitalId) ?? hospitals[0] ?? null

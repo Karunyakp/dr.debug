@@ -1,8 +1,21 @@
 {
   "framework": "vite",
+  "installCommand": "npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
+    {
+      "source": "/api/ai/:path*",
+      "destination": "/api/index?__vercel_api_path=ai/:path*"
+    },
+    {
+      "source": "/api/maps/:path*",
+      "destination": "/api/index?__vercel_api_path=maps/:path*"
+    },
+    {
+      "source": "/api/health",
+      "destination": "/api/index?__vercel_api_path=health"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

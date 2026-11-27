@@ -100,8 +100,34 @@ interface ExtractedMapPlace {
 
 const VALID_VOICES = new Set(['Zephyr', 'Kore', 'Puck', 'Charon', 'Fenrir']);
 
-async function startServer() {
+function normalizeVercelApiUrl(url: string | undefined): string | undefined {
+  if (!url) {
+    return url;
+  }
+
+  const parsedUrl = new URL(url, 'http://localhost');
+  const apiPath = parsedUrl.searchParams.get('__vercel_api_path');
+  if (!apiPath) {
+    return url;
+  }
+
+  parsedUrl.searchParams.delete('__vercel_api_path');
+  const pathname = apiPath.startsWith('/') ? apiPath : `/api/${apiPath}`;
+  return `${pathname}${parsedUrl.search}`;
+}
+
+export async function createKairoServer({
+  vercelFunction = false,
+}: {
+  vercelFunction?: boolean;
+} = {}) {
   const app = express();
+  app.use((req, _res, next) => {
+    if (vercelFunction) {
+      req.url = normalizeVercelApiUrl(req.url) || req.url;
+    }
+    next();
+  });
   app.use(express.json({ limit: '20mb' }));
 
   app.get('/api/health', (_req, res) => {
@@ -121,7 +147,7 @@ async function startServer() {
   });
 
   app.get('/api/maps/config', (_req, res) => {
-    const key = process.env.VITE_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || '';
+    const key = process.env.GOOGLE_MAPS_API_KEY || '';
     res.json({
       hasMapsKey: Boolean(key && key !== 'MY_GOOGLE_MAPS_API_KEY'),
       mapsApiKey: key && key !== 'MY_GOOGLE_MAPS_API_KEY' ? key : '',
@@ -474,14 +500,14 @@ async function startServer() {
     }
   });
 
-  if (!isProduction) {
+  if (!vercelFunction && !isProduction) {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
-  } else {
+  } else if (!vercelFunction) {
     const distDir = path.resolve(__dirname, 'dist');
     app.use(express.static(distDir));
     app.get('*', (_req, res) => {
@@ -503,6 +529,9 @@ async function startServer() {
 
   server.on('upgrade', (request, socket, head) => {
     try {
+      if (vercelFunction) {
+        request.url = normalizeVercelApiUrl(request.url) || request.url;
+      }
       const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
       if (url.pathname === '/api/ai/live') {
         liveWss.handleUpgrade(request, socket, head, (ws) => {
@@ -666,12 +695,19 @@ async function startServer() {
     });
   });
 
+  return server;
+}
+
+async function startServer() {
+  const server = await createKairoServer();
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`KAIROS server running at http://0.0.0.0:${PORT}`);
   });
 }
 
-startServer().catch((err) => {
-  console.error('Failed to start KAIROS server:', err);
-  process.exit(1);
-});
+if (process.env.VERCEL !== '1') {
+  startServer().catch((err) => {
+    console.error('Failed to start KAIROS server:', err);
+    process.exit(1);
+  });
+}
