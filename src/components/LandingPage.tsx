@@ -1154,6 +1154,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <ul className="space-y-2.5 text-xs text-kairos-muted">
                 <li>
                   <a
+                    href="mailto:karunyayashu6@gmail.com"
+                    className="inline-flex items-center gap-2 hover:text-kairos-emerald-ink transition-colors"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-kairos-emerald-ink shrink-0" />
+                    karunyayashu6@gmail.com
+                  </a>
+                </li>
+                <li>
+                  <a
                     href="mailto:support@kairoshealth.in"
                     className="inline-flex items-center gap-2 hover:text-kairos-emerald-ink transition-colors"
                   >
@@ -1323,7 +1332,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     className="space-y-3"
                   >
                     <p className="text-kairos-muted">
-                      Reach out for hospital onboarding, ambulance fleet integration, or technical support.
+                      Reach out for hospital onboarding, ambulance fleet integration, or technical support at{' '}
+                      <a href="mailto:karunyayashu6@gmail.com" className="font-semibold text-kairos-emerald-ink hover:underline">
+                        karunyayashu6@gmail.com
+                      </a>.
                     </p>
                     <div>
                       <label htmlFor="footer-contact-name" className="block font-semibold text-kairos-forest-ink mb-1">
