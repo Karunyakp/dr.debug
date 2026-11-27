@@ -1,14 +1,11 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import {
   GoogleAuthProvider,
-  browserLocalPersistence,
   createUserWithEmailAndPassword,
   getAuth,
   getRedirectResult,
-  setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signInWithRedirect,
   signOut as firebaseSignOut,
   updateProfile,
   type User,
@@ -35,13 +32,6 @@ export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
-
-// Ensure persistent auth sessions survive reloads and OAuth redirects in production
-if (typeof window !== 'undefined') {
-  void setPersistence(auth, browserLocalPersistence).catch(() => {
-    // Fall back to default persistence if browser storage is restricted
-  });
-}
 
 const PENDING_AUTH_KEY = 'kairos_pending_auth_context_v1';
 
@@ -159,30 +149,16 @@ void testConnection();
 
 export async function signInWithGoogle(
   pendingContext?: Omit<PendingAuthContext, 'createdAt' | 'isRedirect'>
-): Promise<User | null> {
+): Promise<User> {
   if (pendingContext) {
     savePendingAuthContext({ ...pendingContext, isRedirect: false });
   }
   try {
+    // Always prefer signInWithPopup: cross-origin signInWithRedirect reloads "/" (Home Page)
+    // and fails under modern browser third-party storage partitioning.
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
   } catch (error) {
-    const code =
-      typeof error === 'object' && error !== null && 'code' in error
-        ? String((error as { code?: unknown }).code)
-        : '';
-    // Automatically fall back to redirect flow only when popups are blocked outside iframes
-    const inIframe = typeof window !== 'undefined' && window.self !== window.top;
-    if (
-      !inIframe &&
-      (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment')
-    ) {
-      if (pendingContext) {
-        savePendingAuthContext({ ...pendingContext, isRedirect: true });
-      }
-      await signInWithRedirect(auth, googleProvider);
-      return null;
-    }
     clearPendingAuthContext();
     throw error;
   }
@@ -230,27 +206,29 @@ export async function syncUserProfileToFirestore(profile: UserProfile): Promise<
 
   const uid = sanitizeId(current.uid);
   const publicPath = `users/${uid}`;
+  const safeDisplayName = (profile.displayName || current.displayName || 'KAIROS User').slice(0, 120);
   try {
-    await setDoc(
-      doc(db, 'users', uid),
-      {
-        uid,
-        displayName: (profile.displayName || current.displayName || 'KAIROS User').slice(0, 120),
-        role: 'patient',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      },
-      { merge: false }
-    );
+    // Fast path for returning users: update allowed mutable fields without triggering a create-rule rejection
+    await updateDoc(doc(db, 'users', uid), {
+      displayName: safeDisplayName,
+      updatedAt: serverTimestamp(),
+    });
   } catch {
-    // Document likely exists already; update allowed mutable fields only
+    // First-time user: create the public user profile document
     try {
-      await updateDoc(doc(db, 'users', uid), {
-        displayName: (profile.displayName || current.displayName || 'KAIROS User').slice(0, 120),
-        updatedAt: serverTimestamp(),
-      });
+      await setDoc(
+        doc(db, 'users', uid),
+        {
+          uid,
+          displayName: safeDisplayName,
+          role: 'patient',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: false }
+      );
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, publicPath);
+      handleFirestoreError(error, OperationType.CREATE, publicPath);
     }
   }
 

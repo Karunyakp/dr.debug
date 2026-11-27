@@ -137,7 +137,10 @@ function formatFirebaseAuthError(err: unknown): string {
     return `Google sign-in is blocked because "${host}" is not yet in Firebase Authorized Domains. Add "${host}" under Firebase Console → Authentication → Settings → Authorized domains.`;
   }
   if (code === 'auth/popup-blocked' || msg.includes('popup-blocked')) {
-    return 'Your browser blocked the Google sign-in popup. Please allow popups for this site and click "Continue with Google" again.';
+    return 'Your browser blocked the Google sign-in popup. Please allow popups for this site and click "Continue with Google" again, or use Demo Login below.';
+  }
+  if (code === 'auth/operation-not-supported-in-this-environment') {
+    return 'Google sign-in popup is restricted in this embedded browser view. Open the app in a full browser tab to sign in with Google, or use Demo Login below.';
   }
   if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
     return 'Google sign-in popup was closed before completing sign-in. Please try again.';

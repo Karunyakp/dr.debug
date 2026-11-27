@@ -426,42 +426,49 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return mapped;
     };
 
-    // Process returning OAuth redirect callback (when popup fell back to redirect)
-    void consumeGoogleRedirectResult()
-      .then(async (redirectUser) => {
-        if (!active || !redirectUser) return;
-        const pending = readPendingAuthContext();
-        const profile = hydrateProfile(redirectUser);
-        saveStoredProfile(profile);
-        clearPendingAuthContext();
-        setCurrentUser(profile);
-        upsertRegisteredUser(
-          profile,
-          'GOOGLE_SIGN_IN',
-          `${profile.displayName} signed in to ${profile.role} portal via Google OAuth redirect.`
-        );
-        setRedirectAuthenticatedRole(pending?.role ?? profile.role);
-        try {
-          await syncUserProfileToFirestore(profile);
-        } catch (err) {
-          console.error('Firestore profile sync warning after redirect:', err);
-        }
-        showToast(`Signed in with Google as ${profile.displayName}`);
-      })
-      .catch((err) => {
-        if (!active) return;
-        clearPendingAuthContext();
-        console.error('Firebase OAuth redirect callback error:', err);
-        setAuthCallbackError(err);
-      });
+    // Process returning OAuth redirect callback only if one was explicitly initiated
+    const initialPending = readPendingAuthContext();
+    if (initialPending?.isRedirect) {
+      void consumeGoogleRedirectResult()
+        .then((redirectUser) => {
+          if (!active || !redirectUser) return;
+          const pending = readPendingAuthContext();
+          const profile = hydrateProfile(redirectUser);
+          saveStoredProfile(profile);
+          clearPendingAuthContext();
+          setCurrentUser(profile);
+          upsertRegisteredUser(
+            profile,
+            'GOOGLE_SIGN_IN',
+            `${profile.displayName} signed in to ${profile.role} portal via Google.`
+          );
+          setRedirectAuthenticatedRole(pending?.role ?? profile.role);
+          syncUserProfileToFirestore(profile).catch((err) => {
+            console.error('Firestore profile sync warning after redirect:', err);
+          });
+          showToast(`Signed in with Google as ${profile.displayName}`);
+        })
+        .catch((err) => {
+          if (!active) return;
+          clearPendingAuthContext();
+          console.error('Firebase OAuth redirect callback error:', err);
+          setAuthCallbackError(err);
+        });
+    }
 
     const unsub = onAuthStateChanged(auth, (fbUser) => {
       if (!active) return;
       setFirebaseUser(fbUser);
       setAuthReady(true);
       if (fbUser) {
+        const pending = readPendingAuthContext();
         const mapped = hydrateProfile(fbUser);
         setCurrentUser(mapped);
+        if (pending?.isRedirect) {
+          saveStoredProfile(mapped);
+          clearPendingAuthContext();
+          setRedirectAuthenticatedRole(pending.role);
+        }
       } else {
         setCurrentUser((prev) => {
           if (prev && prev.uid.startsWith('demo-')) {
@@ -721,10 +728,6 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         role: selectedRole,
         facilityName: facilityName?.trim() || undefined,
       });
-      // Redirect flow initiated; page will navigate away and hydrate on return
-      if (!fbUser) {
-        return false;
-      }
       const existing = loadStoredProfile(fbUser.uid);
       const profile: UserProfile = {
         uid: fbUser.uid,
@@ -748,11 +751,10 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         'GOOGLE_SIGN_IN',
         `${profile.displayName} signed in to ${selectedRole} portal via Google.`
       );
-      try {
-        await syncUserProfileToFirestore(profile);
-      } catch (err) {
+      // Sync profile to Firestore in the background so sign-in enters the dashboard immediately
+      syncUserProfileToFirestore(profile).catch((err) => {
         console.error('Firestore profile sync warning:', err);
-      }
+      });
       showToast(`Signed in with Google as ${profile.displayName}`);
       return true;
     },

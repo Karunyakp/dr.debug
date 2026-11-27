@@ -60,6 +60,8 @@ function isUnknownPath(pathname: string): boolean {
 export default function App() {
   const {
     currentUser,
+    authReady,
+    authCallbackError,
     referrals,
     diagnosticBookings,
     toastMessage,
@@ -112,7 +114,7 @@ export default function App() {
     }
   }, []);
 
-  // Automatically enter dashboard when returning from a Google OAuth redirect callback
+  // Automatically enter dashboard when returning from an OAuth redirect callback
   useEffect(() => {
     if (redirectAuthenticatedRole && currentUser) {
       setAuthRole(redirectAuthenticatedRole);
@@ -123,6 +125,20 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [redirectAuthenticatedRole, currentUser, pendingTab, consumeRedirectAuthenticatedRole]);
+
+  // Surface any OAuth callback errors directly on the sign-in screen instead of leaving the user on Home
+  useEffect(() => {
+    if (authCallbackError && view === 'landing') {
+      setView('auth');
+    }
+  }, [authCallbackError, view]);
+
+  // Keep signed-out dashboard views on the sign-in screen once auth resolves instead of abruptly jumping to Home
+  useEffect(() => {
+    if (view === 'dashboard' && authReady && !currentUser) {
+      setView('auth');
+    }
+  }, [view, authReady, currentUser]);
 
   const handleGoHomepageFromNotFound = () => {
     if (typeof window !== 'undefined' && (window.location.pathname !== '/' || window.location.search)) {
@@ -359,6 +375,13 @@ export default function App() {
           onBackHome={() => setView('landing')}
           onAuthenticated={handleAuthenticated}
         />
+      ) : view === 'dashboard' && !currentUser ? (
+        <div className="min-h-screen bg-kairos-mint text-kairos-forest-ink flex items-center justify-center p-6">
+          <div className="bg-kairos-surface border border-kairos-border rounded-2xl px-6 py-5 text-center shadow-sm">
+            <p className="text-sm font-semibold text-kairos-forest-ink">Opening your KAIROS workspace…</p>
+            <p className="text-xs text-kairos-muted mt-1">Restoring your authenticated session.</p>
+          </div>
+        </div>
       ) : view === 'dashboard' && currentUser ? (
         <DashboardShell
           navItems={navConfig.items}
