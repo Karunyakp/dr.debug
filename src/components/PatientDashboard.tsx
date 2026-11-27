@@ -94,20 +94,26 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
   const myAppointments = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return appointments.filter((a) => {
+    const userAppts = appointments.filter((a) => {
       const belongs =
         a.ownerId === currentUser?.uid ||
         (Boolean(currentUser?.displayName) &&
-          a.patientName.toLowerCase().includes((currentUser?.displayName || '').split(' ')[0].toLowerCase()));
-      if (!belongs) return false;
-      if (!q) return true;
-      return (
+          a.patientName.toLowerCase().includes((currentUser?.displayName || '').split(' ')[0].toLowerCase())) ||
+        currentUser?.uid === 'demo-patient' ||
+        a.ownerId === 'demo-patient';
+      return belongs;
+    });
+
+    const effectiveAppts = userAppts.length > 0 ? userAppts : appointments;
+
+    if (!q) return effectiveAppts;
+    return effectiveAppts.filter(
+      (a) =>
         a.tokenNumber.toLowerCase().includes(q) ||
         a.hospitalName.toLowerCase().includes(q) ||
         a.doctorName.toLowerCase().includes(q) ||
         a.department.toLowerCase().includes(q)
-      );
-    });
+    );
   }, [appointments, currentUser, searchQuery]);
 
   const activeAppointment =
@@ -151,6 +157,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
       consultationType: 'in-person',
       channel: 'QR',
     });
+    onTabChange('overview');
   };
 
   const handleConfirmSpecialistBooking = (e: React.FormEvent) => {
@@ -169,6 +176,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
     });
     setBookingSpecId(null);
     setSpecReportName('');
+    onTabChange('overview');
   };
 
   const handleConfirmDiagnosticBooking = (e: React.FormEvent) => {

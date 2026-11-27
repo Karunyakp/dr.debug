@@ -41,6 +41,18 @@ import {
   recalculateOpdQueue,
 } from '../utils/kairosEngine';
 
+import {
+  DEFAULT_AUDIT_LOGS,
+  DEFAULT_APPOINTMENTS,
+  DEFAULT_DIAGNOSTIC_BOOKINGS,
+  DEFAULT_DIAGNOSTIC_CENTRES,
+  DEFAULT_HOSPITALS,
+  DEFAULT_NOTIFICATIONS,
+  DEFAULT_REFERRALS,
+  DEFAULT_REGISTERED_USERS,
+  DEFAULT_SPECIALISTS,
+} from '../data/defaultPlatformData';
+
 const STORAGE_KEY = 'kairos_platform_state_v2';
 const PROFILE_STORAGE_PREFIX = 'kairos_user_profile_v2_';
 const CHANNEL_NAME = 'kairos-live-sync-v2';
@@ -58,17 +70,17 @@ interface PersistedState {
   registeredUsers: UserProfile[];
 }
 
-const EMPTY_STATE: PersistedState = {
-  hospitals: [],
-  specialists: [],
-  appointments: [],
-  referrals: [],
+export const INITIAL_PLATFORM_STATE: PersistedState = {
+  hospitals: DEFAULT_HOSPITALS,
+  specialists: DEFAULT_SPECIALISTS,
+  appointments: DEFAULT_APPOINTMENTS,
+  referrals: DEFAULT_REFERRALS,
   offlineReferralQueue: [],
-  diagnosticCentres: [],
-  diagnosticBookings: [],
-  notifications: [],
-  auditLogs: [],
-  registeredUsers: [],
+  diagnosticCentres: DEFAULT_DIAGNOSTIC_CENTRES,
+  diagnosticBookings: DEFAULT_DIAGNOSTIC_BOOKINGS,
+  notifications: DEFAULT_NOTIFICATIONS,
+  auditLogs: DEFAULT_AUDIT_LOGS,
+  registeredUsers: DEFAULT_REGISTERED_USERS,
 };
 
 function loadInitialState(): PersistedState {
@@ -77,26 +89,51 @@ function loadInitialState(): PersistedState {
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<PersistedState>;
       return {
-        hospitals: Array.isArray(parsed.hospitals) ? parsed.hospitals : [],
-        specialists: Array.isArray(parsed.specialists) ? parsed.specialists : [],
-        appointments: Array.isArray(parsed.appointments) ? parsed.appointments : [],
-        referrals: Array.isArray(parsed.referrals) ? parsed.referrals : [],
+        hospitals:
+          Array.isArray(parsed.hospitals) && parsed.hospitals.length > 0
+            ? parsed.hospitals
+            : DEFAULT_HOSPITALS,
+        specialists:
+          Array.isArray(parsed.specialists) && parsed.specialists.length > 0
+            ? parsed.specialists
+            : DEFAULT_SPECIALISTS,
+        appointments:
+          Array.isArray(parsed.appointments) && parsed.appointments.length > 0
+            ? parsed.appointments
+            : DEFAULT_APPOINTMENTS,
+        referrals:
+          Array.isArray(parsed.referrals) && parsed.referrals.length > 0
+            ? parsed.referrals
+            : DEFAULT_REFERRALS,
         offlineReferralQueue: Array.isArray(parsed.offlineReferralQueue)
           ? parsed.offlineReferralQueue
           : [],
-        diagnosticCentres: Array.isArray(parsed.diagnosticCentres) ? parsed.diagnosticCentres : [],
-        diagnosticBookings: Array.isArray(parsed.diagnosticBookings)
-          ? parsed.diagnosticBookings
-          : [],
-        notifications: Array.isArray(parsed.notifications) ? parsed.notifications : [],
-        auditLogs: Array.isArray(parsed.auditLogs) ? parsed.auditLogs : [],
-        registeredUsers: Array.isArray(parsed.registeredUsers) ? parsed.registeredUsers : [],
+        diagnosticCentres:
+          Array.isArray(parsed.diagnosticCentres) && parsed.diagnosticCentres.length > 0
+            ? parsed.diagnosticCentres
+            : DEFAULT_DIAGNOSTIC_CENTRES,
+        diagnosticBookings:
+          Array.isArray(parsed.diagnosticBookings) && parsed.diagnosticBookings.length > 0
+            ? parsed.diagnosticBookings
+            : DEFAULT_DIAGNOSTIC_BOOKINGS,
+        notifications:
+          Array.isArray(parsed.notifications) && parsed.notifications.length > 0
+            ? parsed.notifications
+            : DEFAULT_NOTIFICATIONS,
+        auditLogs:
+          Array.isArray(parsed.auditLogs) && parsed.auditLogs.length > 0
+            ? parsed.auditLogs
+            : DEFAULT_AUDIT_LOGS,
+        registeredUsers:
+          Array.isArray(parsed.registeredUsers) && parsed.registeredUsers.length > 0
+            ? parsed.registeredUsers
+            : DEFAULT_REGISTERED_USERS,
       };
     }
   } catch {
-    // Fallback to clean empty state
+    // Fallback to initial default state
   }
-  return EMPTY_STATE;
+  return INITIAL_PLATFORM_STATE;
 }
 
 function loadStoredProfile(uid: string): UserProfile | null {
@@ -284,6 +321,7 @@ interface KairosContextValue {
   updateUserRoleByAdmin: (uid: string, role: UserRole) => void;
   broadcastNotification: (title: string, message: string, severity: KairosNotification['severity']) => void;
   markAllNotificationsRead: () => void;
+  resetPlatformData: () => void;
 }
 
 const KairosContext = createContext<KairosContextValue | null>(null);
@@ -1887,6 +1925,12 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }));
   }, [updateState]);
 
+  const resetPlatformData = useCallback(() => {
+    setState(INITIAL_PLATFORM_STATE);
+    persistAndBroadcast(INITIAL_PLATFORM_STATE);
+    showToast('Healthcare network reset to verified live demo state.');
+  }, [persistAndBroadcast, showToast]);
+
   const value = useMemo<KairosContextValue>(
     () => ({
       currentUser,
@@ -1942,12 +1986,14 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updateUserRoleByAdmin,
       broadcastNotification,
       markAllNotificationsRead,
+      resetPlatformData,
     }),
     [
       currentUser,
       firebaseUser,
       authReady,
       isOfflineSimulated,
+      setOfflineSimulated,
       nowMs,
       state,
       toastMessage,
@@ -1987,6 +2033,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updateUserRoleByAdmin,
       broadcastNotification,
       markAllNotificationsRead,
+      resetPlatformData,
     ]
   );
 

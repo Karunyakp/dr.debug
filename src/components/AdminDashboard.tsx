@@ -14,6 +14,7 @@ import {
   Bell,
   Building2,
   FlaskConical,
+  RotateCcw,
   Send,
   ShieldCheck,
   Stethoscope,
@@ -47,6 +48,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     broadcastNotification,
     addHospitalFacility,
     addSpecialistDoctor,
+    resetPlatformData,
   } = useKairos();
 
   const [broadcastTitle, setBroadcastTitle] = useState('');
@@ -657,6 +659,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 Broadcast to All Roles
               </button>
             </form>
+          </div>
+
+          {/* Platform Demo Reset & Re-seed Card */}
+          <div className="lg:col-span-3 bg-kairos-surface rounded-2xl border border-kairos-border p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <RotateCcw className="w-4 h-4 text-kairos-emerald-ink" />
+                <h3 className="font-display text-base font-bold text-kairos-forest-ink">
+                  Reset Healthcare Network Demo Data
+                </h3>
+              </div>
+              <p className="text-xs text-kairos-muted mt-1 max-w-2xl leading-relaxed">
+                Re-seeds the entire platform with default Bengaluru hospitals (CMRIT, Manipal, Vydehi), verified ICU/General beds, specialists, digital QR tokens, active emergency referrals with live vitals, en-route ambulances, and diagnostic test catalogs.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={resetPlatformData}
+              className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl border border-kairos-border bg-kairos-surface-subtle hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-950/40 text-xs font-bold text-kairos-forest-ink hover:text-red-700 dark:hover:text-red-400 transition-colors shrink-0"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset All Demo Data
+            </button>
           </div>
         </div>
       )}
