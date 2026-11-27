@@ -2,7 +2,11 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
 import {
   auth,
+  clearPendingAuthContext,
+  consumeGoogleRedirectResult,
+  readPendingAuthContext,
   registerWithEmail,
+  savePendingAuthContext,
   signInWithEmail,
   signInWithGoogle,
   signOutFirebase,
@@ -220,9 +224,13 @@ interface KairosContextValue {
   toastMessage: string | null;
   showToast: (msg: string) => void;
   // Auth & Profile
+  authCallbackError: unknown | null;
+  clearAuthCallbackError: () => void;
+  redirectAuthenticatedRole: UserRole | null;
+  consumeRedirectAuthenticatedRole: () => void;
   loginWithEmail: (email: string, password: string, selectedRole: UserRole) => Promise<void>;
   registerWithEmailAccount: (input: RegisterEmailAccountInput) => Promise<void>;
-  loginWithGoogle: (selectedRole?: UserRole, facilityName?: string) => Promise<void>;
+  loginWithGoogle: (selectedRole?: UserRole, facilityName?: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateCurrentProfile: (patch: Partial<UserProfile>) => void;
   // Facility & Directory Registration
@@ -287,8 +295,13 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const [authCallbackError, setAuthCallbackError] = useState<unknown | null>(null);
+  const [redirectAuthenticatedRole, setRedirectAuthenticatedRole] = useState<UserRole | null>(null);
   const channelRef = useRef<BroadcastChannel | null>(null);
   const toastTimerRef = useRef<number | null>(null);
+
+  const clearAuthCallbackError = useCallback(() => setAuthCallbackError(null), []);
+  const consumeRedirectAuthenticatedRole = useCallback(() => setRedirectAuthenticatedRole(null), []);
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -381,33 +394,82 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     [updateState]
   );
 
-  // Firebase Auth listener
+  // Firebase Auth listener + OAuth redirect callback handler
   useEffect(() => {
+    let active = true;
+
+    const hydrateProfile = (fbUser: FirebaseUser): UserProfile => {
+      const pending = readPendingAuthContext();
+      const stored = loadStoredProfile(fbUser.uid);
+      const role: UserRole = pending?.role ?? stored?.role ?? 'patient';
+      const mapped: UserProfile = {
+        uid: fbUser.uid,
+        displayName:
+          pending?.displayName ||
+          stored?.displayName ||
+          fbUser.displayName ||
+          fbUser.email?.split('@')[0] ||
+          'KAIROS User',
+        email: fbUser.email || stored?.email || '',
+        role,
+        phone: pending?.phone ?? stored?.phone,
+        facilityId: stored?.facilityId,
+        facilityName: pending?.facilityName ?? stored?.facilityName,
+        bloodGroup: stored?.bloodGroup,
+        allergies: stored?.allergies,
+        emergencyContact: stored?.emergencyContact,
+        abhaId: stored?.abhaId,
+        consentGranted: pending?.consentGranted ?? stored?.consentGranted ?? true,
+      };
+      return mapped;
+    };
+
+    // Process returning OAuth redirect callback (when popup fell back to redirect)
+    void consumeGoogleRedirectResult()
+      .then(async (redirectUser) => {
+        if (!active || !redirectUser) return;
+        const pending = readPendingAuthContext();
+        const profile = hydrateProfile(redirectUser);
+        saveStoredProfile(profile);
+        clearPendingAuthContext();
+        setCurrentUser(profile);
+        upsertRegisteredUser(
+          profile,
+          'GOOGLE_SIGN_IN',
+          `${profile.displayName} signed in to ${profile.role} portal via Google OAuth redirect.`
+        );
+        setRedirectAuthenticatedRole(pending?.role ?? profile.role);
+        try {
+          await syncUserProfileToFirestore(profile);
+        } catch (err) {
+          console.error('Firestore profile sync warning after redirect:', err);
+        }
+        showToast(`Signed in with Google as ${profile.displayName}`);
+      })
+      .catch((err) => {
+        if (!active) return;
+        clearPendingAuthContext();
+        console.error('Firebase OAuth redirect callback error:', err);
+        setAuthCallbackError(err);
+      });
+
     const unsub = onAuthStateChanged(auth, (fbUser) => {
+      if (!active) return;
       setFirebaseUser(fbUser);
       setAuthReady(true);
       if (fbUser) {
-        const stored = loadStoredProfile(fbUser.uid);
-        const mapped: UserProfile = stored
-          ? {
-              ...stored,
-              displayName: stored.displayName || fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
-              email: fbUser.email || stored.email,
-            }
-          : {
-              uid: fbUser.uid,
-              displayName: fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
-              email: fbUser.email || '',
-              role: 'patient',
-              consentGranted: true,
-            };
+        const mapped = hydrateProfile(fbUser);
         setCurrentUser(mapped);
       } else {
         setCurrentUser(null);
       }
     });
-    return () => unsub();
-  }, []);
+
+    return () => {
+      active = false;
+      unsub();
+    };
+  }, [showToast, upsertRegisteredUser]);
 
   // Live 1-second timer for bed-hold countdowns, auto-release on expiry, & response SLA escalations
   useEffect(() => {
@@ -516,71 +578,102 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const loginWithEmail = useCallback(
     async (email: string, password: string, selectedRole: UserRole) => {
-      const fbUser = await signInWithEmail(email, password);
-      const existing = loadStoredProfile(fbUser.uid);
-      const profile: UserProfile = {
-        uid: fbUser.uid,
-        displayName: existing?.displayName || fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
-        email: fbUser.email || email.trim(),
-        role: selectedRole,
-        phone: existing?.phone,
-        facilityId: existing?.facilityId,
-        facilityName: existing?.facilityName,
-        bloodGroup: existing?.bloodGroup,
-        allergies: existing?.allergies,
-        emergencyContact: existing?.emergencyContact,
-        abhaId: existing?.abhaId,
-        consentGranted: existing?.consentGranted ?? true,
-      };
-      saveStoredProfile(profile);
-      setCurrentUser(profile);
-      upsertRegisteredUser(
-        profile,
-        'USER_SIGNED_IN',
-        `${profile.displayName} signed in to ${selectedRole} portal via Email & Password.`
-      );
-      syncUserProfileToFirestore(profile).catch(() => {
-        // Firestore sync runs when email is verified
-      });
-      showToast(`Signed in as ${profile.displayName}`);
+      setAuthCallbackError(null);
+      savePendingAuthContext({ role: selectedRole, isRedirect: false });
+      try {
+        const fbUser = await signInWithEmail(email, password);
+        const existing = loadStoredProfile(fbUser.uid);
+        const profile: UserProfile = {
+          uid: fbUser.uid,
+          displayName: existing?.displayName || fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
+          email: fbUser.email || email.trim(),
+          role: selectedRole,
+          phone: existing?.phone,
+          facilityId: existing?.facilityId,
+          facilityName: existing?.facilityName,
+          bloodGroup: existing?.bloodGroup,
+          allergies: existing?.allergies,
+          emergencyContact: existing?.emergencyContact,
+          abhaId: existing?.abhaId,
+          consentGranted: existing?.consentGranted ?? true,
+        };
+        saveStoredProfile(profile);
+        clearPendingAuthContext();
+        setCurrentUser(profile);
+        upsertRegisteredUser(
+          profile,
+          'USER_SIGNED_IN',
+          `${profile.displayName} signed in to ${selectedRole} portal via Email & Password.`
+        );
+        syncUserProfileToFirestore(profile).catch(() => {
+          // Firestore sync runs when email is verified
+        });
+        showToast(`Signed in as ${profile.displayName}`);
+      } catch (err) {
+        clearPendingAuthContext();
+        throw err;
+      }
     },
     [showToast, upsertRegisteredUser]
   );
 
   const registerWithEmailAccount = useCallback(
     async (input: RegisterEmailAccountInput) => {
-      const fbUser = await registerWithEmail(input.email, input.password, input.displayName);
-      const profile: UserProfile = {
-        uid: fbUser.uid,
-        displayName: input.displayName.trim(),
-        email: fbUser.email || input.email.trim(),
+      setAuthCallbackError(null);
+      savePendingAuthContext({
         role: input.role,
+        displayName: input.displayName.trim(),
         phone: input.phone?.trim() || undefined,
         facilityName: input.facilityName?.trim() || undefined,
-        bloodGroup: input.bloodGroup,
-        allergies: input.allergies?.trim() || undefined,
-        emergencyContact: input.emergencyContact?.trim() || undefined,
-        abhaId: input.abhaId?.trim() || undefined,
         consentGranted: input.consentGranted,
-      };
-      saveStoredProfile(profile);
-      setCurrentUser(profile);
-      upsertRegisteredUser(
-        profile,
-        'ACCOUNT_REGISTERED',
-        `Created ${input.role} account for ${profile.displayName} with DPDP consent=${input.consentGranted}.`
-      );
-      syncUserProfileToFirestore(profile).catch(() => {
-        // Firestore sync runs when email is verified
+        isRedirect: false,
       });
-      showToast(`Welcome, ${profile.displayName}. Your account is ready.`);
+      try {
+        const fbUser = await registerWithEmail(input.email, input.password, input.displayName);
+        const profile: UserProfile = {
+          uid: fbUser.uid,
+          displayName: input.displayName.trim(),
+          email: fbUser.email || input.email.trim(),
+          role: input.role,
+          phone: input.phone?.trim() || undefined,
+          facilityName: input.facilityName?.trim() || undefined,
+          bloodGroup: input.bloodGroup,
+          allergies: input.allergies?.trim() || undefined,
+          emergencyContact: input.emergencyContact?.trim() || undefined,
+          abhaId: input.abhaId?.trim() || undefined,
+          consentGranted: input.consentGranted,
+        };
+        saveStoredProfile(profile);
+        clearPendingAuthContext();
+        setCurrentUser(profile);
+        upsertRegisteredUser(
+          profile,
+          'ACCOUNT_REGISTERED',
+          `Created ${input.role} account for ${profile.displayName} with DPDP consent=${input.consentGranted}.`
+        );
+        syncUserProfileToFirestore(profile).catch(() => {
+          // Firestore sync runs when email is verified
+        });
+        showToast(`Welcome, ${profile.displayName}. Your account is ready.`);
+      } catch (err) {
+        clearPendingAuthContext();
+        throw err;
+      }
     },
     [showToast, upsertRegisteredUser]
   );
 
   const loginWithGoogle = useCallback(
-    async (selectedRole: UserRole = 'patient', facilityName?: string) => {
-      const fbUser = await signInWithGoogle();
+    async (selectedRole: UserRole = 'patient', facilityName?: string): Promise<boolean> => {
+      setAuthCallbackError(null);
+      const fbUser = await signInWithGoogle({
+        role: selectedRole,
+        facilityName: facilityName?.trim() || undefined,
+      });
+      // Redirect flow initiated; page will navigate away and hydrate on return
+      if (!fbUser) {
+        return false;
+      }
       const existing = loadStoredProfile(fbUser.uid);
       const profile: UserProfile = {
         uid: fbUser.uid,
@@ -597,6 +690,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         consentGranted: existing?.consentGranted ?? true,
       };
       saveStoredProfile(profile);
+      clearPendingAuthContext();
       setCurrentUser(profile);
       upsertRegisteredUser(
         profile,
@@ -609,6 +703,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         console.error('Firestore profile sync warning:', err);
       }
       showToast(`Signed in with Google as ${profile.displayName}`);
+      return true;
     },
     [showToast, upsertRegisteredUser]
   );
@@ -1754,6 +1849,10 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       registeredUsers: state.registeredUsers,
       toastMessage,
       showToast,
+      authCallbackError,
+      clearAuthCallbackError,
+      redirectAuthenticatedRole,
+      consumeRedirectAuthenticatedRole,
       loginWithEmail,
       registerWithEmailAccount,
       loginWithGoogle,
@@ -1794,6 +1893,10 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       state,
       toastMessage,
       showToast,
+      authCallbackError,
+      clearAuthCallbackError,
+      redirectAuthenticatedRole,
+      consumeRedirectAuthenticatedRole,
       loginWithEmail,
       registerWithEmailAccount,
       loginWithGoogle,

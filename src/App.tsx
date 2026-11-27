@@ -63,6 +63,8 @@ export default function App() {
     referrals,
     diagnosticBookings,
     toastMessage,
+    redirectAuthenticatedRole,
+    consumeRedirectAuthenticatedRole,
     logout,
   } = useKairos();
 
@@ -109,6 +111,18 @@ export default function App() {
       setView('auth');
     }
   }, []);
+
+  // Automatically enter dashboard when returning from a Google OAuth redirect callback
+  useEffect(() => {
+    if (redirectAuthenticatedRole && currentUser) {
+      setAuthRole(redirectAuthenticatedRole);
+      setActiveTab(pendingTab ?? DEFAULT_TAB_BY_ROLE[redirectAuthenticatedRole]);
+      setPendingTab(undefined);
+      setView('dashboard');
+      consumeRedirectAuthenticatedRole();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [redirectAuthenticatedRole, currentUser, pendingTab, consumeRedirectAuthenticatedRole]);
 
   const handleGoHomepageFromNotFound = () => {
     if (typeof window !== 'undefined' && (window.location.pathname !== '/' || window.location.search)) {

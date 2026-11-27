@@ -1,10 +1,14 @@
-import { initializeApp } from 'firebase/app';
+import { getApp, getApps, initializeApp } from 'firebase/app';
 import {
   GoogleAuthProvider,
+  browserLocalPersistence,
   createUserWithEmailAndPassword,
   getAuth,
+  getRedirectResult,
+  setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signOut as firebaseSignOut,
   updateProfile,
   type User,
@@ -23,13 +27,69 @@ import type {
   EmergencyReferral,
   OpdAppointment,
   UserProfile,
+  UserRole,
 } from './types/kairos';
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+// Ensure persistent auth sessions survive reloads and OAuth redirects in production
+if (typeof window !== 'undefined') {
+  void setPersistence(auth, browserLocalPersistence).catch(() => {
+    // Fall back to default persistence if browser storage is restricted
+  });
+}
+
+const PENDING_AUTH_KEY = 'kairos_pending_auth_context_v1';
+
+export interface PendingAuthContext {
+  role: UserRole;
+  facilityName?: string;
+  displayName?: string;
+  phone?: string;
+  consentGranted?: boolean;
+  isRedirect?: boolean;
+  createdAt: number;
+}
+
+export function savePendingAuthContext(ctx: Omit<PendingAuthContext, 'createdAt'>): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const payload: PendingAuthContext = { ...ctx, createdAt: Date.now() };
+    window.sessionStorage.setItem(PENDING_AUTH_KEY, JSON.stringify(payload));
+  } catch {
+    // Ignore storage quota / private mode failures
+  }
+}
+
+export function readPendingAuthContext(): PendingAuthContext | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(PENDING_AUTH_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PendingAuthContext;
+    // Expire stale pending contexts older than 10 minutes
+    if (!parsed.createdAt || Date.now() - parsed.createdAt > 10 * 60 * 1000) {
+      window.sessionStorage.removeItem(PENDING_AUTH_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function clearPendingAuthContext(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.removeItem(PENDING_AUTH_KEY);
+  } catch {
+    // Ignore storage failures
+  }
+}
 
 export enum OperationType {
   CREATE = 'create',
@@ -97,9 +157,40 @@ export async function testConnection(): Promise<boolean> {
 
 void testConnection();
 
-export async function signInWithGoogle(): Promise<User> {
-  const result = await signInWithPopup(auth, googleProvider);
-  return result.user;
+export async function signInWithGoogle(
+  pendingContext?: Omit<PendingAuthContext, 'createdAt' | 'isRedirect'>
+): Promise<User | null> {
+  if (pendingContext) {
+    savePendingAuthContext({ ...pendingContext, isRedirect: false });
+  }
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
+  } catch (error) {
+    const code =
+      typeof error === 'object' && error !== null && 'code' in error
+        ? String((error as { code?: unknown }).code)
+        : '';
+    // Automatically fall back to redirect flow only when popups are blocked outside iframes
+    const inIframe = typeof window !== 'undefined' && window.self !== window.top;
+    if (
+      !inIframe &&
+      (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment')
+    ) {
+      if (pendingContext) {
+        savePendingAuthContext({ ...pendingContext, isRedirect: true });
+      }
+      await signInWithRedirect(auth, googleProvider);
+      return null;
+    }
+    clearPendingAuthContext();
+    throw error;
+  }
+}
+
+export async function consumeGoogleRedirectResult(): Promise<User | null> {
+  const result = await getRedirectResult(auth);
+  return result?.user ?? null;
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<User> {
@@ -120,6 +211,7 @@ export async function registerWithEmail(
 }
 
 export async function signOutFirebase(): Promise<void> {
+  clearPendingAuthContext();
   await firebaseSignOut(auth);
 }
 
