@@ -100,6 +100,35 @@ export const DEFAULT_HOSPITALS: HospitalFacility[] = [
     lastVerifiedAt: new Date(nowMs - 22 * 60000).toISOString(),
     avgAcceptanceMin: 5.2,
   },
+  {
+    hospitalId: 'hosp-aster',
+    name: 'Aster CMI Hospital',
+    area: 'Hebbal / Sahakarnagar',
+    city: 'Bengaluru',
+    lat: 13.0569,
+    lng: 77.5925,
+    distanceKm: 12.3,
+    phone: '+91-80-4342-0100',
+    departments: [
+      'Emergency',
+      'Cardiology',
+      'Neurology',
+      'Orthopaedics',
+      'Paediatrics',
+      'General Medicine',
+    ],
+    facilities: ['ICU', 'Ventilator', 'Cath Lab', 'Trauma OT', 'CT/MRI', 'Blood Bank', 'NICU/OB-GYN'],
+    icuAvailable: 6,
+    icuTotal: 15,
+    generalAvailable: 32,
+    generalTotal: 50,
+    pedsAvailable: 8,
+    pedsTotal: 12,
+    acceptingEmergencies: true,
+    lastVerifiedBy: 'Dr. Anand Kumar (Emergency Director)',
+    lastVerifiedAt: new Date(nowMs - 8 * 60000).toISOString(),
+    avgAcceptanceMin: 3.5,
+  },
 ];
 
 export const DEFAULT_SPECIALISTS: SpecialistDoctor[] = [
@@ -486,6 +515,15 @@ export const DEFAULT_DIAGNOSTIC_BOOKINGS: DiagnosticBooking[] = [
 
 export const DEFAULT_REGISTERED_USERS: UserProfile[] = [
   {
+    uid: 'admin-karunya',
+    displayName: 'Karunya',
+    email: 'karunyayashu6@gmail.com',
+    role: 'admin',
+    facilityName: 'State Health Command Operations',
+    phone: '+91-98450-54321',
+    consentGranted: true,
+  },
+  {
     uid: 'demo-patient',
     displayName: 'Aarav Patel',
     email: 'patient.demo@kairoshealth.in',
@@ -580,6 +618,17 @@ export const DEFAULT_NOTIFICATIONS: KairosNotification[] = [
 ];
 
 export const DEFAULT_AUDIT_LOGS: AuditLogEntry[] = [
+  {
+    logId: 'aud-seed-0',
+    actorUid: 'admin-karunya',
+    actorName: 'Karunya',
+    actorRole: 'admin',
+    action: 'ADMIN_PROVISIONED',
+    entityType: 'user',
+    entityId: 'admin-karunya',
+    summary: 'Platform Administrator Karunya (karunyayashu6@gmail.com) provisioned with complete healthcare network authority.',
+    createdAt: new Date(nowMs - 120 * 60000).toISOString(),
+  },
   {
     logId: 'aud-seed-1',
     actorUid: 'demo-hospital',

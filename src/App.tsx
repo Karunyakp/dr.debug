@@ -177,7 +177,7 @@ export default function App() {
   };
 
   const handleAuthenticated = (authenticatedRole?: UserRole) => {
-    const resolvedRole = authenticatedRole ?? authRole;
+    const resolvedRole = currentUser?.role ?? authenticatedRole ?? authRole;
     setAuthRole(resolvedRole);
     setActiveTab(pendingTab ?? DEFAULT_TAB_BY_ROLE[resolvedRole]);
     setPendingTab(undefined);

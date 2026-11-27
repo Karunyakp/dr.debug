@@ -124,10 +124,27 @@ function loadInitialState(): PersistedState {
           Array.isArray(parsed.auditLogs) && parsed.auditLogs.length > 0
             ? parsed.auditLogs
             : DEFAULT_AUDIT_LOGS,
-        registeredUsers:
-          Array.isArray(parsed.registeredUsers) && parsed.registeredUsers.length > 0
-            ? parsed.registeredUsers
-            : DEFAULT_REGISTERED_USERS,
+        registeredUsers: (() => {
+          const list =
+            Array.isArray(parsed.registeredUsers) && parsed.registeredUsers.length > 0
+              ? parsed.registeredUsers
+              : DEFAULT_REGISTERED_USERS;
+          if (!list.some((u) => u.email.toLowerCase() === 'karunyayashu6@gmail.com')) {
+            return [
+              {
+                uid: 'admin-karunya',
+                displayName: 'Karunya',
+                email: 'karunyayashu6@gmail.com',
+                role: 'admin' as UserRole,
+                facilityName: 'State Health Command Operations',
+                phone: '+91-98450-54321',
+                consentGranted: true,
+              },
+              ...list,
+            ];
+          }
+          return list;
+        })(),
       };
     }
   } catch {
@@ -140,7 +157,12 @@ function loadStoredProfile(uid: string): UserProfile | null {
   try {
     const raw = localStorage.getItem(`${PROFILE_STORAGE_PREFIX}${uid}`);
     if (!raw) return null;
-    return JSON.parse(raw) as UserProfile;
+    const profile = JSON.parse(raw) as UserProfile;
+    if (profile.email && profile.email.toLowerCase() === 'karunyayashu6@gmail.com') {
+      profile.role = 'admin';
+      profile.displayName = 'Karunya';
+    }
+    return profile;
   } catch {
     return null;
   }
@@ -441,20 +463,27 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const hydrateProfile = (fbUser: FirebaseUser): UserProfile => {
       const pending = readPendingAuthContext();
       const stored = loadStoredProfile(fbUser.uid);
-      const role: UserRole = pending?.role ?? stored?.role ?? 'patient';
+      const email = fbUser.email?.trim().toLowerCase() || stored?.email?.toLowerCase() || '';
+      const isKarunya = email === 'karunyayashu6@gmail.com';
+      const role: UserRole = isKarunya ? 'admin' : (pending?.role ?? stored?.role ?? 'patient');
       const mapped: UserProfile = {
         uid: fbUser.uid,
         displayName:
-          pending?.displayName ||
-          stored?.displayName ||
-          fbUser.displayName ||
-          fbUser.email?.split('@')[0] ||
-          'KAIROS User',
+          isKarunya
+            ? 'Karunya'
+            : (pending?.displayName ||
+              stored?.displayName ||
+              fbUser.displayName ||
+              fbUser.email?.split('@')[0] ||
+              'KAIROS User'),
         email: fbUser.email || stored?.email || '',
         role,
-        phone: pending?.phone ?? stored?.phone,
+        phone: pending?.phone ?? stored?.phone ?? (isKarunya ? '+91-98450-54321' : undefined),
         facilityId: stored?.facilityId,
-        facilityName: pending?.facilityName ?? stored?.facilityName,
+        facilityName:
+          isKarunya
+            ? 'State Health Command Operations'
+            : (pending?.facilityName ?? stored?.facilityName),
         bloodGroup: stored?.bloodGroup,
         allergies: stored?.allergies,
         emergencyContact: stored?.emergencyContact,
@@ -640,11 +669,12 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     (creds: DummyCredentials) => {
       setAuthCallbackError(null);
       clearPendingAuthContext();
+      const isKarunya = creds.email.toLowerCase() === 'karunyayashu6@gmail.com';
       const profile: UserProfile = {
-        uid: `demo-${creds.role}`,
-        displayName: creds.displayName,
+        uid: isKarunya ? 'admin-karunya' : `demo-${creds.role}`,
+        displayName: isKarunya ? 'Karunya' : creds.displayName,
         email: creds.email,
-        role: creds.role,
+        role: isKarunya ? 'admin' : creds.role,
         phone: creds.phone,
         facilityName: creds.facilityName,
         bloodGroup: creds.bloodGroup,
@@ -660,9 +690,9 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       upsertRegisteredUser(
         profile,
         'DEMO_SIGN_IN',
-        `${profile.displayName} entered ${creds.role} portal via Demo Login.`
+        `${profile.displayName} entered ${profile.role} portal via Demo Login.`
       );
-      showToast(`Demo session started · ${creds.displayName}`);
+      showToast(`Demo session started · ${profile.displayName}`);
     },
     [showToast, upsertRegisteredUser]
   );
@@ -679,14 +709,19 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       try {
         const fbUser = await signInWithEmail(email, password);
         const existing = loadStoredProfile(fbUser.uid);
+        const emailTrimmed = email.trim();
+        const isKarunya = emailTrimmed.toLowerCase() === 'karunyayashu6@gmail.com';
+        const effectiveRole: UserRole = isKarunya ? 'admin' : selectedRole;
         const profile: UserProfile = {
           uid: fbUser.uid,
-          displayName: existing?.displayName || fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
-          email: fbUser.email || email.trim(),
-          role: selectedRole,
-          phone: existing?.phone,
+          displayName: isKarunya
+            ? 'Karunya'
+            : (existing?.displayName || fbUser.displayName || fbUser.email?.split('@')[0] || 'KAIROS User'),
+          email: fbUser.email || emailTrimmed,
+          role: effectiveRole,
+          phone: existing?.phone ?? (isKarunya ? '+91-98450-54321' : undefined),
           facilityId: existing?.facilityId,
-          facilityName: existing?.facilityName,
+          facilityName: isKarunya ? 'State Health Command Operations' : existing?.facilityName,
           bloodGroup: existing?.bloodGroup,
           allergies: existing?.allergies,
           emergencyContact: existing?.emergencyContact,
@@ -699,7 +734,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         upsertRegisteredUser(
           profile,
           'USER_SIGNED_IN',
-          `${profile.displayName} signed in to ${selectedRole} portal via Email & Password.`
+          `${profile.displayName} signed in to ${profile.role} portal via Email & Password.`
         );
         syncUserProfileToFirestore(profile).catch(() => {
           // Firestore sync runs when email is verified
@@ -726,13 +761,15 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
       try {
         const fbUser = await registerWithEmail(input.email, input.password, input.displayName);
+        const emailTrimmed = input.email.trim();
+        const isKarunya = emailTrimmed.toLowerCase() === 'karunyayashu6@gmail.com';
         const profile: UserProfile = {
           uid: fbUser.uid,
-          displayName: input.displayName.trim(),
-          email: fbUser.email || input.email.trim(),
-          role: input.role,
-          phone: input.phone?.trim() || undefined,
-          facilityName: input.facilityName?.trim() || undefined,
+          displayName: isKarunya ? 'Karunya' : input.displayName.trim(),
+          email: fbUser.email || emailTrimmed,
+          role: isKarunya ? 'admin' : input.role,
+          phone: input.phone?.trim() || (isKarunya ? '+91-98450-54321' : undefined),
+          facilityName: isKarunya ? 'State Health Command Operations' : (input.facilityName?.trim() || undefined),
           bloodGroup: input.bloodGroup,
           allergies: input.allergies?.trim() || undefined,
           emergencyContact: input.emergencyContact?.trim() || undefined,
@@ -745,7 +782,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         upsertRegisteredUser(
           profile,
           'ACCOUNT_REGISTERED',
-          `Created ${input.role} account for ${profile.displayName} with DPDP consent=${input.consentGranted}.`
+          `Created ${profile.role} account for ${profile.displayName} with DPDP consent=${input.consentGranted}.`
         );
         syncUserProfileToFirestore(profile).catch(() => {
           // Firestore sync runs when email is verified
@@ -767,14 +804,19 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         facilityName: facilityName?.trim() || undefined,
       });
       const existing = loadStoredProfile(fbUser.uid);
+      const emailLower = fbUser.email?.trim().toLowerCase() || '';
+      const isKarunya = emailLower === 'karunyayashu6@gmail.com';
+      const effectiveRole: UserRole = isKarunya ? 'admin' : selectedRole;
       const profile: UserProfile = {
         uid: fbUser.uid,
-        displayName: fbUser.displayName || existing?.displayName || fbUser.email?.split('@')[0] || 'KAIROS User',
+        displayName: isKarunya
+          ? 'Karunya'
+          : (fbUser.displayName || existing?.displayName || fbUser.email?.split('@')[0] || 'KAIROS User'),
         email: fbUser.email || '',
-        role: selectedRole,
-        phone: existing?.phone,
+        role: effectiveRole,
+        phone: existing?.phone ?? (isKarunya ? '+91-98450-54321' : undefined),
         facilityId: existing?.facilityId,
-        facilityName: facilityName?.trim() || existing?.facilityName,
+        facilityName: isKarunya ? 'State Health Command Operations' : (facilityName?.trim() || existing?.facilityName),
         bloodGroup: existing?.bloodGroup,
         allergies: existing?.allergies,
         emergencyContact: existing?.emergencyContact,
@@ -787,7 +829,7 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       upsertRegisteredUser(
         profile,
         'GOOGLE_SIGN_IN',
-        `${profile.displayName} signed in to ${selectedRole} portal via Google.`
+        `${profile.displayName} signed in to ${profile.role} portal via Google.`
       );
       // Sync profile to Firestore in the background so sign-in enters the dashboard immediately
       syncUserProfileToFirestore(profile).catch((err) => {

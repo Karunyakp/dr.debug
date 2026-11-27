@@ -47,11 +47,11 @@ const DEMO_ACCOUNTS: Record<UserRole, Omit<DummyCredentials, 'role'>> = {
     facilityName: 'Metro Diagnostics Centre',
   },
   admin: {
-    email: 'admin.demo@kairoshealth.in',
+    email: 'karunyayashu6@gmail.com',
     password: 'Kairos@Admin2026',
-    displayName: 'Network Operations Admin',
-    phone: '+91-80-4123-9000',
-    facilityName: 'District Health Command',
+    displayName: 'Karunya (Platform Admin)',
+    phone: '+91-98450-54321',
+    facilityName: 'State Health Command Operations',
   },
 };
 
@@ -79,10 +79,14 @@ export function matchDummyCredentials(
   const roles = Object.keys(DEMO_ACCOUNTS) as UserRole[];
   for (const r of roles) {
     const creds = DEMO_ACCOUNTS[r];
-    if (creds.email.toLowerCase() === normalizedEmail && creds.password === password) {
+    const emailMatches =
+      creds.email.toLowerCase() === normalizedEmail ||
+      (r === 'admin' && (normalizedEmail === 'karunyayashu6@gmail.com' || normalizedEmail === 'admin.demo@kairoshealth.in'));
+    if (emailMatches && creds.password === password) {
       return {
         role: preferredRole ?? r,
         ...creds,
+        email: normalizedEmail,
       };
     }
   }
