@@ -3,6 +3,7 @@ import {
   Activity,
   AlertTriangle,
   Ambulance,
+  Award,
   BarChart3,
   BedDouble,
   Building2,
@@ -202,8 +203,8 @@ export default function App() {
     if (currentUser && view === 'dashboard') {
       const roleNavs: Record<UserRole, string[]> = {
         patient: ['overview', 'opd', 'specialists', 'diagnostics', 'profile'],
-        doctor: ['overview', 'new-referral', 'referrals'],
-        hospital: ['overview', 'opd-queue', 'referrals', 'capacity'],
+        doctor: ['overview', 'new-referral', 'referrals', 'credits'],
+        hospital: ['overview', 'opd-queue', 'referrals', 'capacity', 'credits'],
         ambulance: ['transfers', 'vitals', 'route'],
         diagnostic: ['bookings', 'catalog'],
         admin: ['overview', 'network', 'users', 'governance'],
@@ -254,6 +255,11 @@ export default function App() {
               icon: Activity,
               badge: pendingReferralCount,
             },
+            {
+              id: 'credits',
+              label: 'MedBridge Credits',
+              icon: Award,
+            },
           ],
           primaryCtaLabel: 'New Referral',
           onPrimaryCta: () => setActiveTab('new-referral'),
@@ -270,6 +276,11 @@ export default function App() {
               badge: pendingReferralCount,
             },
             { id: 'capacity', label: 'Beds & Capacity', icon: BedDouble },
+            {
+              id: 'credits',
+              label: 'MedBridge Credits',
+              icon: Award,
+            },
           ],
           primaryCtaLabel: 'Incoming Referrals',
           onPrimaryCta: () => setActiveTab('referrals'),

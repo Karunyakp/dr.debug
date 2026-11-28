@@ -3,17 +3,32 @@ import {
   Activity,
   AlertTriangle,
   Ambulance,
+  ArrowUpRight,
+  Award,
+  BadgeCheck,
+  Check,
   CheckCircle2,
   Clock,
   Code2,
+  Download,
+  FileCheck,
+  FileText,
+  Gift,
   Loader2,
+  Lock,
   Mic,
+  Printer,
   Send,
+  Shield,
   ShieldAlert,
+  ShieldCheck,
   Sparkles,
   Square,
   Stethoscope,
+  TrendingUp,
   WifiOff,
+  X,
+  Zap,
 } from 'lucide-react';
 import { useKairos } from '../context/KairosContext';
 import type { ReferralUrgency } from '../types/kairos';
@@ -49,6 +64,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   onOpenAssistant,
 }) => {
   const {
+    currentUser,
     hospitals,
     appointments,
     referrals,
@@ -58,7 +74,12 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
     createEmergencyReferral,
     syncOfflineReferralsNow,
     assignAmbulanceToReferral,
+    getMedbridgeAccount,
+    awardMedbridgeCredits,
+    redeemMedbridgeCredits,
   } = useKairos();
+
+  const doctorAccount = getMedbridgeAccount(currentUser?.uid ?? 'demo-doctor', 'doctor');
 
   // Emergency Referral Wizard Form State
   const [patientInitials, setPatientInitials] = useState('');
@@ -83,6 +104,16 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   const [manualOverrideReason, setManualOverrideReason] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [fhirPreviewRefId, setFhirPreviewRefId] = useState<string | null>(null);
+  const [selectedCmeBadge, setSelectedCmeBadge] = useState<{
+    id: string;
+    title: string;
+    cmeHours: string;
+    accreditedBy: string;
+    category: string;
+    earnedDate: string;
+    certificateNumber: string;
+    verificationHash: string;
+  } | null>(null);
   const [isDictating, setIsDictating] = useState(false);
   const [isTranscribingNotes, setIsTranscribingNotes] = useState(false);
   const dictationRecorderRef = useRef<MediaRecorder | null>(null);
@@ -226,6 +257,14 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
       saveOffline: isOfflineSimulated,
     });
 
+    awardMedbridgeCredits(
+      currentUser?.uid ?? 'demo-doctor',
+      'doctor',
+      50,
+      `Golden-Hour ISBAR Emergency Referral · ${patientInitials} (${category})`,
+      'golden_hour_referral'
+    );
+
     setPatientInitials('');
     setSymptoms('');
     setIsbarSummary('');
@@ -267,6 +306,49 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
       {/* OVERVIEW TAB */}
       {activeTab === 'overview' && (
         <>
+          {/* MedBridge Credits USP Highlight Banner */}
+          <div className="bg-gradient-to-r from-kairos-surface via-kairos-mint-soft/70 to-kairos-surface border border-kairos-emerald/30 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-kairos-forest text-amber-300 flex items-center justify-center shrink-0 shadow-sm border border-emerald-500/30">
+                <Award className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-sm font-bold text-kairos-forest-ink">
+                    MedBridge Credits™ (Platform USP)
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                    {doctorAccount.tier} Clinician
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                    Zero Cash Commission
+                  </span>
+                </div>
+                <p className="text-xs text-kairos-muted mt-0.5 max-w-xl">
+                  Automated verification for complete ISBAR handovers, Accept-Before-You-Move bed holds, and &lt;5 min emergency alert acknowledgments. Zero cash cuts — 100% ethical merit credits for CME badges &amp; specialist grants.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 shrink-0 w-full md:w-auto justify-between md:justify-end">
+              <div className="text-right">
+                <p className="font-mono text-xl font-extrabold text-kairos-forest-ink tabular-nums">
+                  {doctorAccount.balance} <span className="text-xs font-bold text-kairos-emerald-ink">MBC</span>
+                </p>
+                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">
+                  Zero Cash Commission
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onTabChange('credits')}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-kairos-forest hover:bg-kairos-emerald text-white text-xs font-bold transition-colors whitespace-nowrap shadow-xs"
+              >
+                <span>Credit Vault &amp; Perks</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <div className="bg-kairos-surface border border-kairos-border rounded-2xl p-5">
               <p className="text-xs font-medium text-kairos-muted">Today&apos;s Consultations</p>
@@ -953,6 +1035,669 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* MEDBRIDGE CREDITS - USP FEATURE TAB */}
+      {activeTab === 'credits' && (
+        <div className="space-y-6">
+          {/* Header Banner */}
+          <div className="rounded-2xl bg-gradient-to-r from-kairos-forest-deep via-kairos-forest to-emerald-950 p-6 text-white shadow-xl relative overflow-hidden border border-emerald-500/20">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/15 border border-emerald-400/30 text-emerald-300 text-xs font-semibold uppercase tracking-wider">
+                    <Award className="w-3.5 h-3.5" />
+                    KAIROS USP: MedBridge Credits™ Engine
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-bold uppercase tracking-wider">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Zero Cash Commission Certified
+                  </span>
+                </div>
+                <h2 className="text-2xl lg:text-3xl font-serif font-bold text-white tracking-tight">
+                  Doctor Clinical Credit Vault &amp; Protocol Rewards
+                </h2>
+                <p className="text-sm text-emerald-100/80 max-w-2xl leading-relaxed">
+                  Earn verifiable, non-monetary merit credits for <strong>Complete ISBAR Handovers</strong>, <strong>Accept-Before-You-Move Bed Holds</strong>,
+                  and <strong>&lt;5 Min Emergency Alert Acknowledgments</strong>. Redeem earned credits for on-demand tele-specialist patient grants,
+                  accredited CME training badges, and ALS dispatch prioritization.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    awardMedbridgeCredits(
+                      doctorAccount.entityId,
+                      'doctor',
+                      50,
+                      'Complete ISBAR Clinical Handover Automated Verification Passed',
+                      'isbar_compliance'
+                    );
+                    awardMedbridgeCredits(
+                      doctorAccount.entityId,
+                      'doctor',
+                      50,
+                      'Accept-Before-You-Move Protocol Verified (Bed Held Before Wheels Roll)',
+                      'accept_before_move'
+                    );
+                    awardMedbridgeCredits(
+                      doctorAccount.entityId,
+                      'doctor',
+                      50,
+                      'Emergency Alert Acknowledged within 5-Minute Window (2m 45s SLA)',
+                      'alert_sla_5min'
+                    );
+                  }}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-bold text-xs uppercase tracking-wider hover:from-amber-300 hover:to-amber-400 shadow-md transition-all active:scale-95 whitespace-nowrap"
+                >
+                  <Zap className="w-4 h-4 fill-amber-950" />
+                  Simulate Full Handover &amp; Auto-Verify (+150 MBC)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onTabChange('new-referral')}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-xs uppercase tracking-wider transition-all whitespace-nowrap"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  New Referral (+50 MBC)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Zero Cash Commission Guarantee Charter Box */}
+          <div className="rounded-2xl border-2 border-emerald-500/30 bg-emerald-50/70 dark:bg-emerald-950/20 p-5 shadow-xs">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-bold text-kairos-forest-ink uppercase tracking-wide">
+                      Zero Cash Commission Charter · Ethical Referral Protocol
+                    </h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-300">
+                      NMC Ethics Compliant
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950/60 text-cyan-900 dark:text-cyan-300 border border-cyan-300">
+                      Anti-Kickback Certified
+                    </span>
+                  </div>
+                  <p className="text-xs text-kairos-muted mt-1 leading-relaxed max-w-3xl">
+                    Under National Medical Commission (NMC) regulations, <strong>KAIROS strictly operates with 0% cash cuts or monetary commissions for patient referrals</strong>. MedBridge Credits are exclusively non-monetary merit tokens earned through clinical precision (ISBAR compliance, Accept-Before-You-Move bed holds, and sub-5 minute alert responses). Credits can never be encashed and are redeemable solely for certified CME training badges, indigent patient tele-specialist grants, and emergency logistics.
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 flex items-center gap-2">
+                <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-kairos-card border border-emerald-300 dark:border-emerald-800 text-center">
+                  <span className="text-[10px] font-bold uppercase text-kairos-muted block">Cash Payout</span>
+                  <strong className="text-xs text-red-600 font-mono">₹0.00 (Zero)</strong>
+                </div>
+                <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-kairos-card border border-emerald-300 dark:border-emerald-800 text-center">
+                  <span className="text-[10px] font-bold uppercase text-kairos-muted block">Reward Mode</span>
+                  <strong className="text-xs text-emerald-700 dark:text-emerald-400 font-mono">Clinical Merit Only</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Automated Verification Engine & Compiler Status */}
+          <div className="rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border p-5 space-y-4 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-kairos-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-kairos-mint-soft text-kairos-emerald flex items-center justify-center">
+                  <Code2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-kairos-forest-ink">
+                    MedBridge Automated Verification &amp; Handover Compiler
+                  </h3>
+                  <p className="text-[11px] text-kairos-muted">
+                    Smart rule compiler validating clinical handovers before credit issuance
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-200 dark:border-emerald-800">
+                <BadgeCheck className="w-3.5 h-3.5" />
+                All 3 Core Verification Gates ACTIVE
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-kairos-forest-ink flex items-center gap-1.5">
+                      <FileCheck className="w-3.5 h-3.5 text-kairos-emerald" />
+                      1. Complete ISBAR Handover
+                    </span>
+                    <span className="text-xs font-bold text-emerald-700 font-mono">+50 MBC</span>
+                  </div>
+                  <p className="text-[11px] text-kairos-muted leading-relaxed">
+                    Automated parser validates Identity, Situation, Background, Assessment, Recommendation, complete vitals snapshot, and HL7 FHIR R4 Bundle.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-kairos-border/60 flex items-center justify-between text-[11px]">
+                  <span className="text-kairos-muted">Parser Gate:</span>
+                  <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Auto-Verified Pass
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-kairos-forest-ink flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-kairos-emerald" />
+                      2. Accept Before You Move
+                    </span>
+                    <span className="text-xs font-bold text-emerald-700 font-mono">+50 MBC</span>
+                  </div>
+                  <p className="text-[11px] text-kairos-muted leading-relaxed">
+                    Bed hold lock must be actively confirmed at destination hospital BEFORE ambulance wheels roll. Eliminates blind transfers and patient diversion.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-kairos-border/60 flex items-center justify-between text-[11px]">
+                  <span className="text-kairos-muted">Bed Hold Lock:</span>
+                  <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Locked &amp; Honored
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-kairos-forest-ink flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-kairos-emerald" />
+                      3. &lt;5 Min Emergency Alert SLA
+                    </span>
+                    <span className="text-xs font-bold text-emerald-700 font-mono">+50 MBC</span>
+                  </div>
+                  <p className="text-[11px] text-kairos-muted leading-relaxed">
+                    Cryptographic timestamp audit verifies triage acknowledgment within 300 seconds of initial emergency alert trigger.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-kairos-border/60 flex items-center justify-between text-[11px]">
+                  <span className="text-kairos-muted">Avg Response:</span>
+                  <span className="font-semibold text-emerald-700 flex items-center gap-1 font-mono">
+                    <Check className="w-3 h-3" /> 3m 48s (&lt; 5m SLA)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 4 Core Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold text-kairos-forest-subtle uppercase tracking-wider mb-2">
+                <span>Available Balance</span>
+                <Award className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-serif font-bold text-kairos-forest-ink">
+                  {doctorAccount.balance.toLocaleString()}
+                </span>
+                <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  MBC
+                </span>
+              </div>
+              <p className="text-xs text-kairos-forest-subtle mt-2 flex items-center gap-1">
+                <TrendingUp className="w-3 h-3 text-emerald-600" />
+                Lifetime earned: {doctorAccount.lifetimeEarned.toLocaleString()} MBC
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold text-kairos-forest-subtle uppercase tracking-wider mb-2">
+                <span>Clinician Tier</span>
+                <ShieldCheck className="w-4 h-4 text-kairos-emerald" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-serif font-bold text-kairos-forest-ink uppercase tracking-wide">
+                  {doctorAccount.tier}
+                </span>
+                <span className="text-xs text-kairos-emerald font-semibold">Tier Status</span>
+              </div>
+              <p className="text-xs text-kairos-forest-subtle mt-2">
+                Active Streak: <strong className="text-kairos-forest-ink">{doctorAccount.streakCount} consecutive</strong> golden-hour transfers
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold text-kairos-forest-subtle uppercase tracking-wider mb-2">
+                <span>Handover &amp; SLA Compliance</span>
+                <Activity className="w-4 h-4 text-cyan-600" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-serif font-bold text-kairos-forest-ink">
+                  {doctorAccount.complianceRate}%
+                </span>
+                <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 font-bold">
+                  Top 2%
+                </span>
+              </div>
+              <p className="text-xs text-kairos-forest-subtle mt-2">
+                ISBAR &amp; &lt;5m response: <strong className="text-kairos-forest-ink">100% verified pass</strong>
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold text-kairos-forest-subtle uppercase tracking-wider mb-2">
+                <span>Public-Good Value Redeemed</span>
+                <Gift className="w-4 h-4 text-purple-600" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-serif font-bold text-kairos-forest-ink">
+                  {Math.max(0, doctorAccount.lifetimeEarned - doctorAccount.balance).toLocaleString()}
+                </span>
+                <span className="text-xs text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 font-bold">
+                  MBC
+                </span>
+              </div>
+              <p className="text-xs text-kairos-forest-subtle mt-2">
+                {doctorAccount.recentTransactions.filter((t) => t.type === 'redeem' || t.type === 'redeemed').length} CME badges &amp; specialist grants
+              </p>
+            </div>
+          </div>
+
+          {/* Interactive Redemption Vault: Specialist Consults & CME Training Badges */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-lg font-serif font-bold text-kairos-forest-ink">
+                  Redemption Vault · Specialist Consult Grants &amp; CME Training Badges
+                </h3>
+                <p className="text-xs text-kairos-forest-subtle">
+                  Redeem earned credits for accredited CME training badges, indigent patient tele-specialist grants, and emergency logistics.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-kairos-forest-subtle">
+                  Balance: <strong className="text-amber-600 font-mono">{doctorAccount.balance} MBC</strong>
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                {
+                  id: 'cme-kmc-resus',
+                  title: 'KMC Accredited CME Resuscitation Master Badge',
+                  desc: '2.0 Certified CME Credit Hours in Pre-Hospital Resuscitation, ISBAR handovers & Golden Hour protocol. Accredited by Karnataka Medical Council.',
+                  cost: 350,
+                  tag: 'CME Training Badge',
+                  category: 'cme_training' as const,
+                  cmeHours: '2.0 CME Hours',
+                  accreditedBy: 'Karnataka Medical Council (KMC)',
+                  isBadge: true,
+                  icon: Award,
+                },
+                {
+                  id: 'cme-isbar-fellow',
+                  title: 'Advanced ISBAR Handover Fellow Badge',
+                  desc: '1.5 Accredited CME Hours in Structured Clinical Communication, HL7 FHIR interoperability, and critical care handover standardization.',
+                  cost: 300,
+                  tag: 'CME Training Badge',
+                  category: 'cme_training' as const,
+                  cmeHours: '1.5 CME Hours',
+                  accreditedBy: 'National Medical Commission Protocol',
+                  isBadge: true,
+                  icon: BadgeCheck,
+                },
+                {
+                  id: 'tele-grant',
+                  title: 'On-Demand Tele-Specialist Patient Consult Grant',
+                  desc: 'Sponsor an urgent sub-specialist tele-triage consult (Cardiology / Neurology) for an economically disadvantaged patient with 100% subsidy.',
+                  cost: 200,
+                  tag: 'Specialist Consult Grant',
+                  category: 'tele_specialist_grant' as const,
+                  cmeHours: 'Patient Care Subsidy',
+                  accreditedBy: 'KAIROS Patient Equity Fund',
+                  isBadge: false,
+                  icon: Stethoscope,
+                },
+                {
+                  id: 'tele-neuro-stroke',
+                  title: 'Urgent Tele-Neurology Acute Stroke Review Grant',
+                  desc: 'Subsidize immediate secondary specialist tele-consultation for acute ischemic stroke and thrombolytic triage window evaluation.',
+                  cost: 250,
+                  tag: 'Specialist Consult Grant',
+                  category: 'tele_specialist_grant' as const,
+                  cmeHours: 'Patient Care Subsidy',
+                  accreditedBy: 'KAIROS Stroke Network',
+                  isBadge: false,
+                  icon: Activity,
+                },
+                {
+                  id: 'cme-trauma-fellow',
+                  title: 'Golden Hour Acute Trauma Specialist Badge',
+                  desc: '3.0 Accredited CME Hours in Polytrauma Triage, Hemodynamic Stabilization, and Accept-Before-You-Move bed hold compliance.',
+                  cost: 450,
+                  tag: 'CME Training Badge',
+                  category: 'cme_training' as const,
+                  cmeHours: '3.0 CME Hours',
+                  accreditedBy: 'Karnataka Trauma & Emergency Network',
+                  isBadge: true,
+                  icon: ShieldCheck,
+                },
+                {
+                  id: 'als-priority',
+                  title: 'Green-Corridor ALS Ambulance Priority Dispatch',
+                  desc: 'Priority lock on advanced cardiac life support ambulance with automated municipal traffic corridor signaling for emergency transfer.',
+                  cost: 150,
+                  tag: 'Emergency Transit',
+                  category: 'golden_hour_referral' as const,
+                  cmeHours: 'Emergency Fleet Logistics',
+                  accreditedBy: 'Bangalore Emergency Dispatch Network',
+                  isBadge: false,
+                  icon: Ambulance,
+                },
+              ].map((item) => {
+                const canAfford = doctorAccount.balance >= item.cost;
+                const IconComponent = item.icon;
+                return (
+                  <div
+                    key={item.id}
+                    className="p-5 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm flex flex-col justify-between hover:border-kairos-emerald transition-all"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                          item.isBadge
+                            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-700'
+                            : 'bg-kairos-mint-soft text-kairos-emerald border-kairos-border'
+                        }`}>
+                          {item.tag}
+                        </span>
+                        <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                          <IconComponent className="w-4 h-4" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-sm font-serif font-bold text-kairos-forest-ink">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-kairos-forest-subtle mt-1.5 leading-relaxed">
+                          {item.desc}
+                        </p>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-kairos-surface-subtle border border-kairos-border text-[11px] text-kairos-muted flex items-center justify-between">
+                        <span>Accreditation:</span>
+                        <strong className="text-kairos-forest-ink">{item.cmeHours}</strong>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 pt-4 border-t border-kairos-border/80 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] text-kairos-forest-subtle block uppercase font-bold">Cost</span>
+                        <span className="text-base font-bold text-amber-600 font-mono">
+                          {item.cost} <span className="text-[10px] text-amber-700">MBC</span>
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        {item.isBadge && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedCmeBadge({
+                                id: item.id,
+                                title: item.title,
+                                cmeHours: item.cmeHours,
+                                accreditedBy: item.accreditedBy,
+                                category: item.tag,
+                                earnedDate: new Date().toLocaleDateString('en-IN', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                }),
+                                certificateNumber: `KAIROS-CME-2026-${item.id.toUpperCase()}`,
+                                verificationHash: `0x7F${Math.random().toString(16).substring(2, 10).toUpperCase()}...NMC`,
+                              });
+                            }}
+                            className="px-2.5 py-2 rounded-xl text-xs font-semibold border border-kairos-border text-kairos-forest-ink hover:bg-kairos-mint-soft transition-colors"
+                          >
+                            Inspect Badge
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          disabled={!canAfford}
+                          onClick={() => {
+                            const success = redeemMedbridgeCredits(
+                              doctorAccount.entityId,
+                              'doctor',
+                              item.cost,
+                              item.title,
+                              item.category
+                            );
+                            if (success && item.isBadge) {
+                              setSelectedCmeBadge({
+                                id: item.id,
+                                title: item.title,
+                                cmeHours: item.cmeHours,
+                                accreditedBy: item.accreditedBy,
+                                category: item.tag,
+                                earnedDate: new Date().toLocaleDateString('en-IN', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                }),
+                                certificateNumber: `KAIROS-CME-2026-${item.id.toUpperCase()}`,
+                                verificationHash: `0x7F${Math.random().toString(16).substring(2, 10).toUpperCase()}...NMC`,
+                              });
+                            }
+                          }}
+                          className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                            canAfford
+                              ? 'bg-kairos-emerald hover:bg-kairos-emerald-hover text-white active:scale-95'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed border border-gray-200 dark:border-gray-700'
+                          }`}
+                        >
+                          {canAfford ? (item.isBadge ? 'Redeem Badge' : 'Redeem Grant') : `Need ${item.cost - doctorAccount.balance} more`}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Immutable Transaction Ledger with Automated Verification Hash */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-base font-serif font-bold text-kairos-forest-ink">
+                  MedBridge Automated Verification &amp; Audit Ledger
+                </h3>
+                <p className="text-xs text-kairos-forest-subtle">
+                  Cryptographically timestamped transaction log with verification proof and Zero-Cash-Commission audit seal.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300 font-bold">
+                  NMC Zero-Commission Seal: VERIFIED
+                </span>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-kairos-border text-[11px] font-semibold text-kairos-forest-subtle uppercase tracking-wider">
+                    <th className="pb-3 pl-2">Timestamp</th>
+                    <th className="pb-3">Type</th>
+                    <th className="pb-3">Clinical Action / Protocol Description</th>
+                    <th className="pb-3">Automated Verification Gate</th>
+                    <th className="pb-3 text-right pr-2">Credit Delta</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-kairos-border/60">
+                  {doctorAccount.recentTransactions.map((tx) => {
+                    const isEarned = tx.type === 'earn' || tx.type === 'earned';
+                    const dateStr = new Date(tx.timestamp).toLocaleString('en-IN', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    });
+
+                    // Verification method label
+                    let verifMethod = 'Auto-Verified: ISBAR Compiler (FHIR-OK)';
+                    if (tx.category === 'accept_before_move') verifMethod = 'Auto-Verified: Accept-Before-Move Bed Lock';
+                    else if (tx.category === 'alert_sla_5min') verifMethod = 'Auto-Verified: <5m Alert SLA (<300s)';
+                    else if (tx.category === 'cme_training') verifMethod = 'KMC Credential Issued · Zero-Cash Audit';
+                    else if (tx.category === 'tele_specialist_grant') verifMethod = 'Indigent Care Grant Disbursed (₹0 Fee)';
+                    else if (tx.category === 'golden_hour_referral') verifMethod = 'Door-to-Departure <60m Verified';
+
+                    return (
+                      <tr key={tx.id} className="hover:bg-kairos-mint-soft/30 transition-colors">
+                        <td className="py-3 pl-2 font-mono text-[11px] text-kairos-forest-subtle">
+                          {dateStr}
+                        </td>
+                        <td className="py-3">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                              isEarned
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-purple-50 text-purple-700 border border-purple-200'
+                            }`}
+                          >
+                            {isEarned ? <ArrowUpRight className="w-3 h-3" /> : <Gift className="w-3 h-3" />}
+                            {tx.type}
+                          </span>
+                        </td>
+                        <td className="py-3 font-medium text-kairos-forest-ink max-w-sm">
+                          {tx.reason}
+                        </td>
+                        <td className="py-3">
+                          <span className="font-mono text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                            {verifMethod}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-2 text-right font-mono font-bold">
+                          <span className={isEarned ? 'text-emerald-700' : 'text-purple-700'}>
+                            {isEarned ? '+' : '-'}{tx.amount} MBC
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CME TRAINING BADGE & CERTIFICATE INSPECTION MODAL */}
+      {selectedCmeBadge && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-xl rounded-3xl bg-white dark:bg-kairos-card border-2 border-amber-400 p-8 shadow-2xl space-y-6">
+            <button
+              type="button"
+              onClick={() => setSelectedCmeBadge(null)}
+              className="absolute top-4 right-4 p-2 rounded-xl text-kairos-muted hover:text-kairos-forest-ink hover:bg-kairos-mint-soft transition-colors"
+              aria-label="Close CME Badge Modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Certificate Header */}
+            <div className="text-center space-y-2 border-b border-kairos-border pb-5">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-amber-950 shadow-md mx-auto">
+                <Award className="w-9 h-9" />
+              </div>
+              <p className="text-[11px] font-mono font-bold uppercase tracking-widest text-amber-600">
+                Official CME Training Credential
+              </p>
+              <h3 className="font-serif text-2xl font-bold text-kairos-forest-ink">
+                Certificate of Protocol Excellence
+              </h3>
+              <p className="text-xs text-kairos-muted">
+                Accredited under the National Medical Commission (NMC) Continuing Medical Education Framework
+              </p>
+            </div>
+
+            {/* Certificate Body */}
+            <div className="space-y-4 py-2 text-center">
+              <p className="text-xs text-kairos-muted">This certifies that</p>
+              <p className="text-xl font-serif font-bold text-kairos-forest-ink tracking-wide">
+                {currentUser?.displayName || 'Dr. Vikram Patel, MD'}
+              </p>
+              <p className="text-xs text-kairos-muted max-w-md mx-auto leading-relaxed">
+                has successfully demonstrated verified clinical excellence in structured emergency protocols and is hereby awarded the credential:
+              </p>
+
+              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 inline-block w-full max-w-md">
+                <h4 className="font-serif text-lg font-bold text-amber-900 dark:text-amber-200">
+                  {selectedCmeBadge.title}
+                </h4>
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mt-1">
+                  {selectedCmeBadge.cmeHours} · {selectedCmeBadge.accreditedBy}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-left pt-2">
+                <div className="p-3 rounded-xl bg-kairos-surface-subtle border border-kairos-border">
+                  <span className="text-[10px] text-kairos-muted uppercase font-bold block">Certificate ID</span>
+                  <span className="font-mono text-xs font-semibold text-kairos-forest-ink">
+                    {selectedCmeBadge.certificateNumber}
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-kairos-surface-subtle border border-kairos-border">
+                  <span className="text-[10px] text-kairos-muted uppercase font-bold block">Issue Date</span>
+                  <span className="font-mono text-xs font-semibold text-kairos-forest-ink">
+                    {selectedCmeBadge.earnedDate}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 text-left flex items-center justify-between text-xs">
+                <div>
+                  <span className="font-bold text-emerald-900 dark:text-emerald-200 block">
+                    Zero Cash Commission Audit Seal
+                  </span>
+                  <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-mono">
+                    {selectedCmeBadge.verificationHash}
+                  </span>
+                </div>
+                <BadgeCheck className="w-6 h-6 text-emerald-600 shrink-0" />
+              </div>
+            </div>
+
+            {/* Certificate Footer Controls */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-kairos-border">
+              <button
+                type="button"
+                onClick={() => {
+                  window.print();
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-kairos-border bg-kairos-surface text-xs font-semibold text-kairos-forest-ink hover:bg-kairos-mint-soft"
+              >
+                <Printer className="w-4 h-4" />
+                Print Certificate
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedCmeBadge(null)}
+                className="px-5 py-2.5 rounded-xl bg-kairos-emerald hover:bg-kairos-emerald-hover text-white text-xs font-bold transition-colors"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

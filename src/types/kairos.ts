@@ -254,3 +254,54 @@ export interface HospitalMatchResult {
   reasons: string[];
   warnings: string[];
 }
+
+export type MedBridgeCreditCategory =
+  | 'golden_hour_referral'
+  | 'isbar_compliance'
+  | 'telemetry_stream'
+  | 'fast_bed_acceptance'
+  | 'bed_hold_honored'
+  | 'ambulance_handover'
+  | 'tele_specialist_grant'
+  | 'cme_voucher'
+  | 'cme_training'
+  | 'priority_routing_boost'
+  | 'quality_audit_grant'
+  | 'referral_accepted_fast'
+  | 'zero_double_booking'
+  | 'priority_matching'
+  | 'network_buffer'
+  | 'nabh_compliance'
+  | 'accept_before_move'
+  | 'alert_sla_5min';
+
+export interface MedBridgeCreditTransaction {
+  id: string;
+  timestamp: string;
+  role: 'doctor' | 'hospital';
+  entityId: string;
+  entityName: string;
+  type: 'earn' | 'redeem' | 'earned' | 'redeemed';
+  amount: number;
+  reason: string;
+  category: MedBridgeCreditCategory;
+}
+
+export interface MedBridgeAccount {
+  entityId: string;
+  entityName: string;
+  role: 'doctor' | 'hospital';
+  balance: number;
+  lifetimeEarned: number;
+  tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
+  complianceRate: number; // e.g. 98.4%
+  streakCount: number;
+  recentTransactions: MedBridgeCreditTransaction[];
+  // Convenience aliases for UI components:
+  ownerId?: string;
+  totalEarned?: number;
+  totalRedeemed?: number;
+  complianceScore?: number;
+  streak?: number;
+  transactions?: MedBridgeCreditTransaction[];
+}

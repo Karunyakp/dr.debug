@@ -32,6 +32,9 @@ import type {
   UserProfile,
   UserRole,
   VitalSigns,
+  MedBridgeAccount,
+  MedBridgeCreditCategory,
+  MedBridgeCreditTransaction,
 } from '../types/kairos';
 import {
   createBedHold,
@@ -51,6 +54,7 @@ import {
   DEFAULT_REFERRALS,
   DEFAULT_REGISTERED_USERS,
   DEFAULT_SPECIALISTS,
+  DEFAULT_MEDBRIDGE_ACCOUNTS,
 } from '../data/defaultPlatformData';
 
 const STORAGE_KEY = 'kairos_platform_state_v2';
@@ -68,6 +72,7 @@ interface PersistedState {
   notifications: KairosNotification[];
   auditLogs: AuditLogEntry[];
   registeredUsers: UserProfile[];
+  medbridgeAccounts: Record<string, MedBridgeAccount>;
 }
 
 export const INITIAL_PLATFORM_STATE: PersistedState = {
@@ -81,6 +86,7 @@ export const INITIAL_PLATFORM_STATE: PersistedState = {
   notifications: DEFAULT_NOTIFICATIONS,
   auditLogs: DEFAULT_AUDIT_LOGS,
   registeredUsers: DEFAULT_REGISTERED_USERS,
+  medbridgeAccounts: DEFAULT_MEDBRIDGE_ACCOUNTS,
 };
 
 function loadInitialState(): PersistedState {
@@ -145,6 +151,10 @@ function loadInitialState(): PersistedState {
           }
           return list;
         })(),
+        medbridgeAccounts:
+          parsed.medbridgeAccounts && Object.keys(parsed.medbridgeAccounts).length > 0
+            ? parsed.medbridgeAccounts
+            : DEFAULT_MEDBRIDGE_ACCOUNTS,
       };
     }
   } catch {
@@ -344,6 +354,23 @@ interface KairosContextValue {
   broadcastNotification: (title: string, message: string, severity: KairosNotification['severity']) => void;
   markAllNotificationsRead: () => void;
   resetPlatformData: () => void;
+  // MedBridge Credits USP Engine
+  medbridgeAccounts: Record<string, MedBridgeAccount>;
+  getMedbridgeAccount: (entityId: string, role: 'doctor' | 'hospital') => MedBridgeAccount;
+  awardMedbridgeCredits: (
+    entityId: string,
+    role: 'doctor' | 'hospital',
+    amount: number,
+    reason: string,
+    category: MedBridgeCreditCategory
+  ) => void;
+  redeemMedbridgeCredits: (
+    entityId: string,
+    role: 'doctor' | 'hospital',
+    amount: number,
+    reason: string,
+    category: MedBridgeCreditCategory
+  ) => boolean;
 }
 
 const KairosContext = createContext<KairosContextValue | null>(null);
@@ -1967,6 +1994,212 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }));
   }, [updateState]);
 
+  const getMedbridgeAccount = useCallback(
+    (entityId: string, role: 'doctor' | 'hospital'): MedBridgeAccount => {
+      if (state.medbridgeAccounts && state.medbridgeAccounts[entityId]) {
+        return state.medbridgeAccounts[entityId];
+      }
+      if (role === 'doctor') {
+        return (
+          state.medbridgeAccounts['demo-doctor'] ?? {
+            entityId,
+            entityName: 'Referring Clinician',
+            role: 'doctor',
+            balance: 1450,
+            lifetimeEarned: 2200,
+            tier: 'Gold',
+            complianceRate: 98.4,
+            streakCount: 14,
+            recentTransactions: [],
+          }
+        );
+      }
+      return (
+        state.medbridgeAccounts[entityId] ??
+        state.medbridgeAccounts['hosp-cmrit'] ?? {
+          entityId,
+          entityName: 'Receiving Hospital',
+          role: 'hospital',
+          balance: 3820,
+          lifetimeEarned: 5400,
+          tier: 'Platinum',
+          complianceRate: 99.2,
+          streakCount: 28,
+          recentTransactions: [],
+        }
+      );
+    },
+    [state.medbridgeAccounts]
+  );
+
+  const awardMedbridgeCredits = useCallback(
+    (
+      entityId: string,
+      role: 'doctor' | 'hospital',
+      amount: number,
+      reason: string,
+      category: MedBridgeCreditCategory
+    ) => {
+      const nowIso = new Date().toISOString();
+      const tx: MedBridgeCreditTransaction = {
+        id: `mbc-tx-${Date.now()}`,
+        timestamp: nowIso,
+        role,
+        entityId,
+        entityName: role === 'doctor' ? 'Referring Clinician' : 'Receiving Hospital',
+        type: 'earn',
+        amount,
+        reason,
+        category,
+      };
+
+      updateState((prev) => {
+        const fallbackAcc =
+          role === 'doctor' ? prev.medbridgeAccounts['demo-doctor'] : prev.medbridgeAccounts['hosp-cmrit'];
+        const currentAccount =
+          prev.medbridgeAccounts[entityId] ??
+          fallbackAcc ?? {
+            entityId,
+            entityName: role === 'doctor' ? 'Referring Clinician' : 'Receiving Hospital',
+            role,
+            balance: role === 'doctor' ? 1450 : 3820,
+            lifetimeEarned: role === 'doctor' ? 2200 : 5400,
+            tier: role === 'doctor' ? 'Gold' : 'Platinum',
+            complianceRate: 98.4,
+            streakCount: 14,
+            recentTransactions: [],
+          };
+
+        const nextBalance = currentAccount.balance + amount;
+        const nextLifetime = currentAccount.lifetimeEarned + amount;
+        const nextTier =
+          nextLifetime >= 5000 ? 'Platinum' : nextLifetime >= 2000 ? 'Gold' : nextLifetime >= 1000 ? 'Silver' : 'Bronze';
+
+        const updatedAccount: MedBridgeAccount = {
+          ...currentAccount,
+          balance: nextBalance,
+          lifetimeEarned: nextLifetime,
+          tier: nextTier,
+          streakCount: currentAccount.streakCount + 1,
+          recentTransactions: [tx, ...currentAccount.recentTransactions].slice(0, 25),
+        };
+
+        const nextAccounts: Record<string, MedBridgeAccount> = {
+          ...prev.medbridgeAccounts,
+          [entityId]: updatedAccount,
+        };
+        if (role === 'doctor' || entityId === 'demo-doctor') {
+          nextAccounts['demo-doctor'] = updatedAccount;
+        }
+        if (role === 'hospital' && (entityId === 'hosp-cmrit' || entityId === 'demo-hospital')) {
+          nextAccounts['hosp-cmrit'] = updatedAccount;
+          nextAccounts['demo-hospital'] = updatedAccount;
+        }
+
+        return {
+          ...prev,
+          medbridgeAccounts: nextAccounts,
+          notifications: prependNotification(prev.notifications, {
+            id: `notif-mbc-${Date.now()}`,
+            title: `MedBridge Credits Earned (+${amount} MBC)`,
+            message: `${reason} · Current Balance: ${nextBalance} MBC.`,
+            channel: 'In-App',
+            targetRoles: [role, 'admin'],
+            severity: 'success',
+            read: false,
+            createdAt: nowIso,
+          }),
+          auditLogs: appendAudit(
+            prev,
+            'MEDBRIDGE_CREDITS_EARNED',
+            'referral',
+            entityId,
+            `Awarded +${amount} MBC to ${role} (${reason}). New balance: ${nextBalance} MBC.`
+          ),
+        };
+      });
+
+      showToast(`+${amount} MedBridge Credits awarded! (${reason})`);
+    },
+    [showToast, updateState]
+  );
+
+  const redeemMedbridgeCredits = useCallback(
+    (
+      entityId: string,
+      role: 'doctor' | 'hospital',
+      amount: number,
+      reason: string,
+      category: MedBridgeCreditCategory
+    ): boolean => {
+      const currentAccount = getMedbridgeAccount(entityId, role);
+      if (currentAccount.balance < amount) {
+        showToast(`Insufficient MedBridge Credits (Balance: ${currentAccount.balance} MBC, Required: ${amount} MBC).`);
+        return false;
+      }
+
+      const nowIso = new Date().toISOString();
+      const tx: MedBridgeCreditTransaction = {
+        id: `mbc-tx-${Date.now()}`,
+        timestamp: nowIso,
+        role,
+        entityId,
+        entityName: currentAccount.entityName,
+        type: 'redeem',
+        amount,
+        reason,
+        category,
+      };
+
+      updateState((prev) => {
+        const nextBalance = currentAccount.balance - amount;
+        const updatedAccount: MedBridgeAccount = {
+          ...currentAccount,
+          balance: nextBalance,
+          recentTransactions: [tx, ...currentAccount.recentTransactions].slice(0, 25),
+        };
+
+        const nextAccounts: Record<string, MedBridgeAccount> = {
+          ...prev.medbridgeAccounts,
+          [entityId]: updatedAccount,
+        };
+        if (role === 'doctor' || entityId === 'demo-doctor') {
+          nextAccounts['demo-doctor'] = updatedAccount;
+        }
+        if (role === 'hospital' && (entityId === 'hosp-cmrit' || entityId === 'demo-hospital')) {
+          nextAccounts['hosp-cmrit'] = updatedAccount;
+          nextAccounts['demo-hospital'] = updatedAccount;
+        }
+
+        return {
+          ...prev,
+          medbridgeAccounts: nextAccounts,
+          notifications: prependNotification(prev.notifications, {
+            id: `notif-mbc-${Date.now()}`,
+            title: `MedBridge Credits Redeemed (-${amount} MBC)`,
+            message: `Redeemed: ${reason}. Remaining Balance: ${nextBalance} MBC.`,
+            channel: 'In-App',
+            targetRoles: [role, 'admin'],
+            severity: 'info',
+            read: false,
+            createdAt: nowIso,
+          }),
+          auditLogs: appendAudit(
+            prev,
+            'MEDBRIDGE_CREDITS_REDEEMED',
+            'referral',
+            entityId,
+            `Redeemed -${amount} MBC for ${reason}. Remaining balance: ${nextBalance} MBC.`
+          ),
+        };
+      });
+
+      showToast(`Redeemed ${amount} MBC for ${reason}!`);
+      return true;
+    },
+    [getMedbridgeAccount, showToast, updateState]
+  );
+
   const resetPlatformData = useCallback(() => {
     setState(INITIAL_PLATFORM_STATE);
     persistAndBroadcast(INITIAL_PLATFORM_STATE);
@@ -1991,6 +2224,10 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       notifications: state.notifications,
       auditLogs: state.auditLogs,
       registeredUsers: state.registeredUsers,
+      medbridgeAccounts: state.medbridgeAccounts,
+      getMedbridgeAccount,
+      awardMedbridgeCredits,
+      redeemMedbridgeCredits,
       toastMessage,
       showToast,
       authCallbackError,
@@ -2038,6 +2275,9 @@ export const KairosProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setOfflineSimulated,
       nowMs,
       state,
+      getMedbridgeAccount,
+      awardMedbridgeCredits,
+      redeemMedbridgeCredits,
       toastMessage,
       showToast,
       authCallbackError,

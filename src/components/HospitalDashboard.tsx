@@ -3,16 +3,27 @@ import {
   Activity,
   AlertTriangle,
   Ambulance,
+  ArrowUpRight,
+  Award,
+  BadgeCheck,
   BedDouble,
   Building2,
+  Check,
   CheckCircle2,
   Clock,
+  FileCheck,
+  FileText,
+  Gift,
+  Lock,
   Minus,
   Plus,
   QrCode,
   RefreshCw,
+  ShieldCheck,
+  TrendingUp,
   Users,
   XCircle,
+  Zap,
 } from 'lucide-react';
 import { useKairos } from '../context/KairosContext';
 import { evaluateBedHoldState, formatCountdown } from '../utils/kairosEngine';
@@ -45,6 +56,9 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
     updateHospitalCapacity,
     addHospitalDepartment,
     addHospitalFacility,
+    getMedbridgeAccount,
+    awardMedbridgeCredits,
+    redeemMedbridgeCredits,
   } = useKairos();
 
   const [managedHospitalId, setManagedHospitalId] = useState(
@@ -52,6 +66,11 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
   );
   const myHospital =
     hospitals.find((h) => h.hospitalId === managedHospitalId) ?? hospitals[0] ?? null;
+
+  const hospitalAccount = getMedbridgeAccount(
+    myHospital?.hospitalId ?? 'hosp-cmrit',
+    'hospital'
+  );
 
   // Register Hospital onboarding form state
   const [regName, setRegName] = useState(currentUser?.facilityName ?? '');
@@ -139,6 +158,28 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
     declineReferral(referralId, declineReason.trim());
     setDecliningRefId(null);
     setDeclineReason('');
+  };
+
+  const handleAcceptReferral = (referralId: string, bedLabel: string) => {
+    acceptReferral(referralId, bedLabel, currentUser?.displayName || 'Dr. Vikram Patel');
+    awardMedbridgeCredits(
+      myHospital?.hospitalId ?? 'hosp-cmrit',
+      'hospital',
+      50,
+      `Emergency Bed Hold Reserved for ${referralId} (<5m SLA)`,
+      'referral_accepted_fast'
+    );
+  };
+
+  const handleConfirmPatientArrival = (referralId: string) => {
+    confirmPatientArrival(referralId);
+    awardMedbridgeCredits(
+      myHospital?.hospitalId ?? 'hosp-cmrit',
+      'hospital',
+      30,
+      `Ambulance Arrival Handover Completed for ${referralId} (<10m)`,
+      'zero_double_booking'
+    );
   };
 
   const handleRegisterHospital = (e: React.FormEvent) => {
@@ -362,7 +403,63 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
 
       {/* OVERVIEW TAB — 3-COLUMN COMMAND LAYOUT MATCHING PDF PAGE 2 */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
+        <div className="space-y-5">
+          {/* MedBridge Credits USP Highlight Banner */}
+          <div className="rounded-2xl bg-gradient-to-r from-kairos-forest-deep via-kairos-forest to-emerald-950 p-5 text-white shadow-md border border-emerald-500/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-amber-950 shadow-inner shrink-0">
+                <Award className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                    Hospital USP Feature
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-200">
+                    {hospitalAccount.tier.toUpperCase()} TIER · {hospitalAccount.streakCount}-Hold Streak
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-400/15 px-2 py-0.5 rounded border border-emerald-400/30">
+                    Zero Cash Commission
+                  </span>
+                </div>
+                <p className="text-lg font-serif font-bold text-white mt-0.5">
+                  MedBridge Reserve: <span className="text-amber-400 font-mono">{hospitalAccount.balance.toLocaleString()} MBC</span>
+                  <span className="text-xs font-normal text-emerald-200/80 ml-2">
+                    ({hospitalAccount.complianceRate}% &lt;5m Alert SLA · 100% Accept-Before-You-Move Bed Hold Integrity)
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full md:w-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  awardMedbridgeCredits(
+                    hospitalAccount.entityId,
+                    'hospital',
+                    50,
+                    'Rapid Emergency Referral Acceptance (<4m SLA)',
+                    'referral_accepted_fast'
+                  );
+                }}
+                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95"
+              >
+                <Zap className="w-3.5 h-3.5 fill-amber-950" />
+                +50 MBC Test SLA
+              </button>
+              <button
+                type="button"
+                onClick={() => onTabChange('credits')}
+                className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold text-xs uppercase tracking-wider transition-all"
+              >
+                <span>Credit Vault</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
           {/* Column 1: Live OPD Queue (5 cols) */}
           <div className="xl:col-span-5 bg-kairos-surface border border-kairos-border rounded-2xl p-5 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
@@ -509,13 +606,7 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
                       <div className="flex items-center gap-2 pt-1">
                         <button
                           type="button"
-                          onClick={() =>
-                            acceptReferral(
-                              ref.referralId,
-                              bedChoice,
-                              currentUser?.displayName || 'Dr. Vikram Patel'
-                            )
-                          }
+                          onClick={() => handleAcceptReferral(ref.referralId, bedChoice)}
                           className="flex-1 py-2 px-3 rounded-xl bg-kairos-emerald text-white text-xs font-bold hover:bg-kairos-emerald-hover"
                         >
                           Accept & Hold Bed
@@ -543,7 +634,7 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
                         {ref.status !== 'completed' && (
                           <button
                             type="button"
-                            onClick={() => confirmPatientArrival(ref.referralId)}
+                            onClick={() => handleConfirmPatientArrival(ref.referralId)}
                             className="flex-1 py-1.5 px-3 rounded-xl border border-kairos-emerald text-kairos-forest-ink text-xs font-semibold hover:bg-kairos-mint-soft"
                           >
                             Confirm Arrival
@@ -654,6 +745,7 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
               Update Verified Capacity
             </button>
           </div>
+        </div>
         </div>
       )}
 
@@ -897,13 +989,7 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
                         />
                         <button
                           type="button"
-                          onClick={() =>
-                            acceptReferral(
-                              ref.referralId,
-                              selectedBedLabel,
-                              currentUser?.displayName || 'Dr. Vikram Patel'
-                            )
-                          }
+                          onClick={() => handleAcceptReferral(ref.referralId, selectedBedLabel)}
                           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-kairos-emerald text-white text-xs font-bold hover:bg-kairos-emerald-hover"
                         >
                           <CheckCircle2 className="w-4 h-4" />
@@ -962,7 +1048,7 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
                         )}
                         <button
                           type="button"
-                          onClick={() => confirmPatientArrival(ref.referralId)}
+                          onClick={() => handleConfirmPatientArrival(ref.referralId)}
                           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-kairos-forest text-white text-xs font-bold hover:bg-kairos-emerald"
                         >
                           <CheckCircle2 className="w-4 h-4" />
@@ -1114,6 +1200,489 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({
               title="Regional Hospital Capacity & Incoming Ambulance View"
               heightClass="h-[460px]"
             />
+          </div>
+        </div>
+      )}
+
+      {/* MEDBRIDGE CREDITS - USP FEATURE TAB FOR HOSPITALS */}
+      {activeTab === 'credits' && (
+        <div className="space-y-6">
+          {/* Header Banner */}
+          <div className="rounded-2xl bg-gradient-to-r from-kairos-forest-deep via-kairos-forest to-emerald-950 p-6 text-white shadow-xl relative overflow-hidden border border-emerald-500/20">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/15 border border-emerald-400/30 text-emerald-300 text-xs font-semibold uppercase tracking-wider">
+                    <Award className="w-3.5 h-3.5" />
+                    KAIROS USP: MedBridge Credits™ Engine
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-bold uppercase tracking-wider">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Zero Cash Commission Certified
+                  </span>
+                </div>
+                <h2 className="text-2xl lg:text-3xl font-serif font-bold text-white tracking-tight">
+                  Hospital MedBridge Credits™ &amp; SLA Accountability Hub
+                </h2>
+                <p className="text-sm text-emerald-100/80 max-w-2xl leading-relaxed">
+                  Rewarding receiving facilities for <strong>Complete ISBAR Handovers</strong>, <strong>Accept-Before-You-Move Bed Holds</strong>,
+                  and <strong>&lt;5 Min Emergency Alert Acknowledgments</strong>. Redeem non-monetary merit credits for algorithmic dispatch priority boost,
+                  mutual aid buffers, and automated NABH digital audit packages.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    awardMedbridgeCredits(
+                      hospitalAccount.entityId,
+                      'hospital',
+                      50,
+                      'Emergency Alert Acknowledged within 5-Minute Window (<300s SLA)',
+                      'alert_sla_5min'
+                    );
+                    awardMedbridgeCredits(
+                      hospitalAccount.entityId,
+                      'hospital',
+                      50,
+                      'Accept-Before-You-Move Bed Hold Reserved & Honored with Zero Double-Booking',
+                      'accept_before_move'
+                    );
+                    awardMedbridgeCredits(
+                      hospitalAccount.entityId,
+                      'hospital',
+                      50,
+                      'Complete ISBAR Clinical Handover & Vitals Telemetry Validated',
+                      'isbar_compliance'
+                    );
+                  }}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-bold text-xs uppercase tracking-wider hover:from-amber-300 hover:to-amber-400 shadow-md transition-all active:scale-95 whitespace-nowrap"
+                >
+                  <Zap className="w-4 h-4 fill-amber-950" />
+                  Simulate Complete Triage &amp; Auto-Verify (+150 MBC)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    awardMedbridgeCredits(
+                      hospitalAccount.entityId,
+                      'hospital',
+                      75,
+                      'Zero-Double-Booking Bed Hold Audit Passed (100% Integrity)',
+                      'zero_double_booking'
+                    );
+                  }}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-xs uppercase tracking-wider transition-all whitespace-nowrap"
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  +75 MBC Hold Integrity
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Zero Cash Commission Guarantee Charter Box */}
+          <div className="rounded-2xl border-2 border-emerald-500/30 bg-emerald-50/70 dark:bg-emerald-950/20 p-5 shadow-xs">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-bold text-kairos-forest-ink uppercase tracking-wide">
+                      Hospital Zero Cash Commission Charter · Ethical Network Standards
+                    </h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-300">
+                      NMC Ethics Compliant
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950/60 text-cyan-900 dark:text-cyan-300 border border-cyan-300">
+                      NABH Quality Verified
+                    </span>
+                  </div>
+                  <p className="text-xs text-kairos-muted mt-1 leading-relaxed max-w-3xl">
+                    Under National Medical Commission (NMC) codes and clinical establishment laws, <strong>KAIROS strictly prohibits cash referral kickbacks or financial cuts</strong>. MedBridge Credits are non-monetary institutional performance tokens earned through verifiable quality metrics: sub-5 minute alert response, Accept-Before-You-Move bed hold compliance, and complete ISBAR handovers. Credits are redeemable exclusively for accredited staff CME licenses, algorithmic dispatch priority boosts, and automated NABH digital audit exports.
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 flex items-center gap-2">
+                <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-kairos-card border border-emerald-300 dark:border-emerald-800 text-center">
+                  <span className="text-[10px] font-bold uppercase text-kairos-muted block">Cash Cut</span>
+                  <strong className="text-xs text-red-600 font-mono">₹0.00 (Zero)</strong>
+                </div>
+                <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-kairos-card border border-emerald-300 dark:border-emerald-800 text-center">
+                  <span className="text-[10px] font-bold uppercase text-kairos-muted block">Audit Status</span>
+                  <strong className="text-xs text-emerald-700 dark:text-emerald-400 font-mono">Non-Monetary Merit</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Automated Verification Engine & Compiler Status */}
+          <div className="rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border p-5 space-y-4 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-kairos-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-kairos-mint-soft text-kairos-emerald flex items-center justify-center">
+                  <BadgeCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-kairos-forest-ink">
+                    Hospital Automated SLA Verification &amp; Protocol Compiler
+                  </h3>
+                  <p className="text-[11px] text-kairos-muted">
+                    Automated smart compliance gates for emergency admission and bed hold honoring
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-200 dark:border-emerald-800">
+                <Check className="w-3.5 h-3.5" />
+                All 3 Core Emergency Gates ACTIVE
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-kairos-forest-ink flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-kairos-emerald" />
+                      1. &lt;5 Min Alert Acknowledgment
+                    </span>
+                    <span className="text-xs font-bold text-emerald-700 font-mono">+50 MBC</span>
+                  </div>
+                  <p className="text-[11px] text-kairos-muted leading-relaxed">
+                    Clinician review &amp; acknowledgment registered within 300 seconds of incoming emergency transfer alert.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-kairos-border/60 flex items-center justify-between text-[11px]">
+                  <span className="text-kairos-muted">SLA Average:</span>
+                  <span className="font-semibold text-emerald-700 flex items-center gap-1 font-mono">
+                    <Check className="w-3 h-3" /> 3m 48s (&lt; 5m SLA Pass)
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-kairos-forest-ink flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-kairos-emerald" />
+                      2. Accept Before You Move Bed Lock
+                    </span>
+                    <span className="text-xs font-bold text-emerald-700 font-mono">+50 MBC</span>
+                  </div>
+                  <p className="text-[11px] text-kairos-muted leading-relaxed">
+                    Guaranteed bed reservation issued and held before ambulance leaves referring center. 0% double-booking.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-kairos-border/60 flex items-center justify-between text-[11px]">
+                  <span className="text-kairos-muted">Bed Hold Integrity:</span>
+                  <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                    <Check className="w-3 h-3" /> 100% Zero-Break Guarantee
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-kairos-surface-subtle border border-kairos-border flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-kairos-forest-ink flex items-center gap-1.5">
+                      <FileCheck className="w-3.5 h-3.5 text-kairos-emerald" />
+                      3. Complete ISBAR Intake Audit
+                    </span>
+                    <span className="text-xs font-bold text-emerald-700 font-mono">+50 MBC</span>
+                  </div>
+                  <p className="text-[11px] text-kairos-muted leading-relaxed">
+                    Electronic verification of HL7 FHIR ISBAR bundle with vitals telemetry streaming prior to ED arrival.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-kairos-border/60 flex items-center justify-between text-[11px]">
+                  <span className="text-kairos-muted">Intake Gate:</span>
+                  <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Pre-Triage Validated
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 4 Core Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold text-kairos-forest-subtle uppercase tracking-wider mb-2">
+                <span>Credit Reserve</span>
+                <Award className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-serif font-bold text-kairos-forest-ink">
+                  {hospitalAccount.balance.toLocaleString()}
+                </span>
+                <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  MBC
+                </span>
+              </div>
+              <p className="text-xs text-kairos-forest-subtle mt-2 flex items-center gap-1">
+                <TrendingUp className="w-3 h-3 text-emerald-600" />
+                Lifetime accrued: {hospitalAccount.lifetimeEarned.toLocaleString()} MBC
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold text-kairos-forest-subtle uppercase tracking-wider mb-2">
+                <span>Network Tier</span>
+                <ShieldCheck className="w-4 h-4 text-kairos-emerald" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-serif font-bold text-kairos-forest-ink uppercase tracking-wide">
+                  {hospitalAccount.tier}
+                </span>
+                <span className="text-xs text-kairos-emerald font-semibold">Tier Status</span>
+              </div>
+              <p className="text-xs text-kairos-forest-subtle mt-2">
+                Streak: <strong className="text-kairos-forest-ink">{hospitalAccount.streakCount} consecutive</strong> zero-break holds
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold text-kairos-forest-subtle uppercase tracking-wider mb-2">
+                <span>Acceptance SLA</span>
+                <Clock className="w-4 h-4 text-cyan-600" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-serif font-bold text-kairos-forest-ink">
+                  {hospitalAccount.complianceRate}%
+                </span>
+                <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 font-bold">
+                  Target &lt;5m
+                </span>
+              </div>
+              <p className="text-xs text-kairos-forest-subtle mt-2">
+                Average response time: <strong className="text-kairos-forest-ink">3 min 48 sec</strong>
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold text-kairos-forest-subtle uppercase tracking-wider mb-2">
+                <span>Bed Hold Integrity</span>
+                <BedDouble className="w-4 h-4 text-purple-600" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-serif font-bold text-kairos-forest-ink">
+                  100%
+                </span>
+                <span className="text-xs text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 font-bold">
+                  Zero Double-Book
+                </span>
+              </div>
+              <p className="text-xs text-kairos-forest-subtle mt-2">
+                {Math.max(0, hospitalAccount.lifetimeEarned - hospitalAccount.balance).toLocaleString()} MBC redeemed for institutional utility
+              </p>
+            </div>
+          </div>
+
+          {/* Interactive Hospital Utility & Redemptions */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-serif font-bold text-kairos-forest-ink">
+                  Hospital Institutional Perks &amp; Utility Vault
+                </h3>
+                <p className="text-xs text-kairos-forest-subtle">
+                  Redeem earned credits for algorithmic dispatch priority boost, mutual aid reserves, CME staff licenses, and automated NABH digital audit packages.
+                </p>
+              </div>
+              <span className="text-xs text-kairos-forest-subtle">
+                Balance: <strong className="text-amber-600 font-mono">{hospitalAccount.balance.toLocaleString()} MBC</strong>
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  id: 'dispatch-boost',
+                  title: 'Algorithmic Dispatch Priority Boost',
+                  desc: '30-day algorithmic routing priority for trauma and cardiac referrals matching hospital specialty.',
+                  cost: 1000,
+                  tag: 'Volume & Intake',
+                  category: 'priority_matching' as const,
+                  icon: TrendingUp,
+                },
+                {
+                  id: 'mutual-aid',
+                  title: 'Inter-Hospital Mutual Aid Reserve',
+                  desc: 'Pre-negotiated overflow backup ICU bed guarantee with peer hospital network during surge capacity.',
+                  cost: 750,
+                  tag: 'Capacity Buffer',
+                  category: 'network_buffer' as const,
+                  icon: Building2,
+                },
+                {
+                  id: 'nabh-audit',
+                  title: 'NABH / Ayushman Digital Audit Package',
+                  desc: '1-click cryptographic export of response times, bed hold compliance, and clinical handovers for accreditation.',
+                  cost: 500,
+                  tag: 'Accreditation',
+                  category: 'nabh_compliance' as const,
+                  icon: ShieldCheck,
+                },
+                {
+                  id: 'hospital-cme',
+                  title: 'Emergency Resuscitation CME License',
+                  desc: '10 institutional seats for emergency simulation, acute airway, and trauma resuscitation training.',
+                  cost: 600,
+                  tag: 'Staff Training',
+                  category: 'cme_training' as const,
+                  icon: Award,
+                },
+              ].map((voucher) => {
+                const canAfford = hospitalAccount.balance >= voucher.cost;
+                const IconComponent = voucher.icon;
+                return (
+                  <div
+                    key={voucher.id}
+                    className="p-5 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm flex flex-col justify-between hover:border-kairos-emerald transition-all"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-kairos-mint-soft text-kairos-emerald border border-kairos-border">
+                          {voucher.tag}
+                        </span>
+                        <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                          <IconComponent className="w-4 h-4" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-sm font-serif font-bold text-kairos-forest-ink">
+                          {voucher.title}
+                        </h4>
+                        <p className="text-xs text-kairos-forest-subtle mt-1 leading-relaxed">
+                          {voucher.desc}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 pt-4 border-t border-kairos-border/80 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs text-kairos-forest-subtle block">Cost</span>
+                        <span className="text-base font-bold text-amber-600 font-mono">
+                          {voucher.cost.toLocaleString()} <span className="text-[10px] text-amber-700">MBC</span>
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={!canAfford}
+                        onClick={() => {
+                          redeemMedbridgeCredits(
+                            hospitalAccount.entityId,
+                            'hospital',
+                            voucher.cost,
+                            voucher.title,
+                            voucher.category
+                          );
+                        }}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                          canAfford
+                            ? 'bg-kairos-emerald hover:bg-kairos-emerald-hover text-white active:scale-95'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed border border-gray-200 dark:border-gray-700'
+                        }`}
+                      >
+                        {canAfford ? 'Redeem Perk' : `Need ${voucher.cost - hospitalAccount.balance} more`}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Immutable Transaction Ledger */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-kairos-card border border-kairos-border shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-base font-serif font-bold text-kairos-forest-ink">
+                  Hospital MedBridge Automated Verification &amp; Audit Ledger
+                </h3>
+                <p className="text-xs text-kairos-forest-subtle">
+                  Cryptographically timestamped transaction log with automated SLA verification and Zero-Cash-Commission seal.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300 font-bold">
+                  Zero Cash Commission Audit: PASS
+                </span>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-kairos-border text-[11px] font-semibold text-kairos-forest-subtle uppercase tracking-wider">
+                    <th className="pb-3 pl-2">Timestamp</th>
+                    <th className="pb-3">Type</th>
+                    <th className="pb-3">Clinical Action / Protocol Description</th>
+                    <th className="pb-3">Automated Verification Gate</th>
+                    <th className="pb-3 text-right pr-2">Credit Delta</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-kairos-border/60">
+                  {hospitalAccount.recentTransactions.map((tx) => {
+                    const isEarned = tx.type === 'earn' || tx.type === 'earned';
+                    const dateStr = new Date(tx.timestamp).toLocaleString('en-IN', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    });
+
+                    // Verification method label
+                    let verifMethod = 'Auto-Verified: <5m Alert SLA (<300s)';
+                    if (tx.category === 'accept_before_move') verifMethod = 'Auto-Verified: Accept-Before-Move Bed Lock';
+                    else if (tx.category === 'isbar_compliance') verifMethod = 'Auto-Verified: ISBAR Handover (FHIR-OK)';
+                    else if (tx.category === 'zero_double_booking') verifMethod = 'Auto-Verified: 100% Bed Hold Honored';
+                    else if (tx.category === 'cme_training') verifMethod = 'Institutional CME License Disbursed';
+                    else if (tx.category === 'priority_matching') verifMethod = 'Algorithmic Dispatch Boost Active';
+                    else if (tx.category === 'nabh_compliance') verifMethod = 'NABH Digital Audit Package Exported';
+
+                    return (
+                      <tr key={tx.id} className="hover:bg-kairos-mint-soft/30 transition-colors">
+                        <td className="py-3 pl-2 font-mono text-[11px] text-kairos-forest-subtle">
+                          {dateStr}
+                        </td>
+                        <td className="py-3">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                              isEarned
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-purple-50 text-purple-700 border border-purple-200'
+                            }`}
+                          >
+                            {isEarned ? <ArrowUpRight className="w-3 h-3" /> : <Gift className="w-3 h-3" />}
+                            {tx.type}
+                          </span>
+                        </td>
+                        <td className="py-3 font-medium text-kairos-forest-ink max-w-sm">
+                          {tx.reason}
+                        </td>
+                        <td className="py-3">
+                          <span className="font-mono text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                            {verifMethod}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-2 text-right font-mono font-bold">
+                          <span className={isEarned ? 'text-emerald-700' : 'text-purple-700'}>
+                            {isEarned ? '+' : '-'}{tx.amount} MBC
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
